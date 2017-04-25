@@ -1,14 +1,23 @@
 package job;
 
-import abstraction.Location;
+import bwapi.Unit;
 
 public class UnitGasJob extends UnitJob {
-
-	public Location location;
 	
-	public UnitGasJob(Location location) {
-		super();
-		this.location = location;
+	public Unit extractor;
+	
+	public UnitGasJob(Unit extractor) {
+		this.extractor = extractor;
+	}
+
+	@Override
+	public void perform(Unit unit) {
+		// TODO
+	}
+	
+	@Override
+	public String toString() {
+		return "Gas";
 	}
 	
 }

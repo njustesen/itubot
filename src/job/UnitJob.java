@@ -1,14 +1,12 @@
 package job;
 
-import abstraction.Location;
+import bwapi.Unit;
 
 public abstract class UnitJob {
 
-	public Location location;
-	
-	public UnitJob(Location location) {
-		super();
-		this.location = location;
+	public UnitJob() {
 	}
+
+	public abstract void perform(Unit unit);
 	
 }

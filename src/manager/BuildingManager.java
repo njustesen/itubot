@@ -1,19 +1,18 @@
 package manager;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import job.UnitBuildJob;
-import job.UnitGasJob;
 import job.UnitJob;
-import job.UnitJobType;
 import job.UnitMineJob;
 import job.UnitTrainJob;
-import module.BuildLocator;
 import abstraction.Build;
 import abstraction.BuildType;
+import bwapi.BWAPI;
+import bwapi.Match;
+import bwapi.Unit;
+import bwapi.UnitType;
+import exception.NoBuildOrderException;
 
-public class BuildingManager implements Manager {
+public class BuildingManager extends JobManager {
 
 	// SINGLETON
 	private static BuildingManager instance = null;
@@ -26,66 +25,86 @@ public class BuildingManager implements Manager {
 	}
 	
 	// CLASS
-	private Map<Integer, UnitJob> jobs;
-
 	protected BuildingManager() {
-		jobs = new HashMap<Integer, UnitJob>();
+		super();
 	}
 	
-	@Override
-	public void execute() {
+	protected void assignJobs() {
 		
-		assignJobs();
-		performJobs();
+		// Check next build
+		Build nextBuild;
+		try {
+			nextBuild = BuildOrderManager.getInstance().getNextBuild();
+			if (alreadyAssigned(nextBuild)){
+				return;
+			}
+			if (nextBuild.type == BuildType.UNIT){
+				Unit trainer = getProductionBuilding(nextBuild.unitType);
+				if (trainer == null){
+					//System.out.println("Not able to produce " + nextBuild.toString());
+				} else {
+					jobs.put(trainer.getID(), new UnitTrainJob(nextBuild.unitType));
+				}
+			}
+		} catch (NoBuildOrderException e) {
+			Match.getInstance().printf("No build returned from BuildOrderManager.");
+		}
 		
 	}
 
-	private void performJobs() {
+	private boolean alreadyAssigned(Build nextBuild) {
+		for(Integer unitID : jobs.keySet()){
+			UnitJob job = jobs.get(unitID);
+			if (job != null && job instanceof UnitBuildJob){
+				UnitBuildJob buildJob = ((UnitBuildJob)job);
+				if (buildJob.unitType.equals(nextBuild)){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	protected void performJobs() {
 		
-		for(Integer unit : jobs.keySet()){
-			if (jobs.get(unit) == null){
-				// DO NOTHING
-			} else if (jobs.get(unit) instanceof UnitTrainJob){
-				UnitTrainJob job = ((UnitTrainJob)jobs.get(unit));
-				unit unit = job.unit;
-				unit.train(unit);
+		for(Integer unitID : jobs.keySet()){
+			Unit unit = BWAPI.getInstance().getGame().getUnit(unitID);
+			if (jobs.get(unitID) != null){
+				jobs.get(unitID).perform(unit);
+				Match.getInstance().drawTextMap(unit.getPosition().getX(), 
+						unit.getPosition().getY(), 
+						jobs.get(unitID).toString());
 			}
 		}
 		
 	}
-
-	private void assignJobs() {
 	
-		for(Integer unit : jobs.keySet()){
-			// RETREAT IF UNDER ATTACK
-			// ELSE: CONTINUE AS USUAL
+	private Unit getProductionBuilding(UnitType unitType) {
+		
+		for(Integer unitID : jobs.keySet()){
+			// Check that it is not assigned another job
+			Unit building = Match.getInstance().getUnit(unitID);
+						
+			if (jobs.get(unitID) == null && 
+					building.canTrain(unitType) && 
+					!building.isTraining()){
+				return building;
+			}
 		}
 		
-		// Check next build
-		Build nextBuild = BuildOrderManager.getInstance().getNextBuild();
-		if (nextBuild.type == BuildType.UNIT && canTrain(nextBuild)){
-			unit building = prodBuilding();
-			jobs.put(worker, new UnitBuildJob(location, nextBuild));
-		}
-		
-		for(Integer unit : jobs.keySet()){
-			// RETREAT IF UNDER ATTACK
-			// ELSE: CONTINUE AS USUAL
-		}
-		
+		return null;
 	}
 
-	private unit prodBuilding() {
-		for(Integer unit : jobs.keySet()){
-			// Pick building based on some criteria
+	public void unitStarted(Unit unit) {
+		for(int unitID : this.jobs.keySet()){
+			UnitJob job = this.jobs.get(unitID);
+			if (job instanceof UnitTrainJob){
+				UnitTrainJob buildJob = ((UnitTrainJob)job);
+				if (buildJob.unitType.equals(unit.getType())){
+					this.jobs.put(unitID, null);
+				}
+			}
 		}
-		return building;
 	}
-
-	private boolean canTrain(Build nextBuild) {
-		// Check cost and requirements
-		return true;
-	}
-	
 
 }

@@ -1,16 +1,26 @@
 package job;
 
-import abstraction.Location;
+import bwapi.TilePosition;
+import bwapi.Unit;
+import bwapi.UnitType;
 
 public class UnitBuildJob extends UnitJob {
 
-	public Location location;
-	public unit unit;
+	public UnitType unitType;
+	public TilePosition position;
 	
-	public UnitBuildJob(Location location) {
-		super();
-		this.location = location;
-		this.unit = unit;
+	public UnitBuildJob(TilePosition position, UnitType unitType) {
+		this.position = position;
+		this.unitType = unitType;
+	}
+
+	public void perform(Unit unit) {
+		unit.build(this.unitType, this.position);
+	}
+	
+	@Override
+	public String toString() {
+		return "Build " + unitType;
 	}
 	
 }

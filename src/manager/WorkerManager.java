@@ -1,17 +1,21 @@
 package manager;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import job.UnitBuildJob;
 import job.UnitJob;
-import job.UnitJobType;
 import job.UnitMineJob;
 import module.BuildLocator;
 import abstraction.Build;
 import abstraction.BuildType;
+import bwapi.BWAPI;
+import bwapi.Match;
+import bwapi.Self;
+import bwapi.TilePosition;
+import bwapi.Unit;
+import bwapi.UnitType;
+import exception.NoBuildOrderException;
+import exception.NoWorkersException;
 
-public class WorkerManager implements Manager {
+public class WorkerManager extends JobManager {
 
 	// SINGLETON
 	private static WorkerManager instance = null;
@@ -24,58 +28,48 @@ public class WorkerManager implements Manager {
 	}
 	
 	// CLASS
-	private Map<Integer, UnitJob> jobs;
-
 	protected WorkerManager() {
-		jobs = new HashMap<Integer, UnitJob>();
+		super();
 	}
 	
-	@Override
-	public void execute() {
-		
-		assignJobs();
-		performJobs();
-		
-	}
-
-	private void performJobs() {
-		
-		for(Integer unit : jobs.keySet()){
-			if (jobs.get(unit) instanceof UnitBuildJob){
-				UnitBuildJob job = ((UnitBuildJob)jobs.get(unit));
-				unit unit = job.unit;
-				Location location = job.get(unit);
-				unit.build(unit. location);
-			} else if (jobs.get(unit) instanceof UnitMineJob){
-				if (unit.hasMines){
-					// Goto base
-				} else {
-					// Goto to mine
-				}
-			} else if (jobs.get(unit) instanceof UnitGasJob){
-				if (unit.hasGas){
-					// Goto base
-				} else {
-					// Goto to gas
-				}
+	protected void performJobs() {
+				
+		for(Integer unitID : jobs.keySet()){
+			Unit unit = BWAPI.getInstance().getGame().getUnit(unitID);
+			if (jobs.get(unitID) != null){
+				jobs.get(unitID).perform(unit);
+				Match.getInstance().drawTextMap(unit.getPosition().getX(), 
+						unit.getPosition().getY(), 
+						jobs.get(unitID).toString());
 			}
 		}
 		
 	}
 
-	private void assignJobs() {
-	
-		for(Integer unit : jobs.keySet()){
-			// RETREAT IF UNDER ATTACK
-			// ELSE: CONTINUE AS USUAL
+	protected void assignJobs() {
+			
+		for(Integer unitID : jobs.keySet()){
+			// If no job, mine minerals
+			if (jobs.get(unitID) == null){
+				jobs.put(unitID, new UnitMineJob());
+			}
 		}
-		
+				
 		// Check next build
-		Build nextBuild = BuildOrderManager.getInstance().getNextBuild();
-		if (nextBuild.type == BuildType.BUILDING && canBuild(nextBuild)){
-			Location location = BuildLocator.getInstance().getLocation(nextBuild);
-			unit worker = closestWorker(location);
-			jobs.put(worker, new UnitBuildJob(location, nextBuild));
+		Build nextBuild = null;
+		try {
+			nextBuild = BuildOrderManager.getInstance().getNextBuild();
+			if (nextBuild.type == BuildType.BUILDING && 
+					!buildAlreadyAssigned(nextBuild) && 
+					canBuildNow(nextBuild.unitType)){
+				TilePosition position = BuildLocator.getInstance().getLocation(nextBuild.unitType);
+				Unit worker = closestWorker(position);
+				jobs.put(worker.getID(), new UnitBuildJob(position, nextBuild.unitType));
+			}
+		} catch (NoWorkersException e) {
+			Match.getInstance().printf("Unable to find suitable build position for "+nextBuild.unitType.toString());
+		} catch (NoBuildOrderException e1) {
+			Match.getInstance().printf("No build returned from Build Order Manager");
 		}
 		
 		for(Integer unit : jobs.keySet()){
@@ -85,24 +79,59 @@ public class WorkerManager implements Manager {
 		
 	}
 
-	private boolean canBuild(Build nextBuild) {
-		// Check cost and requirements
+	private boolean buildAlreadyAssigned(Build nextBuild) {
+		for(int unitID : this.jobs.keySet()){
+			UnitJob job = this.jobs.get(unitID);
+			if (job instanceof UnitBuildJob){
+				UnitBuildJob buildJob = ((UnitBuildJob)job);
+				if (buildJob.unitType.equals(nextBuild.unitType)){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private boolean canBuildNow(UnitType unitType) {
+		int minerals = Self.getInstance().minerals();
+		int gas = Self.getInstance().gas();
+		if (minerals < unitType.mineralPrice() || gas < unitType.gasPrice()){
+			return false;
+		}
 		return true;
 	}
 
-	private unit closestWorker(Location location) {
-		unit closestWorker = null;
-		float closestDistance = 1000000;
-		for(unit worker : units){
-			float d = distance(worker, location) < closestDistance;
-			if (jobs.get(worker.id).type == UnitJobType.MINE){
-				closestDistance = d;
-				closestWorker = worker;
+	private Unit closestWorker(TilePosition position) {
+		Unit closestWorker = null;
+		double closestDistance = 1000000d;
+		for(Unit unit : BWAPI.getInstance().getGame().getAllUnits()){
+			if (unit.canBuild() && unit.getPlayer() == BWAPI.getInstance().getGame().self()){
+				double d = distance(unit.getTilePosition(), position);
+				// Only take workers mining
+				if (d < closestDistance && jobs.get(unit.getID()) instanceof UnitMineJob){
+					closestDistance = d;
+					closestWorker = unit;
+				}
 			}
 		}
 		return closestWorker;
 	}
-	
-	
 
+	private double distance(TilePosition a, TilePosition b) {
+		return Math.sqrt( Math.abs(a.getX() - b.getX()) + Math.abs(a.getY() - b.getY()) );
+	}
+
+	public void buildStarted(Unit unit) {
+		for(int unitID : this.jobs.keySet()){
+			UnitJob job = this.jobs.get(unitID);
+			if (job instanceof UnitBuildJob){
+				UnitBuildJob buildJob = ((UnitBuildJob)job);
+				if (buildJob.unitType.equals(unit.getType())){
+					// Rest to mining
+					this.jobs.put(unitID, new UnitMineJob());
+				}
+			}
+		}
+	}
+	
 }

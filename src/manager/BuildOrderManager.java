@@ -3,8 +3,10 @@ package manager;
 import java.util.ArrayList;
 import java.util.List;
 
-import exceptions.NoBuildOrderException;
 import broodwar.BroodWarUnitType;
+import bwapi.Match;
+import bwapi.UnitType;
+import exception.NoBuildOrderException;
 import abstraction.Build;
 import abstraction.BuildType;
 
@@ -21,33 +23,8 @@ public class BuildOrderManager implements Manager {
 	}
 	
 	// CLASS
-	private List<Build> buildOrder;
-	
 	protected BuildOrderManager() {
-		this.buildOrder = new ArrayList<Build>();
-		for (int i = 0; i < 4; i++){
-			this.buildOrder.add(new Build(BuildType.UNIT, BroodWarUnitType.Protoss_Probe.ordinal()));	
-		}
-		this.buildOrder.add(new Build(BuildType.UNIT, BroodWarUnitType.Protoss_Pylon.ordinal()));
 		
-		this.buildOrder.add(new Build(BuildType.UNIT, BroodWarUnitType.Protoss_Probe.ordinal()));
-		
-		this.buildOrder.add(new Build(BuildType.UNIT, BroodWarUnitType.Protoss_Gateway.ordinal()));
-		
-		this.buildOrder.add(new Build(BuildType.UNIT, BroodWarUnitType.Protoss_Probe.ordinal()));
-		
-		this.buildOrder.add(new Build(BuildType.UNIT, BroodWarUnitType.Protoss_Gateway.ordinal()));
-		
-		this.buildOrder.add(new Build(BuildType.UNIT, BroodWarUnitType.Protoss_Probe.ordinal()));
-		
-		this.buildOrder.add(new Build(BuildType.UNIT, BroodWarUnitType.Protoss_Zealot.ordinal()));
-		
-		for(int x = 0; x < 10; x++){
-			this.buildOrder.add(new Build(BuildType.UNIT, BroodWarUnitType.Protoss_Pylon.ordinal()));
-			for(int y = 0; y < 4; y++){
-				this.buildOrder.add(new Build(BuildType.UNIT, BroodWarUnitType.Protoss_Zealot.ordinal()));
-			}
-		}
 		
 	}
 
@@ -55,14 +32,31 @@ public class BuildOrderManager implements Manager {
 	public void execute() {
 		
 	}
-	
+		
 	public Build getNextBuild() throws NoBuildOrderException{
-		if (!this.buildOrder.isEmpty()){
-			Build build = this.buildOrder.get(0);
-			this.buildOrder.remove(0);
-			return build;
+		
+		if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) < 8){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Pylon) == 0){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) < 10){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Gateway) == 0){
+			return new Build(UnitType.Protoss_Gateway);
+		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) == 11){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Gateway) == 1){
+			return new Build(UnitType.Protoss_Gateway);
+		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) == 12){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Zealot) == 0){
+			return new Build(UnitType.Protoss_Zealot);
+		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Pylon) == 1){
+			return new Build(UnitType.Protoss_Pylon);
+		} else {
+			return new Build(UnitType.Protoss_Zealot);
 		}
-		throw new NoBuildOrderException();
+		
 	}
-
+	
 }

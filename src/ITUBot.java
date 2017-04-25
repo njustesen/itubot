@@ -1,29 +1,48 @@
 import bwapi.*;
 import bwta.BWTA;
 import bwta.BaseLocation;
+import commander.Commander;
+import manager.BuildingManager;
+import manager.InformationManager;
+import manager.WorkerManager;
 
 public class ITUBot extends DefaultBWListener {
 
-    private Mirror mirror = new Mirror();
-
-    private Game game;
-
-    private Player self;
-
     public void execute() {
-        mirror.getModule().setEventListener(this);
-        mirror.startGame();
+        BWAPI.getInstance().getModule().setEventListener(this);
+        BWAPI.getInstance().startGame();
     }
 
     @Override
     public void onUnitCreate(Unit unit) {
-        System.out.println("New unit discovered " + unit.getType());
+    	InformationManager.getInstance().UnitCreated(unit);
+    	if (unit.getPlayer().equals(Self.getInstance())){
+	    	if (unit.getType().isBuilding()){
+	    		BuildingManager.getInstance().addUnit(unit);
+	    		WorkerManager.getInstance().buildStarted(unit);
+	    	} else if (unit.getType().isWorker()){
+	    		WorkerManager.getInstance().addUnit(unit);
+	    	}
+	    	if (!unit.getType().isBuilding()){
+	    		BuildingManager.getInstance().unitStarted(unit);
+	    	}
+    	}
+    }
+    
+    @Override
+    public void onUnitDestroy(Unit unit) {
+    	InformationManager.getInstance().UnitDestroyed(unit);
+    	if (unit.getPlayer().equals(Self.getInstance())){
+	    	if (unit.getType().isBuilding()){
+	    		BuildingManager.getInstance().removeUnit(unit);
+	    	} else if (unit.getType().isWorker()){
+	    		WorkerManager.getInstance().removeUnit(unit);
+	    	}
+    	}
     }
 
     @Override
     public void onStart() {
-        game = mirror.getGame();
-        self = game.self();
 
         //Use BWTA to analyze map
         //This may take a few minutes if the map is processed first time!
@@ -40,50 +59,15 @@ public class ITUBot extends DefaultBWListener {
         	}
         	System.out.println();
         }
-
+        
     }
 
     @Override
     public void onFrame() {
-        //game.setTextSize(10);
-        game.drawTextScreen(10, 10, "Playing as " + self.getName() + " - " + self.getRace());
-
-        StringBuilder units = new StringBuilder("My units:\n");
-
-        //iterate through my units
-        for (Unit myUnit : self.getUnits()) {
-            units.append(myUnit.getType()).append(" ").append(myUnit.getTilePosition()).append("\n");
-
-            //if there's enough minerals, train an SCV
-            if (myUnit.getType() == UnitType.Terran_Command_Center && self.minerals() >= 50) {
-                myUnit.train(UnitType.Terran_SCV);
-            }
-
-            //if it's a worker and it's idle, send it to the closest mineral patch
-            if (myUnit.getType().isWorker() && myUnit.isIdle()) {
-                Unit closestMineral = null;
-
-                //find the closest mineral
-                for (Unit neutralUnit : game.neutral().getUnits()) {
-                    if (neutralUnit.getType().isMineralField()) {
-                        if (closestMineral == null || myUnit.getDistance(neutralUnit) < myUnit.getDistance(closestMineral)) {
-                            closestMineral = neutralUnit;
-                        }
-                    }
-                }
-
-                //if a mineral patch was found, send the worker to gather it
-                if (closestMineral != null) {
-                    myUnit.gather(closestMineral, false);
-                }
-            }
-        }
-
-        //draw my units on screen
-        game.drawTextScreen(10, 25, units.toString());
+        Commander.getInstance().run();
     }
 
     public static void main(String[] args) {
-        new TestBot1().execute();
+        new ITUBot().execute();
     }
 }

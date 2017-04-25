@@ -1,21 +1,37 @@
 package commander;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import manager.BuildOrderManager;
+import manager.BuildingManager;
 import manager.Manager;
+import manager.WorkerManager;
 
 public class Commander {
 
-	List<Manager> managers;
-	String name;
+	// SINGLETON
+	private static Commander instance = null;
 	
-	public Commander(String name, List<Manager> managers){
-		this.name = name;
-		this.managers = managers;
+	public static Commander getInstance() {
+	   if(instance == null) {
+		   instance = new Commander();
+	   }
+	   return instance;
+	}
+	
+	// CLASS
+	List<Manager> managers;
+	
+	public Commander(){
+		managers = new ArrayList<Manager>();
+		managers.add(BuildOrderManager.getInstance());
+		managers.add(BuildingManager.getInstance());
+		managers.add(WorkerManager.getInstance());
 	}
 	
 	public void run(){
-		for (Manager manager : managers){
+		for(Manager manager : managers){
 			manager.execute();
 		}
 	}
