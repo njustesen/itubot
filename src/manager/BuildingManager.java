@@ -107,4 +107,10 @@ public class BuildingManager extends JobManager {
 		}
 	}
 
+	@Override
+	public void visualize() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

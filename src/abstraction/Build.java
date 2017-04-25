@@ -31,8 +31,16 @@ public class Build {
 
 	@Override
 	public String toString() {
-		return "Build [type=" + type + ", unitType=" + unitType + ", techType=" + techType + ", upgradeType="
-				+ upgradeType + "]";
+		if (unitType != null){
+			return unitType.toString();
+		}
+		if (techType != null){
+			return techType.toString();
+		}
+		if (upgradeType != null){
+			return techType.toString();
+		}
+		return "[No type]";
 	}
 		
 }

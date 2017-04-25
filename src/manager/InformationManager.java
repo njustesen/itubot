@@ -68,4 +68,10 @@ public class InformationManager implements Manager {
 		return 0;
 	}
 
+	@Override
+	public void visualize() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

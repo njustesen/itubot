@@ -5,6 +5,7 @@ import commander.Commander;
 import manager.BuildingManager;
 import manager.InformationManager;
 import manager.WorkerManager;
+import module.MineralPrioritizor;
 
 public class ITUBot extends DefaultBWListener {
 
@@ -37,6 +38,7 @@ public class ITUBot extends DefaultBWListener {
 	    		BuildingManager.getInstance().removeUnit(unit);
 	    	} else if (unit.getType().isWorker()){
 	    		WorkerManager.getInstance().removeUnit(unit);
+	        	MineralPrioritizor.getInstance().UnitDestroyed(unit);
 	    	}
     	}
     }

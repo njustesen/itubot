@@ -4,15 +4,19 @@ import job.UnitBuildJob;
 import job.UnitJob;
 import job.UnitMineJob;
 import module.BuildLocator;
+import module.MineralPrioritizor;
 import abstraction.Build;
 import abstraction.BuildType;
 import bwapi.BWAPI;
+import bwapi.Color;
 import bwapi.Match;
+import bwapi.Position;
 import bwapi.Self;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 import exception.NoBuildOrderException;
+import exception.NoMinableMineralsException;
 import exception.NoWorkersException;
 
 public class WorkerManager extends JobManager {
@@ -38,9 +42,6 @@ public class WorkerManager extends JobManager {
 			Unit unit = BWAPI.getInstance().getGame().getUnit(unitID);
 			if (jobs.get(unitID) != null){
 				jobs.get(unitID).perform(unit);
-				Match.getInstance().drawTextMap(unit.getPosition().getX(), 
-						unit.getPosition().getY(), 
-						jobs.get(unitID).toString());
 			}
 		}
 		
@@ -51,7 +52,15 @@ public class WorkerManager extends JobManager {
 		for(Integer unitID : jobs.keySet()){
 			// If no job, mine minerals
 			if (jobs.get(unitID) == null){
-				jobs.put(unitID, new UnitMineJob());
+				Unit unit = Match.getInstance().getUnit(unitID);
+				Unit mineralField;
+				try {
+					mineralField = MineralPrioritizor.getInstance().bestMineralField(unit);
+					MineralPrioritizor.getInstance().assign(unit, mineralField);
+					jobs.put(unitID, new UnitMineJob(mineralField));
+				} catch (NoMinableMineralsException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 				
@@ -64,6 +73,7 @@ public class WorkerManager extends JobManager {
 					canBuildNow(nextBuild.unitType)){
 				TilePosition position = BuildLocator.getInstance().getLocation(nextBuild.unitType);
 				Unit worker = closestWorker(position);
+				MineralPrioritizor.getInstance().resign(worker);
 				jobs.put(worker.getID(), new UnitBuildJob(position, nextBuild.unitType));
 			}
 		} catch (NoWorkersException e) {
@@ -128,7 +138,39 @@ public class WorkerManager extends JobManager {
 				UnitBuildJob buildJob = ((UnitBuildJob)job);
 				if (buildJob.unitType.equals(unit.getType())){
 					// Rest to mining
-					this.jobs.put(unitID, new UnitMineJob());
+					Unit worker = Match.getInstance().getUnit(unitID);
+					Unit mineralField;
+					try {
+						mineralField = MineralPrioritizor.getInstance().bestMineralField(worker);
+						MineralPrioritizor.getInstance().assign(worker, mineralField);
+						jobs.put(unitID, new UnitMineJob(mineralField));
+					} catch (NoMinableMineralsException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	public void visualize() {
+		for(Integer unitID : jobs.keySet()){
+			Unit unit = BWAPI.getInstance().getGame().getUnit(unitID);
+			if (jobs.get(unitID) != null){
+				jobs.get(unitID).perform(unit);
+				Match.getInstance().drawTextMap(unit.getPosition().getX(), unit.getPosition().getY(), jobs.get(unitID).toString());
+				if (jobs.get(unitID) instanceof UnitMineJob){
+					UnitMineJob mineJob = (UnitMineJob)jobs.get(unitID);
+					if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) < 10){
+						Match.getInstance().drawLineMap(unit.getPosition(), mineJob.mineralField.getPosition(), Color.Teal);
+						Match.getInstance().drawCircleMap(mineJob.mineralField.getPosition(), 10, Color.Teal);
+					}
+				} else if (jobs.get(unitID) instanceof UnitBuildJob){
+					UnitBuildJob buildJob = (UnitBuildJob)jobs.get(unitID);
+					Match.getInstance().drawLineMap(unit.getPosition(), buildJob.position.toPosition(), Color.Orange);
+					Position toPosition = new Position(buildJob.position.toPosition().getX() + buildJob.unitType.width(), 
+							buildJob.position.toPosition().getY() + buildJob.unitType.height());		
+					Match.getInstance().drawBoxMap(buildJob.position.toPosition(), toPosition, Color.Orange);
 				}
 			}
 		}

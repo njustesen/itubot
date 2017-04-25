@@ -58,5 +58,15 @@ public class BuildOrderManager implements Manager {
 		}
 		
 	}
+
+	@Override
+	public void visualize() {
+		try {
+			Match.getInstance().drawTextScreen(12, 12, "Next Build:");
+			Match.getInstance().drawTextScreen(12, 22, getNextBuild().toString());
+		} catch (NoBuildOrderException e) {
+			e.printStackTrace();
+		}
+	}
 	
 }

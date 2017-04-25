@@ -34,6 +34,9 @@ public class Commander {
 		for(Manager manager : managers){
 			manager.execute();
 		}
+		for(Manager manager : managers){
+			manager.visualize();
+		}
 	}
 	
 }

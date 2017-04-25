@@ -5,30 +5,22 @@ import bwapi.Unit;
 
 public class UnitMineJob extends UnitJob {
 	
-	public UnitMineJob() {
+	public Unit mineralField;
+	
+	public UnitMineJob(Unit mineralField) {
+		this.mineralField = mineralField;
 	}
 
 	@Override
 	public void perform(Unit unit) {
+		
+		// TODO: Check if mineral field is gone
 		if (unit.isGatheringMinerals()){
 			return;
 		}
-				
-		Unit closestMineral = null;
 		
-        //find the closest mineral
-        for (Unit neutralUnit : Match.getInstance().neutral().getUnits()) {
-            if (neutralUnit.getType().isMineralField()) {
-                if (closestMineral == null || unit.getDistance(neutralUnit) < unit.getDistance(closestMineral)) {
-                    closestMineral = neutralUnit;
-                }
-            }
-        }
-
-        //if a mineral patch was found, send the worker to gather it
-        if (closestMineral != null) {
-        	unit.gather(closestMineral);
-        }
+		unit.gather(this.mineralField);
+		
 	}
 	
 	@Override
