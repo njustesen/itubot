@@ -22,6 +22,10 @@ public class MineralPrioritizor {
 	   return instance;
 	}
 	
+	public static void reset() {
+		instance = null;
+	}
+	
 	// CONSTANTS
 	private static double maxDistance = 500;
 	
@@ -50,10 +54,12 @@ public class MineralPrioritizor {
 	private double distanceToOwnBase(Unit a) {
 		int closest = Integer.MAX_VALUE;
 		for(Unit b : Match.getInstance().getAllUnits()){
-			if (b.getPlayer().equals(Self.getInstance()) && b.getType().isResourceDepot()){
+			if (b.getPlayer().getID() == Self.getInstance().getID() && b.getType().isResourceDepot()){
+				
 				closest = Math.min(closest, a.getDistance(b));
 			}
 		}
+		System.out.println("Closest: "+closest);
 		return closest;
 	}
 	

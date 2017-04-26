@@ -4,6 +4,7 @@ import bwta.BaseLocation;
 import commander.Commander;
 import manager.BuildingManager;
 import manager.InformationManager;
+import manager.SquadManager;
 import manager.WorkerManager;
 
 public class ITUBot extends DefaultBWListener {
@@ -24,6 +25,7 @@ public class ITUBot extends DefaultBWListener {
 	
 	// CLASS	
     public void execute() {
+    	Commander.reset();
         BWAPI.getInstance().getModule().setEventListener(this);
         BWAPI.getInstance().startGame();
     }
@@ -31,12 +33,14 @@ public class ITUBot extends DefaultBWListener {
     @Override
     public void onUnitCreate(Unit unit) {
     	InformationManager.getInstance().UnitCreated(unit);
-    	if (unit.getPlayer().equals(Self.getInstance())){
+    	if (unit.getPlayer().getID() == Self.getInstance().getID()){
 	    	if (unit.getType().isBuilding()){
 	    		BuildingManager.getInstance().addUnit(unit);
 	    		WorkerManager.getInstance().buildStarted(unit);
 	    	} else if (unit.getType().isWorker()){
 	    		WorkerManager.getInstance().addUnit(unit);
+	    	} else {
+	    		SquadManager.getInstance().addUnit(unit);
 	    	}
 	    	if (!unit.getType().isBuilding()){
 	    		BuildingManager.getInstance().unitStarted(unit);
@@ -47,11 +51,13 @@ public class ITUBot extends DefaultBWListener {
     @Override
     public void onUnitDestroy(Unit unit) {
     	InformationManager.getInstance().UnitDestroyed(unit);
-    	if (unit.getPlayer().equals(Self.getInstance())){
+    	if (unit.getPlayer().getID() == Self.getInstance().getID()){
 	    	if (unit.getType().isBuilding()){
 	    		BuildingManager.getInstance().removeUnit(unit);
 	    	} else if (unit.getType().isWorker()){
 	    		WorkerManager.getInstance().removeUnit(unit);
+	    	} else {
+	    		SquadManager.getInstance().removeUnit(unit);
 	    	}
     	}
     }
@@ -66,14 +72,7 @@ public class ITUBot extends DefaultBWListener {
         BWTA.analyze();
         System.out.println("Map data ready");
         
-        int i = 0;
-        for(BaseLocation baseLocation : BWTA.getBaseLocations()){
-        	System.out.println("Base location #" + (++i) + ". Printing location's region polygon:");
-        	for(Position position : baseLocation.getRegion().getPolygon().getPoints()){
-        		System.out.print(position + ", ");
-        	}
-        	System.out.println();
-        }
+        Commander.reset();
         
     }
 

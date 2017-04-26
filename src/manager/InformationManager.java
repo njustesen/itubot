@@ -1,11 +1,18 @@
 package manager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import bwapi.BWAPI;
+import bwapi.Match;
+import bwapi.Position;
 import bwapi.Self;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwta.BWTA;
+import bwta.BaseLocation;
 
 public class InformationManager implements Manager {
 
@@ -19,13 +26,30 @@ public class InformationManager implements Manager {
 	   return instance;
 	}
 	
+	public static void reset() {
+		instance = null;
+	}
+	
 	// CLASS
+	public List<BaseLocation> possibleEnemyBasePositions;
+	public BaseLocation ownBasePosition;
+	
 	private Map<String, Integer> ownUnits;
 	private Map<String, Integer> oppUnits;
 	
 	protected InformationManager(){
 		this.ownUnits = new HashMap<String, Integer>();
 		this.oppUnits = new HashMap<String, Integer>();
+		this.possibleEnemyBasePositions = new ArrayList<BaseLocation>();
+		for (BaseLocation b : BWTA.getBaseLocations()) {
+			if (b.isStartLocation()) {
+				if (Self.getInstance().getStartLocation().equals(b.getTilePosition())){
+					ownBasePosition = b;
+				} else {
+					possibleEnemyBasePositions.add(b);
+				}
+			}
+		}
 	}
 	
 	@Override
@@ -70,8 +94,7 @@ public class InformationManager implements Manager {
 
 	@Override
 	public void visualize() {
-		// TODO Auto-generated method stub
-		
+		Match.getInstance().drawTextScreen(12, 22, "Possible base locations: " + possibleEnemyBasePositions.size());
 	}
 
 }

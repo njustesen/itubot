@@ -31,6 +31,10 @@ public class WorkerManager extends JobManager {
 	   return instance;
 	}
 	
+	public static void reset() {
+		instance = null;
+	}
+	
 	// CLASS
 	protected WorkerManager() {
 		super();
@@ -53,11 +57,12 @@ public class WorkerManager extends JobManager {
 			// If no job, mine minerals
 			if (jobs.get(unitID) == null){
 				Unit unit = Match.getInstance().getUnit(unitID);
-				Unit mineralField;
+				Unit mineralPatch;
 				try {
-					mineralField = MineralPrioritizor.getInstance().bestMineralField(unit);
-					MineralPrioritizor.getInstance().assign(unit, mineralField);
-					jobs.put(unitID, new UnitMineJob(mineralField));
+					mineralPatch = MineralPrioritizor.getInstance().bestMineralField(unit);
+					MineralPrioritizor.getInstance().assign(unit, mineralPatch);
+					System.out.println("Mineral patch: " + mineralPatch.getPosition().toString());
+					jobs.put(unitID, new UnitMineJob(mineralPatch));
 				} catch (NoMinableMineralsException e) {
 					e.printStackTrace();
 				}
@@ -166,9 +171,11 @@ public class WorkerManager extends JobManager {
 					}
 				} else if (jobs.get(unitID) instanceof UnitBuildJob){
 					UnitBuildJob buildJob = (UnitBuildJob)jobs.get(unitID);
-					Match.getInstance().drawLineMap(unit.getPosition(), buildJob.position.toPosition(), Color.Orange);
-					Position toPosition = new Position(buildJob.position.toPosition().getX() + buildJob.unitType.width(), 
-							buildJob.position.toPosition().getY() + buildJob.unitType.height());		
+					Position buildCenter = new Position(buildJob.position.toPosition().getX() + buildJob.unitType.tileWidth() * 16,
+							buildJob.position.toPosition().getY() + buildJob.unitType.tileHeight() * 16);
+					Match.getInstance().drawLineMap(unit.getPosition(), buildCenter, Color.Orange);
+					Position toPosition = new Position(buildJob.position.toPosition().getX() + buildJob.unitType.tileWidth() * 32, 
+							buildJob.position.toPosition().getY() + buildJob.unitType.tileHeight() * 32);		
 					Match.getInstance().drawBoxMap(buildJob.position.toPosition(), toPosition, Color.Orange);
 				}
 			}

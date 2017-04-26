@@ -24,6 +24,10 @@ public class BuildingManager extends JobManager {
 	   return instance;
 	}
 	
+	public static void reset() {
+		instance = null;
+	}
+	
 	// CLASS
 	protected BuildingManager() {
 		super();

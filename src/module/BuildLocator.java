@@ -19,6 +19,10 @@ public class BuildLocator {
 	   return instance;
 	}
 	
+	public static void reset() {
+		instance = null;
+	}
+	
 	// CLASS
 	public BuildLocator(){
 		
