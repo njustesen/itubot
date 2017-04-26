@@ -5,10 +5,24 @@ import commander.Commander;
 import manager.BuildingManager;
 import manager.InformationManager;
 import manager.WorkerManager;
-import module.MineralPrioritizor;
 
 public class ITUBot extends DefaultBWListener {
 
+	// SINGLETON
+	private static ITUBot instance = null;
+	
+	public static ITUBot getInstance() {
+	   if(instance == null) {
+		   instance = new ITUBot();
+	   }
+	   return instance;
+	}
+	
+	protected ITUBot(){
+		super();
+	}
+	
+	// CLASS	
     public void execute() {
         BWAPI.getInstance().getModule().setEventListener(this);
         BWAPI.getInstance().startGame();
@@ -38,7 +52,6 @@ public class ITUBot extends DefaultBWListener {
 	    		BuildingManager.getInstance().removeUnit(unit);
 	    	} else if (unit.getType().isWorker()){
 	    		WorkerManager.getInstance().removeUnit(unit);
-	        	MineralPrioritizor.getInstance().UnitDestroyed(unit);
 	    	}
     	}
     }
@@ -70,6 +83,6 @@ public class ITUBot extends DefaultBWListener {
     }
 
     public static void main(String[] args) {
-        new ITUBot().execute();
+        ITUBot.getInstance().execute();
     }
 }

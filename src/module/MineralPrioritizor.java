@@ -26,11 +26,11 @@ public class MineralPrioritizor {
 	private static double maxDistance = 500;
 	
 	// CLASS
-	Map<Integer, List<Integer>> assigned;
+	Map<Integer, Boolean> assigned;
 	Map<Integer, Double> distancesToBases;
 	
 	public MineralPrioritizor(){
-		assigned = new HashMap<Integer, List<Integer>>();
+		assigned = new HashMap<Integer, Boolean>();
 		distancesToBases = new HashMap<Integer, Double>();
 		setup();
 	}
@@ -40,9 +40,9 @@ public class MineralPrioritizor {
 			if (unit.getType().isMineralField()){
 				double distance = distanceToOwnBase(unit);
 				if (distance <= maxDistance){
-					assigned.put(unit.getID(), new ArrayList<Integer>());
+					assigned.put(unit.getID(), false);
+					distancesToBases.put(unit.getID(), distance);
 				}
-				distancesToBases.put(unit.getID(), distance);
 			}
 		}
 	}
@@ -58,14 +58,29 @@ public class MineralPrioritizor {
 	}
 	
 	public Unit bestMineralField(Unit unit) throws NoMinableMineralsException{
-		List<Unit> leastPopulated = bestMineralFields(unit);
+		// Find available mineral fields
+		List<Unit> available = new ArrayList<Unit>();
+		List<Unit> notAvailable = new ArrayList<Unit>();
+		for(int mineralID : assigned.keySet()){
+			Unit mineralPatch = Match.getInstance().getUnit(mineralID);
+			if (assigned.get(mineralID)){
+				notAvailable.add(mineralPatch);
+			} else {
+				available.add(mineralPatch);
+			}
+		}
+		if (available.isEmpty()){
+			available.addAll(notAvailable);
+		}
+		
+		// Find closest mineral patch
 		double closestDistance = Integer.MAX_VALUE;
 		Unit closest = null;
-		for(Unit mineralField : leastPopulated){
-			double distance = unit.getDistance(mineralField);
+		for(Unit mineralPatch : available){
+			double distance = unit.getDistance(mineralPatch);
 			if (distance <= closestDistance){
 				closestDistance = distance;
-				closest = mineralField;
+				closest = mineralPatch;
 			}
 		}
 		
@@ -76,67 +91,8 @@ public class MineralPrioritizor {
 		return closest;
 	}
 	
-	public List<Unit> bestMineralFields(Unit unit) throws NoMinableMineralsException{
-		List<Unit> leastPopulated = leastPopulatedMineralFields();
-		double closestDistance = Integer.MAX_VALUE;
-		List<Unit> closest = new ArrayList<Unit>();
-		for(Unit mineralField : leastPopulated){
-			double distance = distancesToBases.get(mineralField.getID());
-			if (distance < closestDistance){
-				closestDistance = distance;
-				closest.clear();
-				closest.add(mineralField);
-			} else if (distance == closestDistance){
-				closest.add(mineralField);
-			}
-		}
-		
-		if (closest.isEmpty()){
-			throw new NoMinableMineralsException();
-		}
-		
-		return closest;
-	}
-
-	public List<Unit> leastPopulatedMineralFields() throws NoMinableMineralsException{
-		int bestCount = Integer.MAX_VALUE;
-		List<Unit> best = new ArrayList<Unit>();
-		System.out.println("Size " + assigned.size());
-		for(int mineralID : assigned.keySet()){
-			if (assigned.get(mineralID).size() < bestCount){
-				bestCount = assigned.get(mineralID).size();
-				best.clear();
-				best.add(Match.getInstance().getUnit(mineralID));
-			} else if (assigned.get(mineralID).size() == bestCount){
-				best.add(Match.getInstance().getUnit(mineralID));
-			}
-		}
-		
-		if (best.isEmpty()){
-			throw new NoMinableMineralsException();
-		}
-		
-		return best;
-	}
-	
-	public void assign(Unit worker, Unit minerals){
-		System.out.println("Assign called with " + worker + " " + minerals);
-		boolean contains = assigned.containsKey(minerals.getID());
-		System.out.println("Assigned contains " + contains);
-		assigned.get(minerals.getID()).add(worker.getID());
-	}
-	
-	public void resign(Unit worker){
-		for(int mineralID : assigned.keySet()){
-			if (assigned.get(mineralID).contains(worker.getID())){
-				assigned.remove(worker.getID());
-				return;
-			}
-		}
-	}
-
-	public void UnitDestroyed(Unit worker) {
-		this.resign(worker);
+	public void assign(Unit worker, Unit mineralPatch){
+		assigned.put(mineralPatch.getID(), true);
 	}
 	
 }

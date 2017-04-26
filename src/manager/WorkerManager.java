@@ -73,7 +73,6 @@ public class WorkerManager extends JobManager {
 					canBuildNow(nextBuild.unitType)){
 				TilePosition position = BuildLocator.getInstance().getLocation(nextBuild.unitType);
 				Unit worker = closestWorker(position);
-				MineralPrioritizor.getInstance().resign(worker);
 				jobs.put(worker.getID(), new UnitBuildJob(position, nextBuild.unitType));
 			}
 		} catch (NoWorkersException e) {
