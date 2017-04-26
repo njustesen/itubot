@@ -21,6 +21,8 @@ public abstract class JobManager implements Manager {
 	}
 	
 	protected abstract void assignJobs();
+	protected abstract void unitAdded(Unit unit);
+	protected abstract void unitRemoved(Unit unit);
 	
 	protected void performJobs() {
 		//System.out.println(this.getClass().getName() + ": performing jobs");
@@ -38,13 +40,13 @@ public abstract class JobManager implements Manager {
 	}
 
 	public void addUnit(Unit unit) {
-		//System.out.println(this.getClass().getName() + ": " + unit.getType().toString() + " added to jobs.");
 		this.jobs.put(unit.getID(), null);
+		this.unitAdded(unit);
 	}
 
 	public void removeUnit(Unit unit) {
-		//System.out.println(this.getClass().getName() + ": " + unit.getType().toString() + " removed from jobs.");
 		this.jobs.remove(unit.getID());
+		this.unitRemoved(unit);
 	}
 	
 }

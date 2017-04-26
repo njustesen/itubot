@@ -45,8 +45,38 @@ public class SquadManager extends JobManager {
 	}
 	
 	@Override
+	protected void unitAdded(Unit unit) {
+		Squad toJoin = null;
+		int closestDistance = Integer.MAX_VALUE;
+		for (Squad squad : squads){
+			Position center = squad.getCenter();
+			int distance = unit.getDistance(center);
+			if (distance <= SPLIT_DISTANCE && distance < closestDistance){
+				toJoin = squad;
+				closestDistance = distance;
+			}
+		}
+		if (toJoin != null){
+			toJoin.units.add(unit.getID());
+			unitsInSquad.put(unit.getID(), toJoin);
+		} else {
+			Squad newSquad = new Squad();
+			newSquad.units.add(unit.getID());
+			squads.add(newSquad);
+			unitsInSquad.put(unit.getID(), newSquad);
+		}
+	}
+
+	@Override
+	protected void unitRemoved(Unit unit) {
+		Squad squad = unitsInSquad.get(unit.getID());
+		squad.units.remove(unit.getID());
+		if (squad.units.isEmpty())
+			squads.remove(squad);
+	}
+
+	@Override
 	protected void assignJobs() {
-		updateSquads();
 		splitAndMerge();
 		assignTargets();
 		assignUnitJobs();
@@ -59,61 +89,6 @@ public class SquadManager extends JobManager {
 				jobs.put(unitID, new UnitAttackJob(squad.target));
 			}
 		}
-	}
-
-	private void updateSquads() {
-		
-		// Remove killed units and squads
-		List<Integer> removedUnitIDs = new ArrayList<Integer>();
-		for (int unitID : unitsInSquad.keySet()){
-			if (!jobs.keySet().contains(unitID)){
-				unitsInSquad.get(unitID).units.remove(unitID);
-				removedUnitIDs.add(unitID);
-			}
-		}
-		for(int unitID : removedUnitIDs){
-			unitsInSquad.remove(unitID);
-		}
-		List<Squad> removedSquads = new ArrayList<Squad>();
-		for (Squad squad : squads){
-			if (squad.units.isEmpty()){
-				removedSquads.add(squad);
-			}
-		}
-		squads.removeAll(removedSquads);
-		
-		// Look for new units
-		List<Integer> newUnits = new ArrayList<Integer>();
-		for(int unitID : jobs.keySet()){
-			if (!unitsInSquad.keySet().contains(unitID)){
-				newUnits.add(unitID);
-			}
-		}
-		
-		// Add new units to closest squad
-		for(int unitID : newUnits){
-			Unit unit = Match.getInstance().getUnit(unitID);
-			Squad toJoin = null;
-			int closestDistance = Integer.MAX_VALUE;
-			for (Squad squad : squads){
-				Position center = squad.getCenter();
-				int distance = unit.getDistance(center);
-				if (distance <= SPLIT_DISTANCE && distance < closestDistance){
-					toJoin = squad;
-					closestDistance = distance;
-				}
-			}
-			if (toJoin != null){
-				toJoin.units.add(unitID);
-				unitsInSquad.put(unitID, toJoin);
-			} else {
-				Squad newSquad = new Squad();
-				newSquad.units.add(unitID);
-				squads.add(newSquad);
-				unitsInSquad.put(unit.getID(), newSquad);
-			}
-		}
-		
 	}
 
 	private void assignTargets() {

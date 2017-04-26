@@ -33,6 +33,18 @@ public class BuildingManager extends JobManager {
 		super();
 	}
 	
+	@Override
+	protected void unitAdded(Unit unit) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void unitRemoved(Unit unit) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	protected void assignJobs() {
 		
 		// Check next build
@@ -108,5 +120,4 @@ public class BuildingManager extends JobManager {
 			}
 		}
 	}
-
 }

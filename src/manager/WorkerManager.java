@@ -40,6 +40,18 @@ public class WorkerManager extends JobManager {
 		super();
 	}
 	
+	@Override
+	protected void unitAdded(Unit unit) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void unitRemoved(Unit unit) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	protected void assignJobs() {
 			
 		for(Integer unitID : jobs.keySet()){
