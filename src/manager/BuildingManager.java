@@ -68,20 +68,6 @@ public class BuildingManager extends JobManager {
 		}
 		return false;
 	}
-
-	protected void performJobs() {
-		
-		for(Integer unitID : jobs.keySet()){
-			Unit unit = BWAPI.getInstance().getGame().getUnit(unitID);
-			if (jobs.get(unitID) != null){
-				jobs.get(unitID).perform(unit);
-				Match.getInstance().drawTextMap(unit.getPosition().getX(), 
-						unit.getPosition().getY(), 
-						jobs.get(unitID).toString());
-			}
-		}
-		
-	}
 	
 	private Unit getProductionBuilding(UnitType unitType) {
 		
@@ -113,8 +99,14 @@ public class BuildingManager extends JobManager {
 
 	@Override
 	public void visualize() {
-		// TODO Auto-generated method stub
-		
+		for(Integer unitID : jobs.keySet()){
+			Unit unit = BWAPI.getInstance().getGame().getUnit(unitID);
+			if (jobs.get(unitID) != null){
+				Match.getInstance().drawTextMap(unit.getPosition().getX(), 
+						unit.getPosition().getY(), 
+						jobs.get(unitID).toString());
+			}
+		}
 	}
 
 }

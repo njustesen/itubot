@@ -59,7 +59,6 @@ public class MineralPrioritizor {
 				closest = Math.min(closest, a.getDistance(b));
 			}
 		}
-		System.out.println("Closest: "+closest);
 		return closest;
 	}
 	

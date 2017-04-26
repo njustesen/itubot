@@ -1,8 +1,10 @@
 package abstraction;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import bwapi.Match;
 import bwapi.Position;
 import bwapi.Unit;
 
@@ -10,13 +12,13 @@ public class Squad {
 
 	private static int created = 0;
 	
-	public List<Unit> units;
+	public Set<Integer> units;
 	public Position target;
 	public int id;
 	
 	public Squad() {
 		super();
-		this.units = new ArrayList<Unit>();
+		this.units = new HashSet<Integer>();
 		this.target = null;
 		this.id = created+1;
 		created++;
@@ -25,12 +27,13 @@ public class Squad {
 	public Position getCenter() {
 		double x = 0;
 		double y = 0;
-		for (Unit unit : units){
+		for (int unitID : this.units){
+			Unit unit = Match.getInstance().getUnit(unitID);
 			x += unit.getPosition().getX();
 			y += unit.getPosition().getY();
 		}
-		x = x / (double)units.size();
-		y = y / (double)units.size();
+		x = x / (double)this.units.size();
+		y = y / (double)this.units.size();
 		return new Position((int)x, (int)y);
 	}
 

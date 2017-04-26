@@ -40,17 +40,6 @@ public class WorkerManager extends JobManager {
 		super();
 	}
 	
-	protected void performJobs() {
-				
-		for(Integer unitID : jobs.keySet()){
-			Unit unit = BWAPI.getInstance().getGame().getUnit(unitID);
-			if (jobs.get(unitID) != null){
-				jobs.get(unitID).perform(unit);
-			}
-		}
-		
-	}
-
 	protected void assignJobs() {
 			
 		for(Integer unitID : jobs.keySet()){
@@ -61,7 +50,6 @@ public class WorkerManager extends JobManager {
 				try {
 					mineralPatch = MineralPrioritizor.getInstance().bestMineralField(unit);
 					MineralPrioritizor.getInstance().assign(unit, mineralPatch);
-					System.out.println("Mineral patch: " + mineralPatch.getPosition().toString());
 					jobs.put(unitID, new UnitMineJob(mineralPatch));
 				} catch (NoMinableMineralsException e) {
 					e.printStackTrace();

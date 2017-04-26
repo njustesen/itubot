@@ -50,13 +50,18 @@ public class ITUBot extends DefaultBWListener {
     
     @Override
     public void onUnitDestroy(Unit unit) {
+    	System.out.println(this.getClass().getName() + ": " + unit.getType().toString() + " (" + unit.getPlayer().getID() + "|" + Self.getInstance().getID() + ") " + " destroyed.");
     	InformationManager.getInstance().UnitDestroyed(unit);
     	if (unit.getPlayer().getID() == Self.getInstance().getID()){
-	    	if (unit.getType().isBuilding()){
+    		System.out.println("Own unit detected");
+        	if (unit.getType().isBuilding()){
+        		System.out.println("Building detected");
 	    		BuildingManager.getInstance().removeUnit(unit);
 	    	} else if (unit.getType().isWorker()){
+	    		System.out.println("Worker detected");
 	    		WorkerManager.getInstance().removeUnit(unit);
 	    	} else {
+	    		System.out.println("Other unit detected");
 	    		SquadManager.getInstance().removeUnit(unit);
 	    	}
     	}

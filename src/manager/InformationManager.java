@@ -60,7 +60,7 @@ public class InformationManager implements Manager {
 	
 	public void UnitCreated(Unit unit) {
 		String name = unit.getType().toString();
-		if (unit.getPlayer().equals(Self.getInstance())){
+		if (unit.getPlayer().getID() == Self.getInstance().getID()){
 			int c = 0;
 			if (ownUnits.containsKey(name)){
 				c = ownUnits.get(name);
@@ -78,12 +78,16 @@ public class InformationManager implements Manager {
 	}
 	
 	public void UnitDestroyed(Unit unit) {
-		if (unit.getPlayer().equals(Self.getInstance())){
-			ownUnits.put(unit.getType().toString(), ownUnits.get(unit.getType()) - 1);
-		} else {
-			oppUnits.put(unit.getType().toString(), ownUnits.get(unit.getType()) - 1);
+		String key = unit.getType().toString();
+		if (unit.getPlayer().getID() == Self.getInstance().getID()){
+			if (ownUnits.containsKey(key))
+				ownUnits.put(key, ownUnits.get(key) - 1);
+		} else if (!unit.getPlayer().isNeutral()){
+			if (ownUnits.containsKey(key))
+				ownUnits.put(key, ownUnits.get(key) - 1);
 		}
 	}
+	
 	public int ownUnitCount(UnitType unitType) {
 		if (ownUnits.containsKey(unitType.toString())){
 			
