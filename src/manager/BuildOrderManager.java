@@ -5,6 +5,7 @@ import java.util.List;
 
 import broodwar.BroodWarUnitType;
 import bwapi.Match;
+import bwapi.Self;
 import bwapi.UnitType;
 import exception.NoBuildOrderException;
 import abstraction.Build;
@@ -43,22 +44,25 @@ public class BuildOrderManager implements Manager {
 			return new Build(UnitType.Protoss_Probe);
 		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Pylon) == 0){
 			return new Build(UnitType.Protoss_Pylon);
-		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) < 10){
+		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) < 11){
 			return new Build(UnitType.Protoss_Probe);
 		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Gateway) == 0){
 			return new Build(UnitType.Protoss_Gateway);
-		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) == 11){
+		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) == 12){
 			return new Build(UnitType.Protoss_Probe);
 		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Gateway) == 1){
 			return new Build(UnitType.Protoss_Gateway);
-		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) == 12){
+		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) == 13){
 			return new Build(UnitType.Protoss_Probe);
 		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Zealot) == 0){
 			return new Build(UnitType.Protoss_Zealot);
 		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Pylon) == 1){
 			return new Build(UnitType.Protoss_Pylon);
 		} else {
-			return new Build(UnitType.Protoss_Zealot);
+			if (Self.getInstance().supplyTotal() - Self.getInstance().supplyUsed() < 4)
+				return new Build(UnitType.Protoss_Pylon);
+			else
+				return new Build(UnitType.Protoss_Zealot);
 		}
 		
 	}

@@ -6,7 +6,6 @@ import java.util.Map;
 import bwapi.BWAPI;
 import bwapi.Unit;
 import job.UnitJob;
-import job.UnitMoveAndAttackJob;
 
 public abstract class JobManager implements Manager {
 	
@@ -39,12 +38,12 @@ public abstract class JobManager implements Manager {
 	}
 
 	public void addUnit(Unit unit) {
-		System.out.println(this.getClass().getName() + ": " + unit.getType().toString() + " added to jobs.");
+		//System.out.println(this.getClass().getName() + ": " + unit.getType().toString() + " added to jobs.");
 		this.jobs.put(unit.getID(), null);
 	}
 
 	public void removeUnit(Unit unit) {
-		System.out.println(this.getClass().getName() + ": " + unit.getType().toString() + " removed from jobs.");
+		//System.out.println(this.getClass().getName() + ": " + unit.getType().toString() + " removed from jobs.");
 		this.jobs.remove(unit.getID());
 	}
 	

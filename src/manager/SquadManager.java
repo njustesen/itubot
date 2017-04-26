@@ -14,7 +14,7 @@ import bwapi.Color;
 import bwapi.Match;
 import bwapi.Position;
 import bwapi.Unit;
-import job.UnitMoveAndAttackJob;
+import job.UnitAttackJob;
 
 public class SquadManager extends JobManager {
 		
@@ -56,7 +56,7 @@ public class SquadManager extends JobManager {
 		for(Squad squad : squads){
 			for(int unitID : squad.units){
 				//System.out.println("Assigning UnitMoveAndAttackJob jobs: " + unit.getID() + " -> " + squad.target.toString());
-				jobs.put(unitID, new UnitMoveAndAttackJob(squad.target));
+				jobs.put(unitID, new UnitAttackJob(squad.target));
 			}
 		}
 	}
@@ -67,11 +67,7 @@ public class SquadManager extends JobManager {
 		List<Integer> removedUnitIDs = new ArrayList<Integer>();
 		for (int unitID : unitsInSquad.keySet()){
 			if (!jobs.keySet().contains(unitID)){
-				System.out.println(this.getClass().getName() + ": removing unit " + unitID + " from squad - size " + unitsInSquad.get(unitID).units.size());
-				for(int ui : unitsInSquad.get(unitID).units)
-					System.out.println(ui);
 				unitsInSquad.get(unitID).units.remove(unitID);
-				System.out.println(this.getClass().getName() + ": done removing unit " + unitID + " from squad - size " + unitsInSquad.get(unitID).units.size());
 				removedUnitIDs.add(unitID);
 			}
 		}
@@ -81,7 +77,6 @@ public class SquadManager extends JobManager {
 		List<Squad> removedSquads = new ArrayList<Squad>();
 		for (Squad squad : squads){
 			if (squad.units.isEmpty()){
-				System.out.println(this.getClass().getName() + ": removing squad " + squad.id);
 				removedSquads.add(squad);
 			}
 		}
@@ -199,9 +194,9 @@ public class SquadManager extends JobManager {
 		// Draw units
 		for (int unitID : jobs.keySet()){
 			Unit unit = Match.getInstance().getUnit(unitID);
-			if (jobs.get(unitID) != null && jobs.get(unitID) instanceof UnitMoveAndAttackJob){
+			if (jobs.get(unitID) != null && jobs.get(unitID) instanceof UnitAttackJob){
 				Match.getInstance().drawCircleMap(unit.getPosition(), 12, Color.Green);
-				Position enemyAt = ((UnitMoveAndAttackJob)jobs.get(unitID)).position;
+				Position enemyAt = ((UnitAttackJob)jobs.get(unitID)).position;
 				Match.getInstance().drawCircleMap(enemyAt, 12, Color.Red);
 				Match.getInstance().drawLineMap(unit.getPosition(), enemyAt, Color.Red);
 			}
