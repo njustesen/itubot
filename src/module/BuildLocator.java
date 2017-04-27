@@ -5,7 +5,11 @@ import bwapi.Game;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwta.BWTA;
+import bwta.BaseLocation;
+import exception.NoBaseLocationsLeftException;
 import exception.NoWorkersException;
+import manager.InformationManager;
 
 public class BuildLocator {
 
@@ -28,7 +32,7 @@ public class BuildLocator {
 		
 	}
 	
-	public TilePosition getLocation(UnitType buildingType) throws NoWorkersException{
+	public TilePosition getLocation(UnitType buildingType) throws NoWorkersException, NoBaseLocationsLeftException{
 		TilePosition ret = null;
 		int maxDist = 3;
 		int stopDist = 100;
@@ -53,6 +57,32 @@ public class BuildLocator {
 						( Math.abs(n.getTilePosition().getX() - aroundTile.getX()) < stopDist ) &&
 						( Math.abs(n.getTilePosition().getY() - aroundTile.getY()) < stopDist )
 						) return n.getTilePosition();
+			}
+		}
+		
+		// Expansion
+		if (buildingType.isResourceDepot()){
+			BaseLocation best = null;
+			double bestScore = Integer.MIN_VALUE;
+			for(BaseLocation location : BWTA.getBaseLocations()){
+				if (game.canBuildHere(location.getTilePosition(), buildingType, someWorker, false)) {
+					double distanceToHome = aroundTile.toPosition().getDistance(location.getPosition());
+					double distanceToEnemy = 0;
+					for (BaseLocation oppBase : InformationManager.getInstance().possibleEnemyBasePositions){
+						distanceToEnemy += oppBase.getDistance(location.getPosition());
+					}
+					distanceToEnemy = distanceToEnemy / InformationManager.getInstance().possibleEnemyBasePositions.size();
+					double score = distanceToEnemy - distanceToHome;
+					if (score > bestScore){
+						bestScore = score;
+						best = location;
+					}
+				}
+			}
+			if (best == null){
+				throw new NoBaseLocationsLeftException();
+			} else {
+				return best.getTilePosition();
 			}
 		}
 

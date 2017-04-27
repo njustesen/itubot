@@ -13,6 +13,7 @@ import bwapi.Player;
 import bwapi.Position;
 import bwapi.Self;
 import bwapi.TechType;
+import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
@@ -144,7 +145,7 @@ public class InformationManager implements Manager, BWEventListener {
 		}
 		return count;
 	}
-
+	
 	@Override
 	public void visualize() {
 		Match.getInstance().drawTextScreen(12, 22, "Possible base locations: " + possibleEnemyBasePositions.size());

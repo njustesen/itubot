@@ -66,7 +66,7 @@ public class BuildOrderManager implements Manager {
 				return new Build(UnitType.Protoss_Pylon);
 			} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Cybernetics_Core) == 1){
 				if (InformationManager.getInstance().ownUpgradeCountTotal(UpgradeType.Singularity_Charge) == 0){
-					return new Build(UpgradeType.Singularity_Charge);
+					return new Build(UnitType.Protoss_Nexus);
 				} else if (Math.random() > 0.4){
 					return new Build(UnitType.Protoss_Dragoon);
 				} else {

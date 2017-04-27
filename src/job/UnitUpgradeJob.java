@@ -17,5 +17,10 @@ public class UnitUpgradeJob extends UnitJob {
 			unit.upgrade(this.upgradeType);
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return upgradeType.toString();
+	}
 
 }

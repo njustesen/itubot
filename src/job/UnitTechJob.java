@@ -18,4 +18,9 @@ public class UnitTechJob extends UnitJob {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return techType.toString();
+	}
+
 }

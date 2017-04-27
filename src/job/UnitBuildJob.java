@@ -15,7 +15,11 @@ public class UnitBuildJob extends UnitJob {
 	}
 
 	public void perform(Unit unit) {
-		unit.build(this.unitType, this.position);
+		if (unit.getDistance(position.toPosition()) > unit.getType().sightRange()){
+			unit.move(position.toPosition());
+		} else {
+			unit.build(this.unitType, this.position);
+		}
 	}
 	
 	@Override

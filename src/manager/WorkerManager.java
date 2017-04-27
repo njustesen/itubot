@@ -17,15 +17,18 @@ import bwapi.Self;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import exception.NoBaseLocationsLeftException;
 import exception.NoBuildOrderException;
 import exception.NoFreeRefineryException;
 import exception.NoMinableMineralsException;
+import exception.NoSpaceLeftForBuildingException;
 import exception.NoWorkersException;
 import job.UnitBuildJob;
 import job.UnitGasJob;
 import job.UnitJob;
 import job.UnitMineJob;
 import log.BotLogger;
+import module.BruteBuildLocator;
 import module.BuildLocator;
 import module.MineralPrioritizor;
 
@@ -56,7 +59,7 @@ public class WorkerManager implements BWEventListener, Manager {
 		ITUBot.getInstance().addListener(this);
 	}
 	
-	public void execute() throws NoFreeRefineryException, NoMinableMineralsException {
+	public void execute() throws NoFreeRefineryException, NoMinableMineralsException, NoSpaceLeftForBuildingException, NoBaseLocationsLeftException {
 		
 		// Update refineries
 		if (InformationManager.getInstance().refineriesInProd.size() != refineriesInProd){
