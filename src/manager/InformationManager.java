@@ -6,15 +6,20 @@ import java.util.List;
 import java.util.Map;
 
 import bot.ITUBot;
+import bwapi.BWAPI;
 import bwapi.BWEventListener;
 import bwapi.Match;
 import bwapi.Player;
 import bwapi.Position;
 import bwapi.Self;
+import bwapi.TechType;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwapi.UpgradeType;
 import bwta.BWTA;
 import bwta.BaseLocation;
+import extension.TechTypes;
+import extension.UpgradeTypes;
 import log.BotLogger;
 
 public class InformationManager implements Manager, BWEventListener {
@@ -42,8 +47,18 @@ public class InformationManager implements Manager, BWEventListener {
 	private Map<UnitType, Integer> ownUnitsInProduction;
 	private Map<UnitType, Integer> ownUnits;
 	//private Map<String, Integer> oppUnits;
+	private HashMap<UpgradeType, Integer> ownUpgrades;
+	private HashMap<UpgradeType, Integer> ownUpgradesInProduction;
+	private HashMap<TechType, Integer> ownTechs;
+	private HashMap<TechType, Integer> ownTechsInProduction;
 	
 	protected InformationManager(){
+		this.ownUnits = new HashMap<UnitType, Integer>();
+		this.ownUnitsInProduction = new HashMap<UnitType, Integer>();
+		this.ownUpgrades = new HashMap<UpgradeType, Integer>();
+		this.ownUpgradesInProduction = new HashMap<UpgradeType, Integer>();
+		this.ownTechs = new HashMap<TechType, Integer>();
+		this.ownTechsInProduction = new HashMap<TechType, Integer>();
 		this.ownUnits = new HashMap<UnitType, Integer>();
 		this.ownUnitsInProduction = new HashMap<UnitType, Integer>();
 		this.refineries = new ArrayList<Unit>();
@@ -57,6 +72,10 @@ public class InformationManager implements Manager, BWEventListener {
 	public void execute() {
 		this.ownUnits.clear();
 		this.ownUnitsInProduction.clear();
+		this.ownTechs.clear();
+		this.ownTechsInProduction.clear();
+		this.ownUpgrades.clear();
+		this.ownUpgradesInProduction.clear();
 		this.refineries.clear();
 		for (Unit unit : Match.getInstance().getAllUnits()){
 			if (unit.getPlayer().getID() == Self.getInstance().getID()){
@@ -81,16 +100,30 @@ public class InformationManager implements Manager, BWEventListener {
 				}
 			}
 		}
-		/*
-		BotLogger.getInstance().log(this, "--------------");
-		for(UnitType unitType : this.ownUnits.keySet()){
-			BotLogger.getInstance().log(this, unitType + ": " + this.ownUnits.get(unitType));
+		for(TechType tech : TechTypes.all){
+			ownTechs.put(tech, Self.getInstance().hasResearched(tech) ? 1 : 0);
+			ownTechsInProduction.put(tech, Self.getInstance().isResearching(tech) ? 1 : 0);
 		}
-		BotLogger.getInstance().log(this, "- PRODUCTION -");
-		for(UnitType unitType : this.ownUnitsInProduction.keySet()){
-			BotLogger.getInstance().log(this, unitType + ": " + this.ownUnitsInProduction.get(unitType));
+		for(UpgradeType upgrade : UpgradeTypes.all){
+			ownUpgrades.put(upgrade, Self.getInstance().getUpgradeLevel(upgrade));
+			ownUpgradesInProduction.put(upgrade, Self.getInstance().getUpgradeLevel(upgrade) + (Self.getInstance().isUpgrading(upgrade) ? 1 : 0));
 		}
-		*/
+	}
+	
+	public int ownTechCountTotal(TechType tech) {
+		return ownTechs.get(tech) + ownTechsInProduction.get(tech);
+	}
+	
+	public int ownTechCount(TechType tech) {
+		return ownTechs.get(tech);
+	}
+	
+	public int ownUpgradeCountTotal(UpgradeType upgrade) {
+		return ownUpgrades.get(upgrade) + ownUpgradesInProduction.get(upgrade);
+	}
+	
+	public int ownUpgradeCount(UpgradeType upgrade) {
+		return ownUpgrades.get(upgrade);
 	}
 		
 	public int ownUnitCount(UnitType unitType) {
@@ -197,6 +230,5 @@ public class InformationManager implements Manager, BWEventListener {
 	@Override
 	public void onUnitShow(Unit unit) {
 	}
-
 
 }

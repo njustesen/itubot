@@ -1,8 +1,8 @@
 package manager;
 
-import job.UnitBuildJob;
+import job.UnitTechJob;
 import job.UnitTrainJob;
-import log.BotLogger;
+import job.UnitUpgradeJob;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +16,11 @@ import bwapi.Match;
 import bwapi.Player;
 import bwapi.Position;
 import bwapi.Self;
+import bwapi.TechType;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwapi.UpgradeType;
 import exception.NoBuildOrderException;
-import exception.NoMinableMineralsException;
 
 public class BuildingManager implements Manager, BWEventListener {
 
@@ -52,19 +53,26 @@ public class BuildingManager implements Manager, BWEventListener {
 		Build nextBuild;
 		try {
 			nextBuild = BuildOrderManager.getInstance().getNextBuild();
-			//BotLogger.getInstance().log(this, "Next build is " + nextBuild.unitType);
 			if (alreadyAssigned(nextBuild)){
-				//BotLogger.getInstance().log(this, "Already assigned");
 				return;
 			}
 			if (nextBuild.type == BuildType.UNIT){
-				//BotLogger.getInstance().log(this, "Looking for a production building (" + assignments.size() + ") ");
 				UnitAssignment trainer = getProductionBuilding(nextBuild.unitType);
 				if (trainer == null){
-					//BotLogger.getInstance().log(this, "No production building found.");
 				} else {
-					//BotLogger.getInstance().log(this, "Creating train job " + nextBuild.unitType);
 					trainer.job = new UnitTrainJob(nextBuild.unitType);
+				}
+			} else if (nextBuild.type == BuildType.TECH){
+				UnitAssignment trainer = getProductionBuilding(nextBuild.techType);
+				if (trainer == null){
+				} else {
+					trainer.job = new UnitTechJob(nextBuild.techType);
+				}
+			} else if (nextBuild.type == BuildType.UPGRADE){
+				UnitAssignment trainer = getProductionBuilding(nextBuild.upgradeType);
+				if (trainer == null){
+				} else {
+					trainer.job = new UnitUpgradeJob(nextBuild.upgradeType);
 				}
 			}
 		} catch (NoBuildOrderException e) {
@@ -80,10 +88,22 @@ public class BuildingManager implements Manager, BWEventListener {
 
 	private boolean alreadyAssigned(Build nextBuild) {
 		for(UnitAssignment assignment : assignments){
-			if (assignment.job != null && assignment.job instanceof UnitBuildJob){
-				UnitBuildJob buildJob = ((UnitBuildJob)assignment.job);
-				if (buildJob.unitType.equals(nextBuild)){
-					return true;
+			if (assignment.job != null){
+				if (nextBuild.type == BuildType.UNIT && assignment.job instanceof UnitTrainJob){
+					UnitTrainJob trainJob = ((UnitTrainJob)assignment.job);
+					if (trainJob.unitType.equals(nextBuild.unitType)){
+						return true;
+					}
+				} else if (nextBuild.type == BuildType.TECH && assignment.job instanceof UnitTechJob){
+					UnitTechJob techJob = ((UnitTechJob)assignment.job);
+					if (techJob.techType.equals(nextBuild.techType)){
+						return true;
+					}
+				} else if (nextBuild.type == BuildType.UPGRADE && assignment.job instanceof UnitUpgradeJob){
+					UnitUpgradeJob upgradeJob = ((UnitUpgradeJob)assignment.job);
+					if (upgradeJob.upgradeType.equals(nextBuild.upgradeType)){
+						return true;
+					}
 				}
 			}
 		}
@@ -93,18 +113,63 @@ public class BuildingManager implements Manager, BWEventListener {
 	private UnitAssignment getProductionBuilding(UnitType unitType) {
 		
 		for(UnitAssignment assignment : assignments){
-			// Check that it is not assigned another job
 			if (assignment.job == null && 
 					canTrainNow(unitType) &&
 					assignment.unit.canTrain(unitType) && 
-					!assignment.unit.isTraining()){
+					!assignment.unit.isTraining() && 
+					!assignment.unit.isResearching() && 
+					!assignment.unit.isFlying()){
 				return assignment;
 			}
 		}
 		return null;
 	}
 	
+	private UnitAssignment getProductionBuilding(UpgradeType upgradeType) {
+		for(UnitAssignment assignment : assignments){
+			if (assignment.job == null && 
+					canUpgradeNow(upgradeType) &&
+					assignment.unit.canUpgrade(upgradeType) && 
+					!assignment.unit.isTraining() && 
+					!assignment.unit.isResearching() && 
+					!assignment.unit.isFlying()){
+				return assignment;
+			}
+		}
+		return null;
+	}
 
+	private UnitAssignment getProductionBuilding(TechType techType) {
+		for(UnitAssignment assignment : assignments){
+			if (assignment.job == null && 
+					canResearchNow(techType) &&
+					assignment.unit.canResearch(techType) && 
+					!assignment.unit.isTraining() && 
+					!assignment.unit.isResearching() && 
+					!assignment.unit.isFlying()){
+				return assignment;
+			}
+		}
+		return null;
+	}
+
+	private boolean canResearchNow(TechType techType) {
+		int minerals = Self.getInstance().minerals();
+		int gas = Self.getInstance().gas();
+		if (minerals < techType.mineralPrice() || gas < techType.gasPrice() || !Self.getInstance().isResearchAvailable(techType)){
+			return false;
+		}
+		return true;
+	}
+
+	private boolean canUpgradeNow(UpgradeType upgradeType) {
+		int minerals = Self.getInstance().minerals();
+		int gas = Self.getInstance().gas();
+		if (minerals < upgradeType.mineralPrice() || gas < upgradeType.gasPrice()){
+			return false;
+		}
+		return true;
+	}
 	
 	private boolean canTrainNow(UnitType unitType) {
 		int minerals = Self.getInstance().minerals();

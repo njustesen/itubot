@@ -38,7 +38,7 @@ public class Build {
 			return techType.toString();
 		}
 		if (upgradeType != null){
-			return techType.toString();
+			return upgradeType.toString();
 		}
 		return "[No type]";
 	}

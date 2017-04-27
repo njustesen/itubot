@@ -7,6 +7,7 @@ import broodwar.BroodWarUnitType;
 import bwapi.Match;
 import bwapi.Self;
 import bwapi.UnitType;
+import bwapi.UpgradeType;
 import exception.NoBuildOrderException;
 import abstraction.Build;
 import abstraction.BuildType;
@@ -64,7 +65,13 @@ public class BuildOrderManager implements Manager {
 			if (Self.getInstance().supplyTotal() - Self.getInstance().supplyUsed() < 4){
 				return new Build(UnitType.Protoss_Pylon);
 			} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Cybernetics_Core) == 1){
-				return new Build(UnitType.Protoss_Dragoon);
+				if (InformationManager.getInstance().ownUpgradeCountTotal(UpgradeType.Singularity_Charge) == 0){
+					return new Build(UpgradeType.Singularity_Charge);
+				} else if (Math.random() > 0.4){
+					return new Build(UnitType.Protoss_Dragoon);
+				} else {
+					return new Build(UnitType.Protoss_Zealot);
+				}
 			}else{
 				return new Build(UnitType.Protoss_Zealot);
 			}
