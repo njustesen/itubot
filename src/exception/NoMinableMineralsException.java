@@ -1,5 +1,5 @@
 package exception;
 
-public class NoMinableMineralsException extends Exception {
+public class NoMinableMineralsException extends ITUBotException {
 
 }

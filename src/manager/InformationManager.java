@@ -5,16 +5,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import bwapi.BWAPI;
+import bot.ITUBot;
+import bwapi.BWEventListener;
 import bwapi.Match;
+import bwapi.Player;
 import bwapi.Position;
 import bwapi.Self;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwta.BWTA;
 import bwta.BaseLocation;
+import log.BotLogger;
 
-public class InformationManager implements Manager {
+public class InformationManager implements Manager, BWEventListener {
 
 	// SINGLETON PATTERN
 	private static InformationManager instance = null;
@@ -33,14 +36,121 @@ public class InformationManager implements Manager {
 	// CLASS
 	public List<BaseLocation> possibleEnemyBasePositions;
 	public BaseLocation ownBasePosition;
+	public List<Unit> refineries;
+	public List<Unit> refineriesInProd;
 	
-	private Map<String, Integer> ownUnits;
-	private Map<String, Integer> oppUnits;
+	private Map<UnitType, Integer> ownUnitsInProduction;
+	private Map<UnitType, Integer> ownUnits;
+	//private Map<String, Integer> oppUnits;
 	
 	protected InformationManager(){
-		this.ownUnits = new HashMap<String, Integer>();
-		this.oppUnits = new HashMap<String, Integer>();
+		this.ownUnits = new HashMap<UnitType, Integer>();
+		this.ownUnitsInProduction = new HashMap<UnitType, Integer>();
+		this.refineries = new ArrayList<Unit>();
+		this.refineriesInProd = new ArrayList<Unit>();
 		this.possibleEnemyBasePositions = new ArrayList<BaseLocation>();
+		
+		ITUBot.getInstance().addListener(this);
+	}
+	
+	@Override
+	public void execute() {
+		this.ownUnits.clear();
+		this.ownUnitsInProduction.clear();
+		this.refineries.clear();
+		for (Unit unit : Match.getInstance().getAllUnits()){
+			if (unit.getPlayer().getID() == Self.getInstance().getID()){
+				if (unit.isBeingConstructed()){
+					int i = 0;
+					if (this.ownUnitsInProduction.containsKey(unit.getType())){
+						i = this.ownUnitsInProduction.get(unit.getType());
+					}
+					this.ownUnitsInProduction.put(unit.getType(), i+1);
+					if (unit.getType().isRefinery()){
+						this.refineriesInProd.add(unit);
+					}
+				} else {
+					int i = 0;
+					if (this.ownUnits.containsKey(unit.getType())){
+						i = this.ownUnits.get(unit.getType());
+					}
+					this.ownUnits.put(unit.getType(), i+1);
+					if (unit.getType().isRefinery()){
+						this.refineries.add(unit);
+					}
+				}
+			}
+		}
+		/*
+		BotLogger.getInstance().log(this, "--------------");
+		for(UnitType unitType : this.ownUnits.keySet()){
+			BotLogger.getInstance().log(this, unitType + ": " + this.ownUnits.get(unitType));
+		}
+		BotLogger.getInstance().log(this, "- PRODUCTION -");
+		for(UnitType unitType : this.ownUnitsInProduction.keySet()){
+			BotLogger.getInstance().log(this, unitType + ": " + this.ownUnitsInProduction.get(unitType));
+		}
+		*/
+	}
+		
+	public int ownUnitCount(UnitType unitType) {
+		int count = 0;
+		if (ownUnits.containsKey(unitType)){
+			count += ownUnits.get(unitType);
+		}
+		return count;
+	}
+	
+	public int ownUnitCountTotal(UnitType unitType) {
+		int count = 0;
+		if (ownUnits.containsKey(unitType)){
+			count += ownUnits.get(unitType);
+		}
+		if (ownUnitsInProduction.containsKey(unitType)){
+			count += ownUnitsInProduction.get(unitType);
+		}
+		return count;
+	}
+
+	@Override
+	public void visualize() {
+		Match.getInstance().drawTextScreen(12, 22, "Possible base locations: " + possibleEnemyBasePositions.size());
+	}
+
+	@Override
+	public void onEnd(boolean arg0) {
+	}
+
+	@Override
+	public void onFrame() {
+	}
+
+	@Override
+	public void onNukeDetect(Position arg0) {
+	}
+
+	@Override
+	public void onPlayerDropped(Player arg0) {
+	}
+
+	@Override
+	public void onPlayerLeft(Player arg0) {
+	}
+
+	@Override
+	public void onReceiveText(Player arg0, String arg1) {
+	}
+
+	@Override
+	public void onSaveGame(String arg0) {
+	}
+
+	@Override
+	public void onSendText(String arg0) {
+	}
+
+	@Override
+	public void onStart() {
 		for (BaseLocation b : BWTA.getBaseLocations()) {
 			if (b.isStartLocation()) {
 				if (Self.getInstance().getStartLocation().equals(b.getTilePosition())){
@@ -51,54 +161,42 @@ public class InformationManager implements Manager {
 			}
 		}
 	}
-	
-	@Override
-	public void execute() {
-		// TODO Auto-generated method stub
 
-	}
-	
-	public void UnitCreated(Unit unit) {
-		String name = unit.getType().toString();
-		if (unit.getPlayer().getID() == Self.getInstance().getID()){
-			int c = 0;
-			if (ownUnits.containsKey(name)){
-				c = ownUnits.get(name);
-			}
-			this.ownUnits.put(name, c + 1);
-			System.out.println(name + ":" + this.ownUnits.get(name));
-		} else if (!unit.getPlayer().isNeutral()){
-			int c = 0;
-			if (oppUnits.containsKey(name)){
-				c = oppUnits.get(name);
-			}
-			this.oppUnits.put(name, c + 1);
-			System.out.println(name + ":" + this.oppUnits.get(name));
-		}
-	}
-	
-	public void UnitDestroyed(Unit unit) {
-		String key = unit.getType().toString();
-		if (unit.getPlayer().getID() == Self.getInstance().getID()){
-			if (ownUnits.containsKey(key))
-				ownUnits.put(key, ownUnits.get(key) - 1);
-		} else if (!unit.getPlayer().isNeutral()){
-			if (ownUnits.containsKey(key))
-				ownUnits.put(key, ownUnits.get(key) - 1);
-		}
-	}
-	
-	public int ownUnitCount(UnitType unitType) {
-		if (ownUnits.containsKey(unitType.toString())){
-			
-			return ownUnits.get(unitType.toString());
-		}
-		return 0;
+	@Override
+	public void onUnitComplete(Unit arg0) {
 	}
 
 	@Override
-	public void visualize() {
-		Match.getInstance().drawTextScreen(12, 22, "Possible base locations: " + possibleEnemyBasePositions.size());
+	public void onUnitCreate(Unit unit) {
 	}
+
+	@Override
+	public void onUnitDestroy(Unit unit) {
+	}
+
+	@Override
+	public void onUnitDiscover(Unit arg0) {
+	}
+
+	@Override
+	public void onUnitEvade(Unit arg0) {
+	}
+
+	@Override
+	public void onUnitHide(Unit arg0) {
+	}
+
+	@Override
+	public void onUnitMorph(Unit arg0) {
+	}
+
+	@Override
+	public void onUnitRenegade(Unit arg0) {
+	}
+
+	@Override
+	public void onUnitShow(Unit unit) {
+	}
+
 
 }

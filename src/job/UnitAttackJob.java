@@ -1,26 +1,29 @@
 package job;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import bwapi.Color;
 import bwapi.Match;
 import bwapi.Position;
-import bwapi.PositionOrUnit;
 import bwapi.Self;
 import bwapi.Unit;
-import bwapi.UnitCommand;
+import log.BotLogger;
 public class UnitAttackJob extends UnitJob {
 
 	private static final int ATTACK_DISTANCE = 600;
-	public Position position;
+	public Position target;
+	private Unit enemy;
 	
-	public UnitAttackJob(Position position) {
-		this.position = position;
+	public UnitAttackJob(Position target) {
+		this.target = target;
+		this.enemy = null;
 	}
 	
 	@Override
 	public void perform(Unit unit) {
+		
+		// Did last enemy die?
+		if (enemy != null && enemy.getHitPoints() < 1){
+			enemy = null;
+		}
 		
 		// Check for nearby attackable units
 		Unit a = null;
@@ -30,10 +33,10 @@ public class UnitAttackJob extends UnitJob {
 		for (Unit other : Match.getInstance().getAllUnits()){
 			if (other.getPlayer().isEnemy(Self.getInstance())){
 				if (unit.canAttack(other)){
-					if (!other.getType().isBuilding() && unit.getDistance(other) <= disA){
+					if (!other.getType().isBuilding() && unit.getDistance(other) < disA){
 						a = other;
 						disA = unit.getDistance(other);
-					} else if (unit.getDistance(other) <= disB) {
+					} else if (unit.getDistance(other) < disB) {
 						b = other;
 						disB = unit.getDistance(other);
 					}
@@ -42,27 +45,35 @@ public class UnitAttackJob extends UnitJob {
 		}
 		
 		// SELECT TARGET
-		Unit target = null;
+		Unit newEnemy = null;
+		boolean newTarget = false;
 		if (a != null){
-			target = a;
+			newEnemy = a;
 		} else {
-			target = b;
+			newEnemy = b;
+		}
+		if (newEnemy != null && (enemy == null || newEnemy.getID() != enemy.getID())){
+			enemy = newEnemy;
+			newTarget = true;
 		}
 		
 		// Attack target if any found
-		if (target != null){
+		if (enemy != null && enemy.getDistance(unit) < ATTACK_DISTANCE){
+			BotLogger.getInstance().log(this, "Enemy found");
 			Match.getInstance().drawCircleMap(unit.getPosition(), 8, Color.Green, true);
-			Match.getInstance().drawCircleMap(target.getPosition(), 8, Color.Red, true);
-			Match.getInstance().drawLineMap(unit.getPosition(), target.getPosition(), Color.Red );
-			System.out.println("ATTACK " + target.getPosition().toString() + " " + target.getID());
-			if (Match.getInstance().getFrameCount() % 10 == 0)
-				unit.attack(target);
-			return;
+			Match.getInstance().drawCircleMap(enemy.getPosition(), 8, Color.Red, true);
+			Match.getInstance().drawLineMap(unit.getPosition(), enemy.getPosition(), Color.Red );
+			if (newTarget){
+				BotLogger.getInstance().log(this, "Attacking new target");
+				unit.attack(enemy);
+			}
+		} else if (target != null){
+			unit.move(target);
+			enemy = null;
+			BotLogger.getInstance().log(this, "Moving unit");
+		} else {
+			BotLogger.getInstance().log(this, "Did nothing. Target is null.");
 		}
-		
-		// Otherwise move to squad target
-		//System.out.println("Sending move action to target at " + position.toString());
-		unit.move(position);
 		
 	}
 

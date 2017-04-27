@@ -1,39 +1,59 @@
 package abstraction;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-import bwapi.Match;
 import bwapi.Position;
 import bwapi.Unit;
+import job.UnitAttackJob;
+import log.BotLogger;
+import manager.InformationManager;
 
 public class Squad {
 
 	private static int created = 0;
 	
-	public Set<Integer> units;
+	public List<UnitAssignment> assignments;
 	public Position target;
 	public int id;
 	
 	public Squad() {
 		super();
-		this.units = new HashSet<Integer>();
+		this.assignments = new ArrayList<UnitAssignment>();
 		this.target = null;
 		this.id = created+1;
 		created++;
+		if (InformationManager.getInstance().possibleEnemyBasePositions.size() == 1){
+			target = InformationManager.getInstance().possibleEnemyBasePositions.get(0).getPosition();
+		}
+	}
+	
+	public void add(Unit unit) {
+		assignments.add(new UnitAssignment(unit, new UnitAttackJob(target)));
+	}
+	
+	public void remove(Unit unit) {
+		int idx = -1;
+		int i = 0;
+		for(UnitAssignment assignment : assignments){
+			if (assignment.unit.getID() == unit.getID()){
+				idx = i;
+				break;
+			}
+			i++;
+		}
+		assignments.remove(idx);
 	}
 
 	public Position getCenter() {
 		double x = 0;
 		double y = 0;
-		for (int unitID : this.units){
-			Unit unit = Match.getInstance().getUnit(unitID);
-			x += unit.getPosition().getX();
-			y += unit.getPosition().getY();
+		for (UnitAssignment assignment : this.assignments){
+			x += assignment.unit.getPosition().getX();
+			y += assignment.unit.getPosition().getY();
 		}
-		x = x / (double)this.units.size();
-		y = y / (double)this.units.size();
+		x = x / (double)this.assignments.size();
+		y = y / (double)this.assignments.size();
 		return new Position((int)x, (int)y);
 	}
 
@@ -57,6 +77,21 @@ public class Squad {
 		if (id != other.id)
 			return false;
 		return true;
+	}
+
+	public void control() {
+		// Adjust target - Attack if only one possible base location
+		if (InformationManager.getInstance().possibleEnemyBasePositions.size() == 1){
+			target = InformationManager.getInstance().possibleEnemyBasePositions.get(0).getPosition();
+		}
+		
+		// assign jobs
+		for(UnitAssignment assignement : assignments){
+			if (assignement.job == null){
+				assignement.job = new UnitAttackJob(target);
+			}
+			assignement.perform();
+		}
 	}
 
 }

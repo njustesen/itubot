@@ -1,7 +1,7 @@
 package job;
 
-import bwapi.Match;
 import bwapi.Unit;
+import log.BotLogger;
 
 public class UnitMineJob extends UnitJob {
 	
@@ -14,8 +14,12 @@ public class UnitMineJob extends UnitJob {
 	@Override
 	public void perform(Unit unit) {
 		
-		// TODO: Check if mineral field is gone
 		if (unit.isGatheringMinerals()){
+			return;
+		}
+		
+		if (unit.isCarryingMinerals()){
+			unit.returnCargo();
 			return;
 		}
 		

@@ -34,6 +34,7 @@ public class Commander {
 		
 		BuildLocator.reset();
 		MineralPrioritizor.reset();
+		Commander.getInstance();
 	}
 	
 	// CLASS

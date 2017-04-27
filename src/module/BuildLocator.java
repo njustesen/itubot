@@ -31,8 +31,10 @@ public class BuildLocator {
 	public TilePosition getLocation(UnitType buildingType) throws NoWorkersException{
 		TilePosition ret = null;
 		int maxDist = 3;
-		int stopDist = 40;
+		int stopDist = 100;
 		Game game = BWAPI.getInstance().getGame();
+		
+		// TODO: Select base
 		TilePosition aroundTile = game.self().getStartLocation();
 		Unit someWorker = null;
 		for (Unit u : game.getAllUnits()) {

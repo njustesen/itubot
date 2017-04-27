@@ -1,5 +1,5 @@
 package exception;
 
-public class NoBuildOrderException extends Exception {
+public class NoBuildOrderException extends ITUBotException {
 
 }

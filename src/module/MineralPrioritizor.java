@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import bwapi.Match;
+import bwapi.Position;
 import bwapi.Self;
 import bwapi.Unit;
 import exception.NoMinableMineralsException;
+import manager.InformationManager;
 
 public class MineralPrioritizor {
 
@@ -55,7 +57,6 @@ public class MineralPrioritizor {
 		int closest = Integer.MAX_VALUE;
 		for(Unit b : Match.getInstance().getAllUnits()){
 			if (b.getPlayer().getID() == Self.getInstance().getID() && b.getType().isResourceDepot()){
-				
 				closest = Math.min(closest, a.getDistance(b));
 			}
 		}
@@ -78,12 +79,29 @@ public class MineralPrioritizor {
 			available.addAll(notAvailable);
 		}
 		
-		// Find closest mineral patch
+		// Find mineral patches closest to base
 		double closestDistance = Integer.MAX_VALUE;
 		Unit closest = null;
+		Position base = InformationManager.getInstance().ownBasePosition.getPosition();
 		for(Unit mineralPatch : available){
+			double distance = base.getDistance(mineralPatch);
+			if (distance < closestDistance){
+				closestDistance = distance;
+			}
+		}
+		List<Unit> closestPatches = new ArrayList<Unit>();
+		for(Unit mineralPatch : available){
+			if (base.getDistance(mineralPatch) == closestDistance){
+				closestPatches.add(mineralPatch);
+			}
+		}
+		
+		// Find closest mineral patch
+		closestDistance = Integer.MAX_VALUE;
+		closest = null;
+		for(Unit mineralPatch : closestPatches){
 			double distance = unit.getDistance(mineralPatch);
-			if (distance <= closestDistance){
+			if (distance < closestDistance){
 				closestDistance = distance;
 				closest = mineralPatch;
 			}

@@ -1,5 +1,5 @@
 package exception;
 
-public class NoWorkersException extends Exception {
+public class NoWorkersException extends ITUBotException {
 
 }

@@ -40,29 +40,34 @@ public class BuildOrderManager implements Manager {
 		
 	public Build getNextBuild() throws NoBuildOrderException{
 		
-		if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) < 8){
+		if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 8){
 			return new Build(UnitType.Protoss_Probe);
-		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Pylon) == 0){
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) == 0){
 			return new Build(UnitType.Protoss_Pylon);
-		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) < 11){
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 11){
 			return new Build(UnitType.Protoss_Probe);
-		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Gateway) == 0){
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Gateway) == 0){
 			return new Build(UnitType.Protoss_Gateway);
-		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) == 12){
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) == 12){
 			return new Build(UnitType.Protoss_Probe);
-		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Gateway) == 1){
-			return new Build(UnitType.Protoss_Gateway);
-		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) == 13){
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Assimilator) == 0){
+			return new Build(UnitType.Protoss_Assimilator);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) == 13){
 			return new Build(UnitType.Protoss_Probe);
-		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Zealot) == 0){
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Zealot) == 0){
 			return new Build(UnitType.Protoss_Zealot);
-		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Pylon) == 1){
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) == 1){
 			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Cybernetics_Core) == 0){
+			return new Build(UnitType.Protoss_Cybernetics_Core);
 		} else {
-			if (Self.getInstance().supplyTotal() - Self.getInstance().supplyUsed() < 4)
+			if (Self.getInstance().supplyTotal() - Self.getInstance().supplyUsed() < 4){
 				return new Build(UnitType.Protoss_Pylon);
-			else
+			} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Cybernetics_Core) == 1){
+				return new Build(UnitType.Protoss_Dragoon);
+			}else{
 				return new Build(UnitType.Protoss_Zealot);
+			}
 		}
 		
 	}

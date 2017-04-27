@@ -1,18 +1,27 @@
 package manager;
 
 import job.UnitBuildJob;
-import job.UnitJob;
-import job.UnitMineJob;
 import job.UnitTrainJob;
+import log.BotLogger;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import abstraction.Build;
 import abstraction.BuildType;
-import bwapi.BWAPI;
+import abstraction.UnitAssignment;
+import bot.ITUBot;
+import bwapi.BWEventListener;
 import bwapi.Match;
+import bwapi.Player;
+import bwapi.Position;
+import bwapi.Self;
 import bwapi.Unit;
 import bwapi.UnitType;
 import exception.NoBuildOrderException;
+import exception.NoMinableMineralsException;
 
-public class BuildingManager extends JobManager {
+public class BuildingManager implements Manager, BWEventListener {
 
 	// SINGLETON
 	private static BuildingManager instance = null;
@@ -29,50 +38,50 @@ public class BuildingManager extends JobManager {
 	}
 	
 	// CLASS
+	public List<UnitAssignment> assignments;
+	
 	protected BuildingManager() {
 		super();
+		assignments = new ArrayList<UnitAssignment>();
+		ITUBot.getInstance().addListener(this);
 	}
 	
-	@Override
-	protected void unitAdded(Unit unit) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected void unitRemoved(Unit unit) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	protected void assignJobs() {
+	public void execute() {
 		
 		// Check next build
 		Build nextBuild;
 		try {
 			nextBuild = BuildOrderManager.getInstance().getNextBuild();
+			//BotLogger.getInstance().log(this, "Next build is " + nextBuild.unitType);
 			if (alreadyAssigned(nextBuild)){
+				//BotLogger.getInstance().log(this, "Already assigned");
 				return;
 			}
 			if (nextBuild.type == BuildType.UNIT){
-				Unit trainer = getProductionBuilding(nextBuild.unitType);
+				//BotLogger.getInstance().log(this, "Looking for a production building (" + assignments.size() + ") ");
+				UnitAssignment trainer = getProductionBuilding(nextBuild.unitType);
 				if (trainer == null){
-					//System.out.println("Not able to produce " + nextBuild.toString());
+					//BotLogger.getInstance().log(this, "No production building found.");
 				} else {
-					jobs.put(trainer.getID(), new UnitTrainJob(nextBuild.unitType));
+					//BotLogger.getInstance().log(this, "Creating train job " + nextBuild.unitType);
+					trainer.job = new UnitTrainJob(nextBuild.unitType);
 				}
 			}
 		} catch (NoBuildOrderException e) {
 			Match.getInstance().printf("No build returned from BuildOrderManager.");
 		}
 		
+		// Perform jobs
+		for (UnitAssignment assignment : assignments){
+			assignment.perform();
+		}
+		
 	}
 
 	private boolean alreadyAssigned(Build nextBuild) {
-		for(Integer unitID : jobs.keySet()){
-			UnitJob job = jobs.get(unitID);
-			if (job != null && job instanceof UnitBuildJob){
-				UnitBuildJob buildJob = ((UnitBuildJob)job);
+		for(UnitAssignment assignment : assignments){
+			if (assignment.job != null && assignment.job instanceof UnitBuildJob){
+				UnitBuildJob buildJob = ((UnitBuildJob)assignment.job);
 				if (buildJob.unitType.equals(nextBuild)){
 					return true;
 				}
@@ -81,43 +90,126 @@ public class BuildingManager extends JobManager {
 		return false;
 	}
 	
-	private Unit getProductionBuilding(UnitType unitType) {
+	private UnitAssignment getProductionBuilding(UnitType unitType) {
 		
-		for(Integer unitID : jobs.keySet()){
+		for(UnitAssignment assignment : assignments){
 			// Check that it is not assigned another job
-			Unit building = Match.getInstance().getUnit(unitID);
-						
-			if (jobs.get(unitID) == null && 
-					building.canTrain(unitType) && 
-					!building.isTraining()){
-				return building;
+			if (assignment.job == null && 
+					canTrainNow(unitType) &&
+					assignment.unit.canTrain(unitType) && 
+					!assignment.unit.isTraining()){
+				return assignment;
 			}
 		}
-		
 		return null;
 	}
+	
 
-	public void unitStarted(Unit unit) {
-		for(int unitID : this.jobs.keySet()){
-			UnitJob job = this.jobs.get(unitID);
-			if (job instanceof UnitTrainJob){
-				UnitTrainJob buildJob = ((UnitTrainJob)job);
-				if (buildJob.unitType.equals(unit.getType())){
-					this.jobs.put(unitID, null);
+	
+	private boolean canTrainNow(UnitType unitType) {
+		int minerals = Self.getInstance().minerals();
+		int gas = Self.getInstance().gas();
+		int supplyTotal = Self.getInstance().supplyTotal();
+		int supplyUsed = Self.getInstance().supplyUsed();
+		if (minerals < unitType.mineralPrice() || gas < unitType.gasPrice() || supplyUsed + unitType.supplyRequired() > supplyTotal ){
+			return false;
+		}
+		return true;
+	}
+
+	public void visualize() {
+		for(UnitAssignment assignment : assignments){
+			if (assignment.job != null){
+				Match.getInstance().drawTextMap(assignment.unit.getPosition().getX(), 
+						assignment.unit.getPosition().getY(), 
+						assignment.job.toString());
+			}
+		}
+	}
+
+	@Override
+	public void onEnd(boolean win) {
+	}
+
+	@Override
+	public void onFrame() {
+	}
+
+	@Override
+	public void onNukeDetect(Position position) {
+	}
+
+	@Override
+	public void onPlayerDropped(Player player) {
+	}
+
+	@Override
+	public void onPlayerLeft(Player player) {
+	}
+
+	@Override
+	public void onReceiveText(Player player, String text) {
+	}
+
+	@Override
+	public void onSaveGame(String unit) {
+	}
+
+	@Override
+	public void onSendText(String unit) {
+	}
+
+	@Override
+	public void onStart() {
+	}
+
+	@Override
+	public void onUnitComplete(Unit unit) {
+		if (unit.getPlayer().getID() == Self.getInstance().getID() && unit.getType().isBuilding()){
+			this.assignments.add(new UnitAssignment(unit, null));
+		}
+	}
+
+	@Override
+	public void onUnitCreate(Unit unit) {
+		if (unit.getPlayer().getID() == Self.getInstance().getID() && !unit.getType().isBuilding()){
+			for(UnitAssignment assignment : assignments){
+				if (assignment.job instanceof UnitTrainJob){
+					UnitTrainJob buildJob = ((UnitTrainJob)assignment.job);
+					if (buildJob.unitType.equals(unit.getType())){
+						assignment.job = null;
+					}
 				}
 			}
 		}
 	}
 
 	@Override
-	public void visualize() {
-		for(Integer unitID : jobs.keySet()){
-			Unit unit = BWAPI.getInstance().getGame().getUnit(unitID);
-			if (jobs.get(unitID) != null){
-				Match.getInstance().drawTextMap(unit.getPosition().getX(), 
-						unit.getPosition().getY(), 
-						jobs.get(unitID).toString());
-			}
-		}
+	public void onUnitDestroy(Unit unit) {
 	}
+
+	@Override
+	public void onUnitDiscover(Unit unit) {
+	}
+
+	@Override
+	public void onUnitEvade(Unit unit) {
+	}
+
+	@Override
+	public void onUnitHide(Unit unit) {
+	}
+
+	@Override
+	public void onUnitMorph(Unit unit) {
+	}
+
+	@Override
+	public void onUnitRenegade(Unit unit) {
+	}
+
+	@Override
+	public void onUnitShow(Unit unit) {
+	}
+
 }
