@@ -1,6 +1,7 @@
 package abstraction;
 
 import bwapi.Unit;
+import exception.ITUBotException;
 import job.UnitJob;
 
 public class UnitAssignment {
@@ -41,7 +42,11 @@ public class UnitAssignment {
 
 	public void perform() {
 		if (job != null){
-			job.perform(unit);
+			try {
+				job.perform(unit);
+			} catch (ITUBotException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

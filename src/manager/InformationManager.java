@@ -5,15 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import abstraction.Observation;
 import bot.ITUBot;
-import bwapi.BWAPI;
 import bwapi.BWEventListener;
+import bwapi.Color;
 import bwapi.Match;
 import bwapi.Player;
 import bwapi.Position;
 import bwapi.Self;
 import bwapi.TechType;
-import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
@@ -41,17 +41,26 @@ public class InformationManager implements Manager, BWEventListener {
 	
 	// CLASS
 	public List<BaseLocation> possibleEnemyBasePositions;
-	public BaseLocation ownBasePosition;
+	public BaseLocation ownMainBaseLocation;
+	public List<BaseLocation> ownBaseLocations;
+	public List<Observation> observations;
+	public BaseLocation enemyBaseLocation;
+	
 	public List<Unit> refineries;
 	public List<Unit> refineriesInProd;
 	
+	public Player enemy;
+	
 	private Map<UnitType, Integer> ownUnitsInProduction;
 	private Map<UnitType, Integer> ownUnits;
-	//private Map<String, Integer> oppUnits;
+	private Map<UnitType, Integer> oppUnits;
+	
 	private HashMap<UpgradeType, Integer> ownUpgrades;
 	private HashMap<UpgradeType, Integer> ownUpgradesInProduction;
 	private HashMap<TechType, Integer> ownTechs;
 	private HashMap<TechType, Integer> ownTechsInProduction;
+	
+	
 	
 	protected InformationManager(){
 		this.ownUnits = new HashMap<UnitType, Integer>();
@@ -62,11 +71,18 @@ public class InformationManager implements Manager, BWEventListener {
 		this.ownTechsInProduction = new HashMap<TechType, Integer>();
 		this.ownUnits = new HashMap<UnitType, Integer>();
 		this.ownUnitsInProduction = new HashMap<UnitType, Integer>();
+		
+		this.oppUnits = new HashMap<UnitType, Integer>();
+		this.observations = new ArrayList<Observation>();
+		
 		this.refineries = new ArrayList<Unit>();
 		this.refineriesInProd = new ArrayList<Unit>();
 		this.possibleEnemyBasePositions = new ArrayList<BaseLocation>();
 		
+		this.ownBaseLocations = new ArrayList<BaseLocation>();
+		
 		ITUBot.getInstance().addListener(this);
+		
 	}
 	
 	@Override
@@ -77,30 +93,73 @@ public class InformationManager implements Manager, BWEventListener {
 		this.ownTechsInProduction.clear();
 		this.ownUpgrades.clear();
 		this.ownUpgradesInProduction.clear();
+		this.oppUnits.clear();
 		this.refineries.clear();
-		for (Unit unit : Match.getInstance().getAllUnits()){
-			if (unit.getPlayer().getID() == Self.getInstance().getID()){
-				if (unit.isBeingConstructed()){
-					int i = 0;
-					if (this.ownUnitsInProduction.containsKey(unit.getType())){
-						i = this.ownUnitsInProduction.get(unit.getType());
+		for (Unit unit : Self.getInstance().getUnits()){
+			
+			if (unit.isBeingConstructed()){
+				int i = 0;
+				if (this.ownUnitsInProduction.containsKey(unit.getType())){
+					i = this.ownUnitsInProduction.get(unit.getType());
+				}
+				this.ownUnitsInProduction.put(unit.getType(), i+1);
+				if (unit.getType().isRefinery()){
+					this.refineriesInProd.add(unit);
+				}
+			} else {
+				int i = 0;
+				if (this.ownUnits.containsKey(unit.getType())){
+					i = this.ownUnits.get(unit.getType());
+				}
+				this.ownUnits.put(unit.getType(), i+1);
+				if (unit.getType().isRefinery()){
+					this.refineries.add(unit);
+				}
+				if (unit.getType().isResourceDepot()){
+					BaseLocation baseLocation = null;
+					int closest = Integer.MAX_VALUE;
+					for(BaseLocation location : BWTA.getBaseLocations()){
+						int distance = unit.getDistance(location.getPosition());
+						if (distance < closest){
+							closest = distance;
+							baseLocation = location;
+						}
 					}
-					this.ownUnitsInProduction.put(unit.getType(), i+1);
-					if (unit.getType().isRefinery()){
-						this.refineriesInProd.add(unit);
-					}
-				} else {
-					int i = 0;
-					if (this.ownUnits.containsKey(unit.getType())){
-						i = this.ownUnits.get(unit.getType());
-					}
-					this.ownUnits.put(unit.getType(), i+1);
-					if (unit.getType().isRefinery()){
-						this.refineries.add(unit);
+					if (!this.ownBaseLocations.contains(baseLocation)){
+						this.ownBaseLocations.add(baseLocation);
+						BotLogger.getInstance().log(this, "Adding new base location: " + baseLocation);
 					}
 				}
 			}
 		}
+		for(Unit unit : this.enemy.getUnits()){
+			if (unit.getPosition().isValid()){
+				boolean found = false;
+				for (Observation observation : observations){
+					if (observation.id == unit.getID()){
+						observation.position = new Position(unit.getPosition().getX(), unit.getPosition().getY());
+						found = true;
+						break;
+					}
+				}
+				if (!found){
+					observations.add(new Observation(unit));
+					if (enemyBaseLocation == null && unit.getPlayer().isEnemy(Self.getInstance())){
+						BotLogger.getInstance().log(this, "Enemy (" + unit.getPlayer().getRace() + " " + unit.getType() + ") base found at " + unit.getPosition());
+						if (unit.getType().isResourceDepot()){
+							BotLogger.getInstance().log(this, "Enemy (" + unit.getPlayer().getRace() + ") base found at " + unit.getPosition());
+							for(BaseLocation location : possibleEnemyBasePositions){
+								if (unit.getDistance(location.getPosition()) < 100){
+									enemyBaseLocation = location;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
 		for(TechType tech : TechTypes.all){
 			ownTechs.put(tech, Self.getInstance().hasResearched(tech) ? 1 : 0);
 			ownTechsInProduction.put(tech, Self.getInstance().isResearching(tech) ? 1 : 0);
@@ -146,9 +205,36 @@ public class InformationManager implements Manager, BWEventListener {
 		return count;
 	}
 	
+
+	public int ownUnitCountInProd(UnitType unitType) {
+		int count = 0;
+		if (ownUnitsInProduction.containsKey(unitType)){
+			count += ownUnitsInProduction.get(unitType);
+		}
+		return count;
+	}
+	
 	@Override
 	public void visualize() {
-		Match.getInstance().drawTextScreen(12, 22, "Possible base locations: " + possibleEnemyBasePositions.size());
+		if (enemyBaseLocation == null){
+			Match.getInstance().drawTextScreen(12, 22, "Possible base locations: " + possibleEnemyBasePositions.size());
+		} else {
+			Match.getInstance().drawTextScreen(12, 22, "Enemy base location: " + enemyBaseLocation.getPosition());
+		}
+		Match.getInstance().drawTextScreen(12, 32, "Own bases: " + ownBaseLocations.size());
+		for(Observation observation : observations){
+			if (observation.type.isBuilding()){
+				int width = observation.type.width();
+				int height = observation.type.height();
+				Position topLeft = new Position(observation.position.getX() - width/2, observation.position.getY() - height/2);
+				Position bottomRight = new Position(observation.position.getX() + width/2, observation.position.getY() + height/2);
+				Match.getInstance().drawBoxMap(topLeft, bottomRight, Color.Red);
+			} else {
+				Match.getInstance().drawCircleMap(observation.position, observation.type.width()/2, Color.Red);
+			}
+			Match.getInstance().drawTextMap(observation.position, observation.type.toString());
+		}
+		Match.getInstance().drawTextScreen(12, 62, "Observations: " + observations.size());
 	}
 
 	@Override
@@ -157,6 +243,7 @@ public class InformationManager implements Manager, BWEventListener {
 
 	@Override
 	public void onFrame() {
+		
 	}
 
 	@Override
@@ -188,10 +275,15 @@ public class InformationManager implements Manager, BWEventListener {
 		for (BaseLocation b : BWTA.getBaseLocations()) {
 			if (b.isStartLocation()) {
 				if (Self.getInstance().getStartLocation().equals(b.getTilePosition())){
-					ownBasePosition = b;
+					ownMainBaseLocation = b;
 				} else {
 					possibleEnemyBasePositions.add(b);
 				}
+			}
+		}
+		for(Player player : Match.getInstance().getPlayers()){
+			if (player.isEnemy(Self.getInstance())){
+				this.enemy = player;
 			}
 		}
 	}
@@ -206,14 +298,40 @@ public class InformationManager implements Manager, BWEventListener {
 
 	@Override
 	public void onUnitDestroy(Unit unit) {
+		if (unit.getPlayer().isEnemy(Self.getInstance())){
+			Observation toRemove = null;
+			for (Observation observation : observations){
+				if (observation.id == unit.getID()){
+					toRemove = observation;
+					break;
+				}
+			}
+			observations.remove(toRemove);
+		} else {
+			if (unit.getType().isResourceDepot()){
+				BaseLocation baseLocation = null;
+				int closest = Integer.MAX_VALUE;
+				for(BaseLocation location : BWTA.getBaseLocations()){
+					int distance = unit.getDistance(location.getPosition());
+					if (distance < closest){
+						closest = distance;
+						baseLocation = location;
+					}
+				}
+				this.ownBaseLocations.remove(baseLocation);
+			}
+		}
+		
 	}
 
 	@Override
-	public void onUnitDiscover(Unit arg0) {
+	public void onUnitDiscover(Unit unit) {
+
 	}
 
 	@Override
-	public void onUnitEvade(Unit arg0) {
+	public void onUnitEvade(Unit unit) {
+
 	}
 
 	@Override
@@ -231,5 +349,6 @@ public class InformationManager implements Manager, BWEventListener {
 	@Override
 	public void onUnitShow(Unit unit) {
 	}
+
 
 }

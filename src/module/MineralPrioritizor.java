@@ -9,7 +9,9 @@ import bwapi.Match;
 import bwapi.Position;
 import bwapi.Self;
 import bwapi.Unit;
+import bwta.BaseLocation;
 import exception.NoMinableMineralsException;
+import log.BotLogger;
 import manager.InformationManager;
 
 public class MineralPrioritizor {
@@ -32,27 +34,12 @@ public class MineralPrioritizor {
 	private static double maxDistance = 500;
 	
 	// CLASS
-	Map<Integer, Boolean> assigned;
-	Map<Integer, Double> distancesToBases;
+	List<Integer> assigned;
 	
 	public MineralPrioritizor(){
-		assigned = new HashMap<Integer, Boolean>();
-		distancesToBases = new HashMap<Integer, Double>();
-		setup();
+		assigned = new ArrayList<Integer>();
 	}
-	
-	public void setup(){
-		for(Unit unit : Match.getInstance().getAllUnits()){
-			if (unit.getType().isMineralField()){
-				double distance = distanceToOwnBase(unit);
-				if (distance <= maxDistance){
-					assigned.put(unit.getID(), false);
-					distancesToBases.put(unit.getID(), distance);
-				}
-			}
-		}
-	}
-	
+		
 	private double distanceToOwnBase(Unit a) {
 		int closest = Integer.MAX_VALUE;
 		for(Unit b : Match.getInstance().getAllUnits()){
@@ -67,43 +54,63 @@ public class MineralPrioritizor {
 		// Find available mineral fields
 		List<Unit> available = new ArrayList<Unit>();
 		List<Unit> notAvailable = new ArrayList<Unit>();
-		for(int mineralID : assigned.keySet()){
-			Unit mineralPatch = Match.getInstance().getUnit(mineralID);
-			if (assigned.get(mineralID)){
-				notAvailable.add(mineralPatch);
-			} else {
-				available.add(mineralPatch);
+		for (Unit u : Match.getInstance().getAllUnits()){
+			int closestBaseDistance = Integer.MAX_VALUE;
+			for(BaseLocation location : InformationManager.getInstance().ownBaseLocations){
+				int distance = u.getDistance(location.getPosition());
+				if (distance < closestBaseDistance){
+					closestBaseDistance = distance;
+				}
+			}
+			if (u.getType().isMineralField() && closestBaseDistance < 400){
+				//BotLogger.getInstance().log(this, "MINERAL PATCH [" + u.getID() + "] (" + u.getPosition() + "): ");
+				if (assigned.contains(u.getID())){
+					notAvailable.add(u);
+				} else {
+					available.add(u);
+				}
 			}
 		}
 		if (available.isEmpty()){
 			available.addAll(notAvailable);
 		}
-		
-		// Find mineral patches closest to base
-		double closestDistance = Integer.MAX_VALUE;
-		Unit closest = null;
-		Position base = InformationManager.getInstance().ownBasePosition.getPosition();
-		for(Unit mineralPatch : available){
-			double distance = base.getDistance(mineralPatch);
-			if (distance < closestDistance){
-				closestDistance = distance;
+		/*
+		for (Unit u : Match.getInstance().getAllUnits()){
+			if (u.getType().isMineralField()){
+				BotLogger.getInstance().log(this, "-- MINERAL PATCH [" + u.getID() + "] (" + u.getPosition() + "): ");
 			}
 		}
+		*/
+		// Find mineral patches closest to any base
+		//BotLogger.getInstance().log(this, available.size() + " mineral patches found.");
+		double closestDistance = Integer.MAX_VALUE;
+		Unit closest = null;
 		List<Unit> closestPatches = new ArrayList<Unit>();
+		//BotLogger.getInstance().log(this, InformationManager.getInstance().ownBaseLocations + " base locations.");
 		for(Unit mineralPatch : available){
-			if (base.getDistance(mineralPatch) == closestDistance){
-				closestPatches.add(mineralPatch);
+			for(BaseLocation location : InformationManager.getInstance().ownBaseLocations){
+				double distance = mineralPatch.getDistance(location);
+				if (distance < closestDistance){
+					closestDistance = distance;
+					closestPatches.clear();
+				}
+				if (distance == closestDistance){
+					closestPatches.add(mineralPatch);
+				}
 			}
 		}
 		
 		// Find closest mineral patch
+		//BotLogger.getInstance().log(this, closestPatches.size() + " close mineral patches found.");
 		closestDistance = Integer.MAX_VALUE;
 		closest = null;
 		for(Unit mineralPatch : closestPatches){
 			double distance = unit.getDistance(mineralPatch);
+			//BotLogger.getInstance().log(this, "Distance (" + unit.getPosition() + ") to mineral patch (" + mineralPatch.getPosition() + "): " + distance);
 			if (distance < closestDistance){
 				closestDistance = distance;
 				closest = mineralPatch;
+				//BotLogger.getInstance().log(this, "Setting closest to mineral patch at distance " + closestDistance);
 			}
 		}
 		
@@ -115,7 +122,7 @@ public class MineralPrioritizor {
 	}
 	
 	public void assign(Unit worker, Unit mineralPatch){
-		assigned.put(mineralPatch.getID(), true);
+		assigned.add(mineralPatch.getID());
 	}
 	
 }

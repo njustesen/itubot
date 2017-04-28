@@ -81,8 +81,8 @@ public class Squad {
 
 	public void control() {
 		// Adjust target - Attack if only one possible base location
-		if (InformationManager.getInstance().possibleEnemyBasePositions.size() == 1){
-			target = InformationManager.getInstance().possibleEnemyBasePositions.get(0).getPosition();
+		if (InformationManager.getInstance().enemyBaseLocation != null){
+			target = InformationManager.getInstance().enemyBaseLocation.getPosition();
 		}
 		
 		// assign jobs

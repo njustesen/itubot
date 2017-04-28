@@ -59,8 +59,8 @@ public class UnitAttackJob extends UnitJob {
 		
 		// Attack target if any found
 		if (enemy != null && enemy.getDistance(unit) < ATTACK_DISTANCE){
-			Match.getInstance().drawCircleMap(unit.getPosition(), 8, Color.Green, true);
-			Match.getInstance().drawCircleMap(enemy.getPosition(), 8, Color.Red, true);
+			Match.getInstance().drawCircleMap(unit.getPosition(), 2, Color.Green, true);
+			Match.getInstance().drawCircleMap(enemy.getPosition(), 2, Color.Red, true);
 			Match.getInstance().drawLineMap(unit.getPosition(), enemy.getPosition(), Color.Red );
 			if (newTarget){
 				unit.attack(enemy);
@@ -72,6 +72,11 @@ public class UnitAttackJob extends UnitJob {
 			//BotLogger.getInstance().log(this, "Did nothing. Target is null.");
 		}
 		
+	}
+	
+	@Override
+	public String toString() {
+		return "Attack";
 	}
 
 }

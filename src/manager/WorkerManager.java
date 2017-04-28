@@ -27,8 +27,7 @@ import job.UnitBuildJob;
 import job.UnitGasJob;
 import job.UnitJob;
 import job.UnitMineJob;
-import log.BotLogger;
-import module.BruteBuildLocator;
+import job.UnitScoutJob;
 import module.BuildLocator;
 import module.MineralPrioritizor;
 
@@ -61,6 +60,13 @@ public class WorkerManager implements BWEventListener, Manager {
 	
 	public void execute() throws NoFreeRefineryException, NoMinableMineralsException, NoSpaceLeftForBuildingException, NoBaseLocationsLeftException {
 		
+		// Mine with workers without a job
+		for (UnitAssignment assignment : assignments){
+			if (assignment.job == null){
+				assignment.job = newMineJob(assignment.unit);
+			}
+		}
+		
 		// Update refineries
 		if (InformationManager.getInstance().refineriesInProd.size() != refineriesInProd){
 			refineriesInProd = InformationManager.getInstance().refineriesInProd.size();
@@ -73,7 +79,7 @@ public class WorkerManager implements BWEventListener, Manager {
 		// Move to gas
 		int gasLeft = gasSpotsLeft();
 		while (gasLeft > 0 && getMinWorkers() > 8){
-			moveOneMinerToGas();
+			moveMinerToGas();
 			gasLeft--;
 		}
 		
@@ -97,6 +103,23 @@ public class WorkerManager implements BWEventListener, Manager {
 			Match.getInstance().printf("Unable to find suitable build position for "+nextBuild.unitType.toString());
 		} catch (NoBuildOrderException e1) {
 			Match.getInstance().printf("No build returned from Build Order Manager");
+		} catch (NoBaseLocationsLeftException e2){
+			Match.getInstance().printf("No base locations left to expand to");
+		}
+		
+		// If one pylon and not scouting
+		if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) > 0 && 
+				InformationManager.getInstance().possibleEnemyBasePositions.size() > 1){
+			boolean scouting = false;
+			for(UnitAssignment assignment : assignments){
+				if (assignment.job instanceof UnitScoutJob){
+					scouting = true;
+					break;
+				}
+			}
+			if (!scouting){
+				moveMinerToScout();
+			}
 		}
 		
 		// Perform jobs
@@ -109,18 +132,27 @@ public class WorkerManager implements BWEventListener, Manager {
 	private void moveGasserToMine() throws NoMinableMineralsException {
 		
 		for(UnitAssignment responsibility : assignments){
-			if (responsibility.job instanceof UnitGasJob){
+			if (responsibility.job instanceof UnitGasJob && !responsibility.unit.isCarryingGas()){
 				responsibility.job = newMineJob(responsibility.unit);
 				return;
 			}
 		}
 	}
 
-	private void moveOneMinerToGas() throws NoFreeRefineryException {
+	private void moveMinerToGas() throws NoFreeRefineryException {
 		Unit refinery = getFreeRefinery();
 		for(UnitAssignment responsibility : assignments){
-			if (responsibility.job instanceof UnitMineJob){
+			if (responsibility.job instanceof UnitMineJob && !responsibility.unit.isCarryingMinerals()){
 				responsibility.job = new UnitGasJob(refinery);
+				return;
+			}
+		}
+	}
+	
+	private void moveMinerToScout() throws NoFreeRefineryException {
+		for(UnitAssignment responsibility : assignments){
+			if (responsibility.job instanceof UnitMineJob && !responsibility.unit.isCarryingMinerals()){
+				responsibility.job = new UnitScoutJob();
 				return;
 			}
 		}
@@ -288,12 +320,13 @@ public class WorkerManager implements BWEventListener, Manager {
 
 	@Override
 	public void onUnitComplete(Unit unit) {
+		
 		if (unit.getPlayer().getID() == Self.getInstance().getID()){
 			if (unit.getType().isWorker()){
 				try {
 					this.assignments.add(new UnitAssignment(unit, newMineJob(unit)));
 				} catch (NoMinableMineralsException e) {
-					e.printStackTrace();
+					this.assignments.add(new UnitAssignment(unit, null));
 				}
 			}
 		}

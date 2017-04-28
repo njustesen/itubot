@@ -40,7 +40,7 @@ public class BuildOrderManager implements Manager {
 	}
 		
 	public Build getNextBuild() throws NoBuildOrderException{
-		
+		/*
 		if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 8){
 			return new Build(UnitType.Protoss_Probe);
 		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) == 0){
@@ -75,6 +75,40 @@ public class BuildOrderManager implements Manager {
 			}else{
 				return new Build(UnitType.Protoss_Zealot);
 			}
+		}*/
+		
+		if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 8){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 1){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 14){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Nexus) < 2){
+			return new Build(UnitType.Protoss_Nexus);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 15){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 2){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 16){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Gateway) < 1){
+			return new Build(UnitType.Protoss_Gateway);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 17){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Gateway) < 2){
+			return new Build(UnitType.Protoss_Gateway);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 18){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 3){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (Self.getInstance().supplyTotal() - Self.getInstance().supplyUsed() < 4 && InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Pylon) == 0){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Zealot) < InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Gateway)){
+			return new Build(UnitType.Protoss_Zealot);
+		} else if (InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Gateway) < 1 && InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Gateway) < 6){
+			return new Build(UnitType.Protoss_Gateway);
+		} else {
+			return new Build(UnitType.Protoss_Probe);
 		}
 		
 	}

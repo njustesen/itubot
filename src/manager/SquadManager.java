@@ -103,13 +103,13 @@ public class SquadManager implements Manager, BWEventListener {
 	@Override
 	public void visualize() {
 		// Draw squads
-		Match.getInstance().drawTextScreen(12, 32, "Squads: " + squads.size());
+		Match.getInstance().drawTextScreen(12, 42, "Squads: " + squads.size());
 		for (Squad squad : squads){
 			for (UnitAssignment assignment : squad.assignments){
 				Match.getInstance().drawTextMap(assignment.unit.getX(), assignment.unit.getY(), ""+squad.id);
 				// Draw units
 				if (assignment.job != null && assignment.job instanceof UnitAttackJob){
-					Match.getInstance().drawCircleMap(assignment.unit.getPosition(), 12, Color.Green);
+					Match.getInstance().drawCircleMap(assignment.unit.getPosition(), assignment.unit.getType().width()/2, Color.Green);
 					if (((UnitAttackJob)assignment.job).target != null){
 						Position target = ((UnitAttackJob)assignment.job).target;
 						Match.getInstance().drawCircleMap(target, 12, Color.Red);
