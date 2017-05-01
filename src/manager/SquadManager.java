@@ -24,8 +24,8 @@ import log.BotLogger;
 
 public class SquadManager implements Manager, BWEventListener {
 		
-	private static final int SPLIT_DISTANCE = 400;
-	private static final int MERGE_DISTANCE = 100;
+	private static final int SPLIT_DISTANCE = 320;
+	private static final int MERGE_DISTANCE = 80;
 	
 	// SINGLETON
 	private static SquadManager instance = null;
@@ -54,7 +54,11 @@ public class SquadManager implements Manager, BWEventListener {
 	public void execute() {
 		splitAndMerge();
 		for(Squad squad : squads){
-			squad.control();
+			try{
+				squad.control();
+			} catch (Exception e){
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -120,10 +124,10 @@ public class SquadManager implements Manager, BWEventListener {
 			Position center = squad.getCenter();
 			Match.getInstance().drawCircleMap(center, SPLIT_DISTANCE, Color.Blue);
 			Match.getInstance().drawCircleMap(center, MERGE_DISTANCE, Color.Purple);
-			Match.getInstance().drawCircleMap(center, 4, Color.Green);
+			Match.getInstance().drawCircleMap(center, 8, Color.Green);
+			Match.getInstance().drawTextMap(center, squad.text);
 			if (squad.target != null){
 				Match.getInstance().drawLineMap(center, squad.target, Color.Blue);
-				Match.getInstance().drawCircleMap(center, 4, Color.Red);
 			}
 		}
 	}

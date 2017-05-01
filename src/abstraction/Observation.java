@@ -9,12 +9,14 @@ public class Observation {
 	public UnitType type;
 	public int id;
 	public Position position;
+	public int hp;
 	
 	public Observation(Unit unit) {
 		super();
 		this.type = unit.getType();
 		this.id = unit.getID();
 		this.position = new Position(unit.getPosition().getX(), unit.getPosition().getY());
+		this.hp = unit.getHitPoints();
 	}
 
 	@Override

@@ -1,14 +1,14 @@
 package job;
 
 import bwapi.Color;
+import bwapi.Enemy;
 import bwapi.Match;
 import bwapi.Position;
-import bwapi.Self;
 import bwapi.Unit;
-import log.BotLogger;
+import bwapi.UnitType;
 public class UnitAttackJob extends UnitJob {
 
-	private static final int ATTACK_DISTANCE = 600;
+	private static final int ATTACK_DISTANCE = 900;
 	public Position target;
 	private Unit enemy;
 	
@@ -30,16 +30,14 @@ public class UnitAttackJob extends UnitJob {
 		Unit b = null;
 		int disA = ATTACK_DISTANCE;
 		int disB = ATTACK_DISTANCE;
-		for (Unit other : Match.getInstance().getAllUnits()){
-			if (other.getPlayer().isEnemy(Self.getInstance())){
-				if (unit.canAttack(other)){
-					if (!other.getType().isBuilding() && unit.getDistance(other) < disA){
-						a = other;
-						disA = unit.getDistance(other);
-					} else if (unit.getDistance(other) < disB) {
-						b = other;
-						disB = unit.getDistance(other);
-					}
+		for (Unit other : Enemy.getInstance().getUnits()){
+			if (unit.canAttack(other)){
+				if (isFirstPriority(other) && unit.getDistance(other) < disA){
+					a = other;
+					disA = unit.getDistance(other);
+				} else if (unit.getDistance(other) < disB) {
+					b = other;
+					disB = unit.getDistance(other);
 				}
 			}
 		}
@@ -74,6 +72,15 @@ public class UnitAttackJob extends UnitJob {
 		
 	}
 	
+	private boolean isFirstPriority(Unit other) {
+		return (!other.getType().isBuilding() || 
+				other.getType() == UnitType.Terran_Bunker || 
+				other.getType() == UnitType.Protoss_Photon_Cannon || 
+				other.getType() == UnitType.Zerg_Sunken_Colony || 
+				other.getType() == UnitType.Zerg_Spore_Colony || 
+				other.getType().isSpellcaster());
+	}
+
 	@Override
 	public String toString() {
 		return "Attack";

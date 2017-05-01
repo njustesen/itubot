@@ -1,13 +1,14 @@
 package manager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import abstraction.Build;
 import abstraction.BuildType;
 import abstraction.UnitAssignment;
 import bot.ITUBot;
-import bwapi.BWAPI;
 import bwapi.BWEventListener;
 import bwapi.Color;
 import bwapi.Match;
@@ -17,6 +18,8 @@ import bwapi.Self;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwta.BWTA;
+import bwta.BaseLocation;
 import exception.NoBaseLocationsLeftException;
 import exception.NoBuildOrderException;
 import exception.NoFreeRefineryException;
@@ -28,7 +31,9 @@ import job.UnitGasJob;
 import job.UnitJob;
 import job.UnitMineJob;
 import job.UnitScoutJob;
+import log.BotLogger;
 import module.BuildLocator;
+import module.GasPrioritizor;
 import module.MineralPrioritizor;
 
 public class WorkerManager implements BWEventListener, Manager {
@@ -92,12 +97,19 @@ public class WorkerManager implements BWEventListener, Manager {
 		Build nextBuild = null;
 		try {
 			nextBuild = BuildOrderManager.getInstance().getNextBuild();
-			if (nextBuild.type == BuildType.BUILDING && 
-					!buildAlreadyAssigned(nextBuild) && 
-					canBuildNow(nextBuild.unitType)){
+			if (nextBuild.type == BuildType.BUILDING && !buildAlreadyAssigned(nextBuild)){
 				TilePosition position = BuildLocator.getInstance().getLocation(nextBuild.unitType);
 				UnitAssignment worker = closestWorker(position);
-				worker.job = new UnitBuildJob(position, nextBuild.unitType);
+				int resTime = resourceTime(nextBuild.unitType);
+				int moveTime = moveTime(position, worker);
+				if (canBuildNow(nextBuild.unitType) || resTime <= moveTime){
+					if (worker.job instanceof UnitMineJob){
+						MineralPrioritizor.getInstance().ressign(((UnitMineJob)worker.job).mineralField);
+					} else if (worker.job instanceof UnitGasJob){
+						MineralPrioritizor.getInstance().ressign(((UnitGasJob)worker.job).refinery);
+					}
+					worker.job = new UnitBuildJob(position, nextBuild.unitType);
+				}
 			}
 		} catch (NoWorkersException e) {
 			Match.getInstance().printf("Unable to find suitable build position for "+nextBuild.unitType.toString());
@@ -129,10 +141,36 @@ public class WorkerManager implements BWEventListener, Manager {
 		
 	}
 
+	private int resourceTime(UnitType unitType) {
+		int mineralsNeeded = Math.max(0, unitType.mineralPrice() - Self.getInstance().minerals());
+		int gasNeeded = Math.max(0, unitType.gasPrice() - Self.getInstance().gas());
+		double estimateMinerals = 0;
+		double estimateGas = 0;
+		int gassers = 0;
+		if (gasNeeded > 0 && InformationManager.getInstance().refineries.size() > 0){
+			gassers = InformationManager.getInstance().refineries.size() * 3;
+			estimateGas = gassers * 0.07;
+		}
+		if (mineralsNeeded > 0){
+			estimateMinerals = (InformationManager.getInstance().ownUnitCount(Self.getInstance().getRace().getWorker()) - gassers) * 0.05;
+		}
+		return (int)(estimateGas + estimateMinerals);
+	}
+
+	private int moveTime(TilePosition position, UnitAssignment assignment) {
+		
+		int distance = (int) (BWTA.getGroundDistance(position, assignment.unit.getPosition().toTilePosition()));
+		int time = (int) (distance / assignment.unit.getType().topSpeed());
+		
+		return time;
+		
+	}
+
 	private void moveGasserToMine() throws NoMinableMineralsException {
 		
 		for(UnitAssignment responsibility : assignments){
 			if (responsibility.job instanceof UnitGasJob && !responsibility.unit.isCarryingGas()){
+				GasPrioritizor.getInstance().ressign(((UnitGasJob)responsibility.job).refinery);
 				responsibility.job = newMineJob(responsibility.unit);
 				return;
 			}
@@ -140,10 +178,12 @@ public class WorkerManager implements BWEventListener, Manager {
 	}
 
 	private void moveMinerToGas() throws NoFreeRefineryException {
-		Unit refinery = getFreeRefinery();
 		for(UnitAssignment responsibility : assignments){
 			if (responsibility.job instanceof UnitMineJob && !responsibility.unit.isCarryingMinerals()){
+				Unit refinery = GasPrioritizor.getInstance().bestRefinery(responsibility.unit);
+				MineralPrioritizor.getInstance().ressign(((UnitMineJob)responsibility.job).mineralField);
 				responsibility.job = new UnitGasJob(refinery);
+				GasPrioritizor.getInstance().assign(refinery);
 				return;
 			}
 		}
@@ -152,28 +192,13 @@ public class WorkerManager implements BWEventListener, Manager {
 	private void moveMinerToScout() throws NoFreeRefineryException {
 		for(UnitAssignment responsibility : assignments){
 			if (responsibility.job instanceof UnitMineJob && !responsibility.unit.isCarryingMinerals()){
+				MineralPrioritizor.getInstance().ressign(((UnitMineJob)responsibility.job).mineralField);
 				responsibility.job = new UnitScoutJob();
 				return;
 			}
 		}
 	}
 	
-	private Unit getFreeRefinery() throws NoFreeRefineryException{
-		for(Unit refinery : InformationManager.getInstance().refineries){
-			int spots = 3;
-			for(UnitAssignment responsibility : assignments){
-				if (responsibility.job instanceof UnitGasJob && 
-						((UnitGasJob)responsibility.job).refinery.getID() == refinery.getID()){
-					spots--;
-				}
-			}
-			if (spots > 0){
-				return refinery;
-			}
-		}
-		throw new NoFreeRefineryException();
-	}
-
 	private int gasSpotsLeft() {
 		int n = InformationManager.getInstance().refineries.size()*3;
 		for(UnitAssignment responsibility : assignments){
@@ -226,9 +251,9 @@ public class WorkerManager implements BWEventListener, Manager {
 
 	private UnitAssignment closestWorker(TilePosition position) {
 		UnitAssignment closestWorker = null;
-		double closestDistance = 1000000d;
+		double closestDistance = Integer.MAX_VALUE;
 		for(UnitAssignment responsibility : assignments){
-			double d = distance(responsibility.unit.getTilePosition(), position);
+			double d = responsibility.unit.getDistance(position.toPosition());
 			if (d < closestDistance && responsibility.job instanceof UnitMineJob){
 				closestDistance = d;
 				closestWorker = responsibility;
@@ -237,10 +262,6 @@ public class WorkerManager implements BWEventListener, Manager {
 		return closestWorker;
 	}
 
-	private double distance(TilePosition a, TilePosition b) {
-		return Math.sqrt( Math.abs(a.getX() - b.getX()) + Math.abs(a.getY() - b.getY()) );
-	}
-	
 	private void stopBuildJobs(UnitType type) {
 		for(UnitAssignment assignment : assignments){
 			if (assignment.job instanceof UnitBuildJob &&
@@ -260,10 +281,8 @@ public class WorkerManager implements BWEventListener, Manager {
 			Match.getInstance().drawTextMap(assignment.unit.getPosition().getX(), assignment.unit.getPosition().getY(), assignment.job.toString());
 			if (assignment.job instanceof UnitMineJob){
 				UnitMineJob mineJob = (UnitMineJob)assignment.job;
-				if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe) < 10){
-					Match.getInstance().drawLineMap(assignment.unit.getPosition(), mineJob.mineralField.getPosition(), Color.Teal);
-					Match.getInstance().drawCircleMap(mineJob.mineralField.getPosition(), 10, Color.Teal);
-				}
+				Match.getInstance().drawLineMap(assignment.unit.getPosition(), mineJob.mineralField.getPosition(), Color.Teal);
+				Match.getInstance().drawCircleMap(mineJob.mineralField.getPosition(), 10, Color.Teal);
 			} else if (assignment.job instanceof UnitBuildJob){
 				UnitBuildJob buildJob = (UnitBuildJob)assignment.job;
 				Position buildCenter = new Position(buildJob.position.toPosition().getX() + buildJob.unitType.tileWidth() * 16,
@@ -274,12 +293,55 @@ public class WorkerManager implements BWEventListener, Manager {
 				Match.getInstance().drawBoxMap(buildJob.position.toPosition(), toPosition, Color.Orange);
 			}
 		}
+		for(Integer unitID : MineralPrioritizor.getInstance().assigned.keySet()){
+			Unit unit = Match.getInstance().getUnit(unitID);
+			if (MineralPrioritizor.getInstance().assigned.get(unitID) > 0){
+				Match.getInstance().drawCircleMap(unit.getPosition(), 12, Color.Red);
+			} else {
+				Match.getInstance().drawCircleMap(unit.getPosition(), 12, Color.Green);
+			}
+			Match.getInstance().drawTextMap(unit.getPosition(), ""+MineralPrioritizor.getInstance().assigned.get(unitID));
+		}
+		for(Integer unitID : GasPrioritizor.getInstance().assigned.keySet()){
+			Unit unit = Match.getInstance().getUnit(unitID);
+			Match.getInstance().drawCircleMap(unit.getPosition(), 12, Color.Red);
+			Match.getInstance().drawTextMap(unit.getPosition(), ""+GasPrioritizor.getInstance().assigned.get(unitID));
+		}
 	}
 	
 	private UnitJob newMineJob(Unit unit) throws NoMinableMineralsException {
 		Unit minePatch = MineralPrioritizor.getInstance().bestMineralField(unit);
-		MineralPrioritizor.getInstance().assign(unit, minePatch);
+		MineralPrioritizor.getInstance().assign(minePatch);
 		return new UnitMineJob(minePatch);
+	}
+	
+
+	private void transferWorkers(Unit unit) {
+		BotLogger.getInstance().log(this, "Transfering workers.");
+		for(UnitAssignment assignment : assignments){
+			if (assignment.job instanceof UnitMineJob){
+				try {
+					MineralPrioritizor.getInstance().ressign(((UnitMineJob)assignment.job).mineralField);
+					((UnitMineJob)assignment.job).mineralField = MineralPrioritizor.getInstance().bestMineralField(assignment.unit);
+					MineralPrioritizor.getInstance().assign(((UnitMineJob)assignment.job).mineralField);
+				} catch (NoMinableMineralsException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private BaseLocation closestBaseLocation(Unit unit) {
+		BaseLocation closestLocation = null;
+		double closestDistance = Integer.MAX_VALUE;
+		for(BaseLocation location : InformationManager.getInstance().ownBaseLocations){
+			double distance = unit.getDistance(location);
+			if (distance < closestDistance){
+				closestDistance = distance;
+				closestLocation = location;
+			}
+		}
+		return closestLocation;
 	}
 
 	@Override
@@ -328,6 +390,8 @@ public class WorkerManager implements BWEventListener, Manager {
 				} catch (NoMinableMineralsException e) {
 					this.assignments.add(new UnitAssignment(unit, null));
 				}
+			} else if (unit.getType().isResourceDepot() && Match.getInstance().getFrameCount() > 1){
+				transferWorkers(unit);
 			}
 		}
 	}

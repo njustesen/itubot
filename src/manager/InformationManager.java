@@ -9,6 +9,7 @@ import abstraction.Observation;
 import bot.ITUBot;
 import bwapi.BWEventListener;
 import bwapi.Color;
+import bwapi.Enemy;
 import bwapi.Match;
 import bwapi.Player;
 import bwapi.Position;
@@ -49,6 +50,8 @@ public class InformationManager implements Manager, BWEventListener {
 	public List<Unit> refineries;
 	public List<Unit> refineriesInProd;
 	
+	public List<Unit> bases;
+	
 	public Player enemy;
 	
 	private Map<UnitType, Integer> ownUnitsInProduction;
@@ -78,6 +81,8 @@ public class InformationManager implements Manager, BWEventListener {
 		this.refineries = new ArrayList<Unit>();
 		this.refineriesInProd = new ArrayList<Unit>();
 		this.possibleEnemyBasePositions = new ArrayList<BaseLocation>();
+		
+		this.bases = new ArrayList<Unit>();
 		
 		this.ownBaseLocations = new ArrayList<BaseLocation>();
 		
@@ -132,7 +137,7 @@ public class InformationManager implements Manager, BWEventListener {
 				}
 			}
 		}
-		for(Unit unit : this.enemy.getUnits()){
+		for(Unit unit : Enemy.getInstance().getUnits()){
 			if (unit.getPosition().isValid()){
 				boolean found = false;
 				for (Observation observation : observations){
@@ -146,10 +151,10 @@ public class InformationManager implements Manager, BWEventListener {
 					observations.add(new Observation(unit));
 					if (enemyBaseLocation == null && unit.getPlayer().isEnemy(Self.getInstance())){
 						BotLogger.getInstance().log(this, "Enemy (" + unit.getPlayer().getRace() + " " + unit.getType() + ") base found at " + unit.getPosition());
-						if (unit.getType().isResourceDepot()){
+						if (unit.getType().isBuilding()){
 							BotLogger.getInstance().log(this, "Enemy (" + unit.getPlayer().getRace() + ") base found at " + unit.getPosition());
 							for(BaseLocation location : possibleEnemyBasePositions){
-								if (unit.getDistance(location.getPosition()) < 100){
+								if (unit.getDistance(location.getPosition()) < 1000){
 									enemyBaseLocation = location;
 									break;
 								}
@@ -235,6 +240,18 @@ public class InformationManager implements Manager, BWEventListener {
 			Match.getInstance().drawTextMap(observation.position, observation.type.toString());
 		}
 		Match.getInstance().drawTextScreen(12, 62, "Observations: " + observations.size());
+		
+		for(Unit base : InformationManager.instance.bases){
+			Position topLeft = new Position(base.getPosition().getX() - base.getType().width()/2, base.getPosition().getY() - base.getType().height()/2);
+			Position bottomRight = new Position(base.getPosition().getX() + base.getType().width()/2, base.getPosition().getY() + base.getType().height()/2);
+			Match.getInstance().drawBoxMap(topLeft, bottomRight, Color.Orange);
+		}
+		
+		for(Unit base : InformationManager.instance.refineries){
+			Position topLeft = new Position(base.getPosition().getX() - base.getType().width()/2, base.getPosition().getY() - base.getType().height()/2);
+			Position bottomRight = new Position(base.getPosition().getX() + base.getType().width()/2, base.getPosition().getY() + base.getType().height()/2);
+			Match.getInstance().drawBoxMap(topLeft, bottomRight, Color.Grey);
+		}
 	}
 
 	@Override
@@ -281,15 +298,13 @@ public class InformationManager implements Manager, BWEventListener {
 				}
 			}
 		}
-		for(Player player : Match.getInstance().getPlayers()){
-			if (player.isEnemy(Self.getInstance())){
-				this.enemy = player;
-			}
-		}
 	}
 
 	@Override
-	public void onUnitComplete(Unit arg0) {
+	public void onUnitComplete(Unit unit) {
+		if (unit.getType().isResourceDepot() && unit.getPlayer().getID() == Self.getInstance().getID()){
+			bases.add(unit);
+		}
 	}
 
 	@Override
@@ -319,6 +334,7 @@ public class InformationManager implements Manager, BWEventListener {
 					}
 				}
 				this.ownBaseLocations.remove(baseLocation);
+				this.bases.remove(unit);
 			}
 		}
 		

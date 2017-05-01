@@ -10,6 +10,7 @@ import bwapi.Self;
 import bwapi.Unit;
 import exception.NoFreeRefineryException;
 import exception.NoMinableMineralsException;
+import manager.InformationManager;
 
 public class GasPrioritizor {
 
@@ -27,34 +28,29 @@ public class GasPrioritizor {
 		instance = null;
 	}
 	
-	// CONSTANTS
-	private static double maxDistance = 500;
-	
 	// CLASS
-	Map<Integer, Integer> assigned;
+	public Map<Integer, Integer> assigned;
 	
 	public GasPrioritizor(){
 		assigned = new HashMap<Integer, Integer>();
 	}
 	
-	public void newRefinery(Unit unit){
-		assigned.put(unit.getID(), 0);
-	}
-	
 	public Unit bestRefinery(Unit unit) throws NoFreeRefineryException{
 		// Find available mineral fields
 		List<Unit> noneOrOne = new ArrayList<Unit>();
-		List<Unit> twoOrThree = new ArrayList<Unit>();
-		for(int refineryID : assigned.keySet()){
-			Unit refinery = Match.getInstance().getUnit(refineryID);
-			if (assigned.get(refineryID) < 3){
+		List<Unit> two = new ArrayList<Unit>();
+		for(Unit refinery : InformationManager.getInstance().refineries){
+			if (!assigned.containsKey(refinery.getID())){
+				assigned.put(refinery.getID(), 0);
+			}
+			if (assigned.get(refinery.getID()) < 2){
 				noneOrOne.add(refinery);
-			} else if (assigned.get(refineryID) == 3){
-				twoOrThree.add(refinery);
+			} else if (assigned.get(refinery.getID()) == 2){
+				two.add(refinery);
 			}
 		}
 		if (noneOrOne.isEmpty()){
-			noneOrOne.addAll(twoOrThree);
+			noneOrOne.addAll(two);
 		}
 		
 		// Find closest refinery
@@ -75,8 +71,12 @@ public class GasPrioritizor {
 		return closest;
 	}
 	
-	public void assign(Unit worker, Unit refinery){
-		assigned.put(refinery.getID(), assigned.get(refinery.getID()));
+	public void assign(Unit refinery){
+		assigned.put(refinery.getID(), assigned.get(refinery.getID()) + 1);
+	}
+	
+	public void ressign(Unit refinery){
+		assigned.put(refinery.getID(), assigned.get(refinery.getID()) - 1);
 	}
 	
 }

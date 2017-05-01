@@ -7,14 +7,21 @@ public class UnitMineJob extends UnitJob {
 	
 	public Unit mineralField;
 	
+	private Unit lastMineralField;
+	
 	public UnitMineJob(Unit mineralField) {
 		this.mineralField = mineralField;
+		this.lastMineralField = mineralField;
 	}
 
 	@Override
 	public void perform(Unit unit) {
-		
+				
 		if (unit.isGatheringMinerals()){
+			if (lastMineralField.getID() != mineralField.getID()){
+				lastMineralField = mineralField;
+				unit.gather(this.mineralField);
+			}
 			return;
 		}
 		
@@ -23,7 +30,12 @@ public class UnitMineJob extends UnitJob {
 			return;
 		}
 		
+		if (lastMineralField.getID() != mineralField.getID()){
+			
+		}
+		
 		unit.gather(this.mineralField);
+		
 		
 	}
 	

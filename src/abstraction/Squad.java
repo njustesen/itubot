@@ -3,11 +3,16 @@ package abstraction;
 import java.util.ArrayList;
 import java.util.List;
 
+import bwapi.Match;
 import bwapi.Position;
+import bwapi.Self;
 import bwapi.Unit;
+import bwapi.Unitset;
 import job.UnitAttackJob;
-import log.BotLogger;
+import job.UnitRetreatJob;
 import manager.InformationManager;
+import manager.SquadManager;
+import module.CombatPredictor;
 
 public class Squad {
 
@@ -16,6 +21,7 @@ public class Squad {
 	public List<UnitAssignment> assignments;
 	public Position target;
 	public int id;
+	public String text;
 	
 	public Squad() {
 		super();
@@ -23,13 +29,17 @@ public class Squad {
 		this.target = null;
 		this.id = created+1;
 		created++;
-		if (InformationManager.getInstance().possibleEnemyBasePositions.size() == 1){
-			target = InformationManager.getInstance().possibleEnemyBasePositions.get(0).getPosition();
+		if (InformationManager.getInstance().enemyBaseLocation != null){
+			target = InformationManager.getInstance().enemyBaseLocation.getPosition();
 		}
+		text = "Idle";
 	}
 	
 	public void add(Unit unit) {
-		assignments.add(new UnitAssignment(unit, new UnitAttackJob(target)));
+		if (target != null)
+			assignments.add(new UnitAssignment(unit, new UnitAttackJob(target)));
+		else
+			assignments.add(new UnitAssignment(unit, null));
 	}
 	
 	public void remove(Unit unit) {
@@ -80,18 +90,68 @@ public class Squad {
 	}
 
 	public void control() {
-		// Adjust target - Attack if only one possible base location
-		if (InformationManager.getInstance().enemyBaseLocation != null){
-			target = InformationManager.getInstance().enemyBaseLocation.getPosition();
-		}
-		
-		// assign jobs
-		for(UnitAssignment assignement : assignments){
-			if (assignement.job == null){
-				assignement.job = new UnitAttackJob(target);
-			}
-			assignement.perform();
+		assignJobs();
+		for(UnitAssignment assignment : assignments){
+			assignment.perform();
 		}
 	}
+
+	private void assignJobs() {
+		// Adjust target - Attack if only one possible base location
+		if (InformationManager.getInstance().enemyBaseLocation != null){
+
+			// Target enemy base
+			target = InformationManager.getInstance().enemyBaseLocation.getPosition();
+			
+			// Estimate win change
+			double score = CombatPredictor.getInstance().prediction(this, target, 1.33);
+			
+			// Retreat or merge
+			if (score < 0){
+				if (SquadManager.getInstance().squads.size() < 2){
+					Position home = InformationManager.getInstance().ownMainBaseLocation.getPosition();
+					text = "Retreating (" + score + ") " + home;
+					for (UnitAssignment assignment : assignments){
+						if (assignment.job instanceof UnitRetreatJob)
+							((UnitRetreatJob)assignment.job).target = home;
+						else
+							assignment.job = new UnitRetreatJob(home);
+					}
+				} else {
+					double closest = Double.MAX_VALUE;
+					Position closestSquad = this.getCenter();
+					for(Squad squad : SquadManager.getInstance().squads){
+						if (squad.id != this.id){
+							Position otherCenter = squad.getCenter();
+							double distance = target.getDistance(otherCenter);
+							if (distance < closest){
+								closest = distance;
+								closestSquad = otherCenter;
+							}
+						}
+					}
+					text = "Merging (" + score + ") " + closestSquad;
+					for (UnitAssignment assignment : assignments){
+						if (assignment.job instanceof UnitRetreatJob)
+							((UnitRetreatJob)assignment.job).target = closestSquad;
+						else
+							assignment.job = new UnitRetreatJob(closestSquad);
+					}
+				}
+			} else {
+				text = "Attacking (" + score + ") " + target;
+				// assign jobs
+				for(UnitAssignment assignement : assignments){
+					if (assignement.job != null && assignement.job instanceof UnitAttackJob){
+						((UnitAttackJob)assignement.job).target = target;
+					} else {
+						assignement.job = new UnitAttackJob(target);
+					}
+				}
+			}
+		}
+	}
+	
+	
 
 }
