@@ -119,6 +119,11 @@ public class SquadManager implements Manager, BWEventListener {
 						Match.getInstance().drawCircleMap(target, 12, Color.Red);
 						Match.getInstance().drawLineMap(assignment.unit.getPosition(), target, Color.Red);
 					}
+					if (((UnitAttackJob)assignment.job).moveTarget != null){
+						Position target = ((UnitAttackJob)assignment.job).moveTarget;
+						Match.getInstance().drawLineMap(assignment.unit.getPosition(), target, Color.Blue);
+						Match.getInstance().drawCircleMap(target, 4, Color.Red);
+					}
 				}
 			}
 			Position center = squad.getCenter();
