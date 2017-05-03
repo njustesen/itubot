@@ -12,6 +12,7 @@ import job.UnitAttackJob;
 import job.UnitRetreatJob;
 import manager.InformationManager;
 import manager.SquadManager;
+import module.AssaultPrioritizor;
 import module.CombatPredictor;
 
 public class Squad {
@@ -101,46 +102,39 @@ public class Squad {
 		if (InformationManager.getInstance().enemyBaseLocation != null){
 
 			// Target enemy base
-			target = InformationManager.getInstance().enemyBaseLocation.getPosition();
+			target = AssaultPrioritizor.getInstance().getTarget(this);
 			
-			// Estimate win change
-			double score = CombatPredictor.getInstance().prediction(this, target, 1.33);
-			
-			// Retreat or merge
-			if (score < 0){
-				if (SquadManager.getInstance().squads.size() < 2){
-					Position home = InformationManager.getInstance().ownMainBaseLocation.getPosition();
-					text = "Retreating (" + score + ") " + home;
-					for (UnitAssignment assignment : assignments){
-						if (assignment.job instanceof UnitRetreatJob)
-							((UnitRetreatJob)assignment.job).target = home;
-						else
-							assignment.job = new UnitRetreatJob(home);
-					}
-				} else {
-					double closest = Double.MAX_VALUE;
-					Position closestSquad = this.getCenter();
-					for(Squad squad : SquadManager.getInstance().squads){
-						if (squad.id != this.id){
-							Position otherCenter = squad.getCenter();
-							double distance = target.getDistance(otherCenter);
-							if (distance < closest){
-								closest = distance;
-								closestSquad = otherCenter;
-							}
+			// Attack or merge
+			if (target == null && SquadManager.getInstance().squads.size() == 1){
+				Position home = InformationManager.getInstance().ownMainBaseLocation.getPosition();
+				text = "Retreating";
+				for (UnitAssignment assignment : assignments){
+					if (assignment.job instanceof UnitRetreatJob)
+						((UnitRetreatJob)assignment.job).target = home;
+					else
+						assignment.job = new UnitRetreatJob(home);
+				}
+			} else if (target == null){
+				int largest = 0;
+				Squad largestSquad = null;
+				for(Squad squad : SquadManager.getInstance().squads){
+					if (squad.id != this.id){
+						if (squad.assignments.size() > largest){
+							largest = squad.assignments.size();
+							largestSquad = squad;
 						}
 					}
-					text = "Merging (" + score + ") " + closestSquad;
-					for (UnitAssignment assignment : assignments){
-						if (assignment.job instanceof UnitRetreatJob)
-							((UnitRetreatJob)assignment.job).target = closestSquad;
-						else
-							assignment.job = new UnitRetreatJob(closestSquad);
-					}
+				}
+				Position center = largestSquad.getCenter();
+				text = "Merging " + center;
+				for (UnitAssignment assignment : assignments){
+					if (assignment.job instanceof UnitRetreatJob)
+						((UnitRetreatJob)assignment.job).target = center;
+					else
+						assignment.job = new UnitRetreatJob(center);
 				}
 			} else {
-				text = "Attacking (" + score + ") " + target;
-				// assign jobs
+				text = "Attacking " + target;
 				for(UnitAssignment assignement : assignments){
 					if (assignement.job != null && assignement.job instanceof UnitAttackJob){
 						((UnitAttackJob)assignement.job).target = target;

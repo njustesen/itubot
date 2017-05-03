@@ -75,12 +75,12 @@ public class BuildOrderManager implements Manager {
 			return new Build(UnitType.Protoss_Stargate);
 		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Fleet_Beacon) < 1){
 			return new Build(UnitType.Protoss_Fleet_Beacon);
-		} else if (InformationManager.getInstance().ownUpgradeCountTotal(UpgradeType.Carrier_Capacity) < 1 && InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Fleet_Beacon) == 1){
-			return new Build(UpgradeType.Carrier_Capacity);
 		} else if (Self.getInstance().supplyUsed() + 8 > Self.getInstance().supplyTotal()){
 			return new Build(UnitType.Protoss_Pylon);
 		} else if (InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Carrier) < InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Stargate)){
 			return new Build(UnitType.Protoss_Carrier);
+		} else if (InformationManager.getInstance().ownUpgradeCountTotal(UpgradeType.Carrier_Capacity) < 1 && InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Fleet_Beacon) == 1){
+			return new Build(UpgradeType.Carrier_Capacity);
 		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Stargate) < 2){
 			return new Build(UnitType.Protoss_Stargate);
 		} else {

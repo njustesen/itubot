@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import abstraction.Observation;
+import abstraction.UnitAssignment;
 import bot.ITUBot;
 import bwapi.BWEventListener;
 import bwapi.Color;
@@ -24,10 +25,13 @@ import bwta.BaseLocation;
 import bwta.Region;
 import exception.NoBuildOrderException;
 import exception.NoWorkersException;
+import extension.BWAPIHelper;
 import extension.TechTypes;
 import extension.UpgradeTypes;
 import log.BotLogger;
 import module.BuildLocator;
+import module.CombatPredictor;
+import module.GasPrioritizor;
 
 public class InformationManager implements Manager, BWEventListener {
 
@@ -267,7 +271,7 @@ public class InformationManager implements Manager, BWEventListener {
 		// Get random worker
 		//if (Match.getInstance().getFrameCount() % 24 != 0)
 		//	return;
-		/*
+		
 		UnitType nextBuild;
 		try {
 			nextBuild = BuildOrderManager.getInstance().getNextBuild().unitType;
@@ -275,7 +279,7 @@ public class InformationManager implements Manager, BWEventListener {
 			e.printStackTrace();
 			return;
 		}
-		
+		/*
 		Unit someWorker = null;
 		for (Unit u : Self.getInstance().getUnits()) {
 			if (u.canBuild()){
@@ -424,12 +428,12 @@ public class InformationManager implements Manager, BWEventListener {
 										}
 									}
 									if (legal){
-										Match.getInstance().drawBoxMap(position.toPosition().getX(), position.toPosition().getY(), position.toPosition().getX() + 32*nextBuild.tileWidth(), position.toPosition().getY() + 32*nextBuild.tileHeight(), Color.Green);
+										Match.getInstance().drawBoxMap(position.toPosition().getX()+2, position.toPosition().getY()+2, position.toPosition().getX() -4 + 32*nextBuild.tileWidth(), position.toPosition().getY() -4 + 32*nextBuild.tileHeight(), Color.Green);
 									} else {
-										//Match.getInstance().drawBoxMap(position.toPosition().getX(), position.toPosition().getY(), position.toPosition().getX() + 32*nextBuild.tileWidth(), position.toPosition().getY() + 32*nextBuild.tileHeight(), Color.Red);
+										Match.getInstance().drawBoxMap(position.toPosition().getX()+2, position.toPosition().getY()+2, position.toPosition().getX() -4 + 32*nextBuild.tileWidth(), position.toPosition().getY() -4 + 32*nextBuild.tileHeight(), Color.Red);
 									}
 								}
-								//Match.getInstance().drawBoxMap(position.toPosition().getX(), position.toPosition().getY(), position.toPosition().getX() + 32*nextBuild.tileWidth(), position.toPosition().getY() + 32*nextBuild.tileHeight(), Color.Red);
+								Match.getInstance().drawBoxMap(position.toPosition().getX()+2, position.toPosition().getY()+2, position.toPosition().getX() -4 + 32*nextBuild.tileWidth(), position.toPosition().getY()-4 + 32*nextBuild.tileHeight(), Color.Red);
 								Match.getInstance().drawTextMap(point, "Blocked");
 							}
 						}
@@ -510,22 +514,18 @@ public class InformationManager implements Manager, BWEventListener {
 					break;
 				}
 			}
+			BotLogger.getInstance().log(this, "Before removing " + observations.size());
 			observations.remove(toRemove);
+			BotLogger.getInstance().log(this, "After removing " + observations.size());
 		} else {
 			if (unit.getType().isResourceDepot()){
-				BaseLocation baseLocation = null;
-				int closest = Integer.MAX_VALUE;
-				for(BaseLocation location : BWTA.getBaseLocations()){
-					int distance = unit.getDistance(location.getPosition());
-					if (distance < closest){
-						closest = distance;
-						baseLocation = location;
-					}
-				}
+				BaseLocation baseLocation = BWTA.getNearestBaseLocation(unit.getPosition());
 				this.ownBaseLocations.remove(baseLocation);
 				this.bases.remove(unit);
 			} else if (unit.getType() == UnitType.Protoss_Pylon){
 				pylons.remove(unit);
+			} else if (unit.getType().isRefinery()){
+				refineries.remove(unit);
 			}
 		}
 		

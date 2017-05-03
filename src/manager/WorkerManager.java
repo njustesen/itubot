@@ -14,6 +14,7 @@ import bwapi.Color;
 import bwapi.Match;
 import bwapi.Player;
 import bwapi.Position;
+import bwapi.Race;
 import bwapi.Self;
 import bwapi.TilePosition;
 import bwapi.Unit;
@@ -26,6 +27,7 @@ import exception.NoFreeRefineryException;
 import exception.NoMinableMineralsException;
 import exception.NoSpaceLeftForBuildingException;
 import exception.NoWorkersException;
+import extension.BWAPIHelper;
 import job.UnitBuildJob;
 import job.UnitGasJob;
 import job.UnitJob;
@@ -103,6 +105,12 @@ public class WorkerManager implements BWEventListener, Manager {
 				BotLogger.getInstance().log(this, "Location returned " + position);
 				UnitAssignment worker = closestWorker(position);
 				int resTime = resourceTime(nextBuild.unitType);
+				if (position == null && Self.getInstance().getRace() == Race.Protoss) {
+					nextBuild = new Build(UnitType.Protoss_Pylon);
+					position = BuildLocator.getInstance().getLocation(nextBuild.unitType);
+					BotLogger.getInstance().log(this, "Location returned " + position);
+					worker = closestWorker(position);
+				}
 				int moveTime = moveTime(position, worker);
 				if (canBuildNow(nextBuild.unitType) || resTime <= moveTime){
 					if (worker.job instanceof UnitMineJob){
@@ -255,8 +263,6 @@ public class WorkerManager implements BWEventListener, Manager {
 		UnitAssignment closestWorker = null;
 		double closestDistance = Integer.MAX_VALUE;
 		for(UnitAssignment responsibility : assignments){
-			BotLogger.getInstance().log(this, "Unit: " + responsibility.unit );
-			BotLogger.getInstance().log(this, "Position: " + position );
 			double d = responsibility.unit.getDistance(position.toPosition());
 			if (d < closestDistance && responsibility.job instanceof UnitMineJob){
 				closestDistance = d;
@@ -419,8 +425,16 @@ public class WorkerManager implements BWEventListener, Manager {
 						remove = assignment;
 					}
 				}
+				if (unit.isGatheringGas()){
+					Unit refinery = BWAPIHelper.getNearestUnit(unit.getPosition(), Self.getInstance().getRace().getRefinery());
+					if (refinery != null && GasPrioritizor.getInstance().assigned.containsKey(refinery.getID())){
+						GasPrioritizor.getInstance().ressign(refinery);
+					}
+				}
 				if (remove != null)
 					this.assignments.remove(remove);
+			} else if (unit.getType().isRefinery()){
+				GasPrioritizor.getInstance().assigned.remove(unit.getID());
 			}
 		}
 	}

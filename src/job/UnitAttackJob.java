@@ -10,7 +10,7 @@ import bwapi.UnitType;
 import bwapi.UpgradeType;
 public class UnitAttackJob extends UnitJob {
 
-	private static final int ATTACK_DISTANCE = 900;
+	private static final int ATTACK_DISTANCE = 1500;
 	public Position target;
 	private Unit enemy;
 	public Position moveTarget;
@@ -60,7 +60,7 @@ public class UnitAttackJob extends UnitJob {
 		int disA = ATTACK_DISTANCE;
 		int disB = ATTACK_DISTANCE;
 		for (Unit other : Enemy.getInstance().getUnits()){
-			if (unit.canAttack(other)){
+			if (unit.canAttack(other) || unit.getType().isSpellcaster()){
 				if (isFirstPriority(other) && unit.getDistance(other) < disA){
 					a = other;
 					disA = unit.getDistance(other);
@@ -90,9 +90,27 @@ public class UnitAttackJob extends UnitJob {
 			Match.getInstance().drawCircleMap(enemy.getPosition(), 2, Color.Red, true);
 			Match.getInstance().drawLineMap(unit.getPosition(), enemy.getPosition(), Color.Red );
 			
+			// Carrier
+			/*
+			if (unit.getType() == UnitType.Protoss_Carrier){
+				if (newTarget || unit.getDistance(enemy) > 12){
+					unit.attack(enemy);
+					lastAttackFrame = Match.getInstance().getFrameCount();
+					return;
+				} else {
+					moveTarget = getKitePosition(unit, 12);
+					unit.move(moveTarget);
+					return;
+				}
+			} 
+			*/
+			
 			int range = 0;
 			int cooldown = 0;
-			if (enemy.isFlying()){
+			if (unit.getType() == UnitType.Protoss_Carrier){
+				range = 8*32;
+				cooldown = 40;
+			} else if (enemy.isFlying()){
 				range = unit.getType().airWeapon().maxRange();
 				cooldown = unit.getType().airWeapon().damageCooldown();
 			} else {
@@ -100,13 +118,11 @@ public class UnitAttackJob extends UnitJob {
 				cooldown = unit.getType().groundWeapon().damageCooldown();
 			}
 			
+			//BotLogger.getInstance().log(this, "Range = " + range);
+			//BotLogger.getInstance().log(this, "Cooldown = " + cooldown);
 			
 			if (unit.getDistance(enemy) < range*0.9 && Match.getInstance().getFrameCount() - lastAttackFrame > cooldown/2 && Match.getInstance().getFrameCount() - lastAttackFrame < cooldown){
-				int x = unit.getPosition().getX() - enemy.getPosition().getX();
-				int y = unit.getPosition().getY() - enemy.getPosition().getY();
-				double length = new Position(x,y).getDistance(new Position(0,0));
-				double multiplier = range / length;
-				moveTarget = new Position((int)(unit.getPosition().getX() + x * multiplier), (int)(unit.getPosition().getY() + y * multiplier));
+				moveTarget = getKitePosition(unit, range);
 				unit.move(moveTarget);
 				Match.getInstance().drawTextMap(unit.getPosition(), "Move");
 			} else {
@@ -125,8 +141,18 @@ public class UnitAttackJob extends UnitJob {
 				
 	}
 	
+	private Position getKitePosition(Unit unit, int range) {
+		int x = unit.getPosition().getX() - enemy.getPosition().getX();
+		int y = unit.getPosition().getY() - enemy.getPosition().getY();
+		double length = new Position(x,y).getDistance(new Position(0,0));
+		double multiplier = range / length;
+		return new Position((int)(unit.getPosition().getX() + x * multiplier), (int)(unit.getPosition().getY() + y * multiplier));
+	}
+
 	private boolean isFirstPriority(Unit other) {
-		return (!other.getType().isBuilding() || 
+		return (!other.getType().isBuilding() ||
+				other.getType() == UnitType.Protoss_Observer || 
+				other.getType() == UnitType.Terran_Missile_Turret || 
 				other.getType() == UnitType.Terran_Bunker || 
 				other.getType() == UnitType.Protoss_Photon_Cannon || 
 				other.getType() == UnitType.Zerg_Sunken_Colony || 

@@ -35,14 +35,14 @@ public class BuildLocator {
 		instance = null;
 	}
 
-	public static final int MIN_MINERAL_DISTANCE = 3;
-	public static final int MIN_GEYSER_DISTANCE = 3;
+	public static final int MIN_MINERAL_DISTANCE = 4;
+	public static final int MIN_GEYSER_DISTANCE = 5;
 	public static final int MIN_BASE_DISTANCE = 5;
-	public static final int PYLON_CELL_SIZE = 5;
+	public static final int PYLON_CELL_SIZE = 4;
 	public static final int PYLON_GRID_SIZE = 12;
 	public static final int BUILDING_CELL_SIZE = 2;
 	public static final int BUILDING_GRID_SIZE = 7;
-	public static final int MIN_BUILDING_BASE_DISTANCE = 7;
+	public static final int MIN_BUILDING_BASE_DISTANCE = 5;
 	public static final int MIN_BUILDING_MINERAL_DISTANCE = 5;
 	public static final int MIN_BUILDING_GEYSER_DISTANCE = 5;
 	
@@ -117,7 +117,6 @@ public class BuildLocator {
 							checked.add(position);
 							Position point = position.toPosition().getPoint();
 							if (!position.isValid()){
-								BotLogger.getInstance().log(this, "Invalid: " + position);
 								continue;
 							}
 							if (BWTA.getRegion(position) == null || !BWTA.getRegion(position).equals(baseRegion)){

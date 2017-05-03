@@ -19,6 +19,7 @@ import bwapi.Player;
 import bwapi.Position;
 import bwapi.Self;
 import bwapi.Unit;
+import bwapi.UnitType;
 import job.UnitAttackJob;
 import log.BotLogger;
 
@@ -175,7 +176,11 @@ public class SquadManager implements Manager, BWEventListener {
 
 	@Override
 	public void onUnitComplete(Unit unit) {
-		if (unit.getPlayer().getID() == Self.getInstance().getID() && !unit.getType().isBuilding() && !unit.getType().isWorker()){
+		if (unit.getPlayer().getID() == Self.getInstance().getID() 
+				&& !unit.getType().isBuilding() 
+				&& !unit.getType().isWorker() 
+				&& unit.getType() != UnitType.Protoss_Interceptor
+				&& unit.getType() != UnitType.Protoss_Scarab){
 			Squad toJoin = null;
 			int closestDistance = Integer.MAX_VALUE;
 			for (Squad squad : squads){
