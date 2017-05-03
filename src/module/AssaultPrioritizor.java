@@ -42,7 +42,7 @@ public class AssaultPrioritizor {
 		
 		// Estimate win change
 		double score = CombatPredictor.getInstance().prediction(squad, 1.33);
-		BotLogger.getInstance().log(this, "Score = " + score);
+		//BotLogger.getInstance().log(this, "Score = " + score);
 		
 		if (InformationManager.getInstance().enemyBaseLocation != null && score > 0){
 			return InformationManager.getInstance().enemyBaseLocation.getPosition();

@@ -1,7 +1,15 @@
 package job;
 
+import abstraction.Observation;
+import bwapi.Match;
+import bwapi.Position;
 import bwapi.Unit;
+import bwapi.UnitType;
+import bwapi.WeaponType;
+import bwta.BWTA;
+import extension.BWAPIHelper;
 import log.BotLogger;
+import manager.InformationManager;
 
 public class UnitMineJob extends UnitJob {
 	
@@ -16,7 +24,32 @@ public class UnitMineJob extends UnitJob {
 
 	@Override
 	public void perform(Unit unit) {
-				
+			
+		// Enemy units nearby
+		Unit enemy = BWAPIHelper.getNearestEnemyUnit(unit.getPosition(), null);
+		if (enemy != null){
+			if (enemy.getType().isWorker()
+					&& unit.getDistance(enemy) < 100 
+					&& BWTA.getNearestBaseLocation(unit.getPosition()).getPosition().getDistance(unit.getPosition()) < 200){
+				if (Match.getInstance().getFrameCount() % 10 == 0){
+					unit.attack(enemy);
+				}
+				return;
+			} else {
+				WeaponType weapon = BWAPIHelper.getWeaponAgainst(enemy, unit); 
+				if (weapon != null && unit.getDistance(enemy) <= weapon.maxRange() * 2){
+					Position position = BWAPIHelper.getKitePosition(unit, enemy, weapon.maxRange());
+					unit.move(position);
+					return;
+				} else if (enemy.getType().isSpellcaster() && unit.getDistance(enemy) <= 12){
+					Position position = BWAPIHelper.getKitePosition(unit, enemy, weapon.maxRange());
+					unit.move(position);
+					return;
+				}
+			}
+		}
+		
+		// Else - gather minerals
 		if (unit.isGatheringMinerals()){
 			if (lastMineralField.getID() != mineralField.getID()){
 				lastMineralField = mineralField;
@@ -30,12 +63,7 @@ public class UnitMineJob extends UnitJob {
 			return;
 		}
 		
-		if (lastMineralField.getID() != mineralField.getID()){
-			
-		}
-		
 		unit.gather(this.mineralField);
-		
 		
 	}
 	

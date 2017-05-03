@@ -164,13 +164,13 @@ public class WorkerManager implements BWEventListener, Manager {
 		if (mineralsNeeded > 0){
 			estimateMinerals = (InformationManager.getInstance().ownUnitCount(Self.getInstance().getRace().getWorker()) - gassers) * 0.05;
 		}
-		return (int)(estimateGas + estimateMinerals);
+		return (int) Math.max(estimateGas, estimateMinerals);
 	}
 
 	private int moveTime(TilePosition position, UnitAssignment assignment) {
 		
 		int distance = (int) (BWTA.getGroundDistance(position, assignment.unit.getPosition().toTilePosition()));
-		int time = (int) (distance / assignment.unit.getType().topSpeed());
+		int time = (int) ((double)distance / (double)assignment.unit.getType().topSpeed());
 		
 		return time;
 		
@@ -426,7 +426,7 @@ public class WorkerManager implements BWEventListener, Manager {
 					}
 				}
 				if (unit.isGatheringGas()){
-					Unit refinery = BWAPIHelper.getNearestUnit(unit.getPosition(), Self.getInstance().getRace().getRefinery());
+					Unit refinery = BWAPIHelper.getNearestFriendlyUnit(unit.getPosition(), Self.getInstance().getRace().getRefinery());
 					if (refinery != null && GasPrioritizor.getInstance().assigned.containsKey(refinery.getID())){
 						GasPrioritizor.getInstance().ressign(refinery);
 					}

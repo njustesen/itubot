@@ -45,8 +45,52 @@ public class BuildOrderManager implements Manager {
 			return new Build(UnitType.Protoss_Probe);
 		} else {
 			return new Build(UnitType.Protoss_Pylon);
-		}*/
+		}
+		*/
 		
+		if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 8){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 1){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 11){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Gateway) < 1){
+			return new Build(UnitType.Protoss_Gateway);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 12){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 2){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 13){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Assimilator) < 1){
+			return new Build(UnitType.Protoss_Assimilator);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 14){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Cybernetics_Core) < 1){
+			return new Build(UnitType.Protoss_Cybernetics_Core);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 15){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 3){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Robotics_Facility) < 1){
+			return new Build(UnitType.Protoss_Robotics_Facility);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 17){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Robotics_Support_Bay) < 1){
+			return new Build(UnitType.Protoss_Robotics_Support_Bay);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 18){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 4){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Reaver) < 1){
+			return new Build(UnitType.Protoss_Reaver);
+		} else if (Self.getInstance().supplyUsed() + 8 > Self.getInstance().supplyTotal() && InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Pylon) < 1){
+			return new Build(UnitType.Protoss_Pylon);
+		} else {
+			return new Build(UnitType.Protoss_Zealot);
+		}
+		
+		/*
 		if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 8){
 			return new Build(UnitType.Protoss_Probe);
 		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 1){
@@ -85,7 +129,7 @@ public class BuildOrderManager implements Manager {
 			return new Build(UnitType.Protoss_Stargate);
 		} else {
 			return new Build(UnitType.Protoss_Probe);
-		}
+		}*/
 		
 	}
 

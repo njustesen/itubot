@@ -8,6 +8,8 @@ import bwapi.Self;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
+import extension.BWAPIHelper;
+import log.BotLogger;
 public class UnitAttackJob extends UnitJob {
 
 	private static final int ATTACK_DISTANCE = 1500;
@@ -89,40 +91,29 @@ public class UnitAttackJob extends UnitJob {
 			Match.getInstance().drawCircleMap(unit.getPosition(), 2, Color.Green, true);
 			Match.getInstance().drawCircleMap(enemy.getPosition(), 2, Color.Red, true);
 			Match.getInstance().drawLineMap(unit.getPosition(), enemy.getPosition(), Color.Red );
-			
-			// Carrier
-			/*
-			if (unit.getType() == UnitType.Protoss_Carrier){
-				if (newTarget || unit.getDistance(enemy) > 12){
-					unit.attack(enemy);
-					lastAttackFrame = Match.getInstance().getFrameCount();
-					return;
-				} else {
-					moveTarget = getKitePosition(unit, 12);
-					unit.move(moveTarget);
-					return;
-				}
-			} 
-			*/
-			
+						
 			int range = 0;
 			int cooldown = 0;
 			if (unit.getType() == UnitType.Protoss_Carrier){
 				range = 8*32;
 				cooldown = 40;
+			} else if (unit.getType() == UnitType.Protoss_Reaver){
+				range = 8*32;
+				cooldown = 55;
 			} else if (enemy.isFlying()){
 				range = unit.getType().airWeapon().maxRange();
 				cooldown = unit.getType().airWeapon().damageCooldown();
 			} else {
+				BotLogger.getInstance().log(this, "Ground weapon="+unit.getType().groundWeapon());
 				range = unit.getType().groundWeapon().maxRange();
 				cooldown = unit.getType().groundWeapon().damageCooldown();
 			}
 			
-			//BotLogger.getInstance().log(this, "Range = " + range);
-			//BotLogger.getInstance().log(this, "Cooldown = " + cooldown);
+			BotLogger.getInstance().log(this, "Range="+range);
+			BotLogger.getInstance().log(this, "Cooldown="+cooldown);
 			
 			if (unit.getDistance(enemy) < range*0.9 && Match.getInstance().getFrameCount() - lastAttackFrame > cooldown/2 && Match.getInstance().getFrameCount() - lastAttackFrame < cooldown){
-				moveTarget = getKitePosition(unit, range);
+				moveTarget = BWAPIHelper.getKitePosition(unit, enemy, range);
 				unit.move(moveTarget);
 				Match.getInstance().drawTextMap(unit.getPosition(), "Move");
 			} else {
@@ -141,13 +132,6 @@ public class UnitAttackJob extends UnitJob {
 				
 	}
 	
-	private Position getKitePosition(Unit unit, int range) {
-		int x = unit.getPosition().getX() - enemy.getPosition().getX();
-		int y = unit.getPosition().getY() - enemy.getPosition().getY();
-		double length = new Position(x,y).getDistance(new Position(0,0));
-		double multiplier = range / length;
-		return new Position((int)(unit.getPosition().getX() + x * multiplier), (int)(unit.getPosition().getY() + y * multiplier));
-	}
 
 	private boolean isFirstPriority(Unit other) {
 		return (!other.getType().isBuilding() ||

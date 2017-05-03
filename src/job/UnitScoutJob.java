@@ -1,10 +1,14 @@
 package job;
 
+import bwapi.Enemy;
 import bwapi.Match;
+import bwapi.Position;
 import bwapi.Race;
 import bwapi.Unit;
+import bwta.BWTA;
 import bwta.BaseLocation;
 import exception.NoPossibleBasePositionsException;
+import extension.BWAPIHelper;
 import manager.InformationManager;
 public class UnitScoutJob extends UnitJob {
 
@@ -17,7 +21,6 @@ public class UnitScoutJob extends UnitJob {
 		this.target = null;
 		this.enemy = null;
 		this.lastHP = -1;
-		this.lastFlee = 0;
 	}
 	
 	@Override
@@ -35,40 +38,22 @@ public class UnitScoutJob extends UnitJob {
 			if (this.enemy == null){
 				
 				// Find mineral patches closest to base
-				double closestDistance = Integer.MAX_VALUE;
-				Unit closest = null;
-				for(Unit other : Match.getInstance().getAllUnits()){
-					if (other.getType().isMineralField()){
-						double distance = unit.getDistance(other);
-						if (distance < closestDistance){
-							closestDistance = distance;
-							closest = other;
-						}
-					}
-				}
+				Position location = BWTA.getNearestBaseLocation(unit.getPosition()).getPosition();
 				
 				// Move towards minerals
-				if (closest != null && unit.getDistance(closest) > 50){
-					unit.move(closest.getPosition());
+				if (unit.getDistance(location) > 80){
+					unit.move(location);
 				}
 				
 				// Find target enemy unit
-				closestDistance = Integer.MAX_VALUE;
-				closest = null;
-				for(Unit other : Match.getInstance().getAllUnits()){
-					if (other.getPlayer().isEnemy(unit.getPlayer()) && other.getType().isWorker()){
-						double distance = unit.getDistance(other);
-						if (distance < closestDistance){
-							closestDistance = distance;
-							closest = other;
-						}
-					}
-				}
+				Unit closestWorker = BWAPIHelper.getNearestEnemyUnit(unit.getPosition(),Enemy.getInstance().getRace().getWorker());
 				
 				// Move towards minerals
-				if (closest != null){
-					enemy = closest;
-					unit.attack(enemy);
+				if (closestWorker != null){
+					enemy = closestWorker;
+					if (Match.getInstance().getFrameCount() % 20 == 0){
+						unit.attack(enemy);
+					}
 				}
 				
 			} else {

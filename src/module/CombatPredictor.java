@@ -75,8 +75,8 @@ public class CombatPredictor {
 			}
 		}
 		
-		BotLogger.getInstance().log(this, "Self: " + selfScore);
-		BotLogger.getInstance().log(this, "Enemy: " + enemyScore*enemyMultiplier);
+		//BotLogger.getInstance().log(this, "Self: " + selfScore);
+		//BotLogger.getInstance().log(this, "Enemy: " + enemyScore*enemyMultiplier);
 		
 		// TODO: Add own defense
 		return selfScore - enemyScore*enemyMultiplier;
