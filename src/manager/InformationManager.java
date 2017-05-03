@@ -15,14 +15,19 @@ import bwapi.Player;
 import bwapi.Position;
 import bwapi.Self;
 import bwapi.TechType;
+import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import bwta.BWTA;
 import bwta.BaseLocation;
+import bwta.Region;
+import exception.NoBuildOrderException;
+import exception.NoWorkersException;
 import extension.TechTypes;
 import extension.UpgradeTypes;
 import log.BotLogger;
+import module.BuildLocator;
 
 public class InformationManager implements Manager, BWEventListener {
 
@@ -51,6 +56,7 @@ public class InformationManager implements Manager, BWEventListener {
 	public List<Unit> refineriesInProd;
 	
 	public List<Unit> bases;
+	public List<Unit> pylons;
 	
 	public Player enemy;
 	
@@ -62,8 +68,6 @@ public class InformationManager implements Manager, BWEventListener {
 	private HashMap<UpgradeType, Integer> ownUpgradesInProduction;
 	private HashMap<TechType, Integer> ownTechs;
 	private HashMap<TechType, Integer> ownTechsInProduction;
-	
-	
 	
 	protected InformationManager(){
 		this.ownUnits = new HashMap<UnitType, Integer>();
@@ -83,6 +87,7 @@ public class InformationManager implements Manager, BWEventListener {
 		this.possibleEnemyBasePositions = new ArrayList<BaseLocation>();
 		
 		this.bases = new ArrayList<Unit>();
+		this.pylons = new ArrayList<Unit>();
 		
 		this.ownBaseLocations = new ArrayList<BaseLocation>();
 		
@@ -100,6 +105,8 @@ public class InformationManager implements Manager, BWEventListener {
 		this.ownUpgradesInProduction.clear();
 		this.oppUnits.clear();
 		this.refineries.clear();
+		this.refineriesInProd.clear();
+		
 		for (Unit unit : Self.getInstance().getUnits()){
 			
 			if (unit.isBeingConstructed()){
@@ -173,6 +180,9 @@ public class InformationManager implements Manager, BWEventListener {
 			ownUpgrades.put(upgrade, Self.getInstance().getUpgradeLevel(upgrade));
 			ownUpgradesInProduction.put(upgrade, Self.getInstance().getUpgradeLevel(upgrade) + (Self.getInstance().isUpgrading(upgrade) ? 1 : 0));
 		}
+		
+		
+		
 	}
 	
 	public int ownTechCountTotal(TechType tech) {
@@ -252,6 +262,182 @@ public class InformationManager implements Manager, BWEventListener {
 			Position bottomRight = new Position(base.getPosition().getX() + base.getType().width()/2, base.getPosition().getY() + base.getType().height()/2);
 			Match.getInstance().drawBoxMap(topLeft, bottomRight, Color.Grey);
 		}
+		
+		// Build locations
+		// Get random worker
+		//if (Match.getInstance().getFrameCount() % 24 != 0)
+		//	return;
+		/*
+		UnitType nextBuild;
+		try {
+			nextBuild = BuildOrderManager.getInstance().getNextBuild().unitType;
+		} catch (NoBuildOrderException e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		Unit someWorker = null;
+		for (Unit u : Self.getInstance().getUnits()) {
+			if (u.canBuild()){
+				someWorker = u;
+				break;
+			}
+		}
+		if (someWorker != null){
+			// Pylons
+			if (nextBuild == UnitType.Protoss_Pylon){
+				List<TilePosition> checked = new ArrayList<TilePosition>();
+				for(int i = 0; i < BuildLocator.PYLON_GRID_SIZE; i++){
+					for(BaseLocation base : InformationManager.getInstance().ownBaseLocations){
+						Region baseRegion = BWTA.getRegion(base.getTilePosition());
+						for(int x = base.getPoint().toTilePosition().getX() - BuildLocator.PYLON_CELL_SIZE*i; x <= base.getPoint().toTilePosition().getX() + BuildLocator.PYLON_CELL_SIZE*i; x+=BuildLocator.PYLON_CELL_SIZE){
+							for(int y = base.getPoint().toTilePosition().getY() - BuildLocator.PYLON_CELL_SIZE*i; y <= base.getPoint().toTilePosition().getY() + BuildLocator.PYLON_CELL_SIZE*i; y+=BuildLocator.PYLON_CELL_SIZE){
+								TilePosition position = new TilePosition(x, y);
+								if (checked.contains(position))
+									continue;
+								checked.add(position);
+								Position point = position.toPosition().getPoint();
+								if (!position.isValid()){
+									Match.getInstance().drawBoxMap(position.toPosition().getX(), position.toPosition().getY(), position.toPosition().getX() + 64, position.toPosition().getY() + 64, Color.Red);
+									continue;
+								}
+								if (BWTA.getRegion(position) == null || !BWTA.getRegion(position).equals(baseRegion)){
+									Match.getInstance().drawTextMap(position.toPosition(), "Region");
+									continue;
+								}
+								if (Match.getInstance().canBuildHere(position, UnitType.Protoss_Pylon, someWorker, false)) {
+									boolean legal = true;
+									if (base.getPoint().toTilePosition().getDistance(point.toTilePosition()) < BuildLocator.MIN_BASE_DISTANCE){
+										legal = false;
+										Match.getInstance().drawTextMap(position.toPosition(), "Base: " + base.getPoint().toTilePosition().getDistance(position));
+									}
+									if (legal){
+										for(Unit mineral : base.getMinerals()){
+											if (mineral.getTilePosition().getDistance(point.toTilePosition()) < BuildLocator.MIN_MINERAL_DISTANCE){
+												legal = false;
+												Match.getInstance().drawTextMap(point, "Minerals");
+												break;
+											}
+										}
+									}
+									
+									if (legal){
+										for(Unit geyser : base.getGeysers()){
+											if (geyser.getTilePosition().getDistance(point.toTilePosition()) < BuildLocator.MIN_GEYSER_DISTANCE){
+												legal = false;
+												Match.getInstance().drawTextMap(point, "Gas");
+												break;
+											}
+										}
+									}
+									if (legal){
+										for(Unit geyser : InformationManager.getInstance().refineries){
+											if (geyser.getTilePosition().getDistance(point.toTilePosition()) < BuildLocator.MIN_GEYSER_DISTANCE){
+												legal = false;
+												Match.getInstance().drawTextMap(point, "Gas");
+												break;
+											}
+										}
+									}
+									if (legal){
+										for(Unit geyser : InformationManager.getInstance().refineriesInProd){
+											if (geyser.getTilePosition().getDistance(point.toTilePosition()) < BuildLocator.MIN_GEYSER_DISTANCE){
+												legal = false;
+												Match.getInstance().drawTextMap(point, "Gas");
+												break;
+											}
+										}
+									}
+									if (legal){
+										Match.getInstance().drawBoxMap(position.toPosition().getX(), position.toPosition().getY(), position.toPosition().getX() + 64, position.toPosition().getY() + 64, Color.Green);
+									} else {
+										//Match.getInstance().drawBoxMap(position.toPosition().getX(), position.toPosition().getY(), position.toPosition().getX() + 64, position.toPosition().getY() + 64, Color.Red);
+									}
+								} else {
+									//Match.getInstance().drawBoxMap(position.toPosition().getX(), position.toPosition().getY(), position.toPosition().getX() + 64, position.toPosition().getY() + 64, Color.Red);
+									Match.getInstance().drawTextMap(point, "Blocked");
+								}
+							}
+						}
+					}
+				}
+			} else if (nextBuild.isBuilding()){
+				List<TilePosition> checked = new ArrayList<TilePosition>();
+				for(int i = 2; i < BuildLocator.BUILDING_GRID_SIZE; i++){
+					for(Unit pylon : InformationManager.getInstance().pylons){
+						Region pylonRegion = BWTA.getRegion(pylon.getTilePosition());
+						for(int x = pylon.getPoint().toTilePosition().getX() - BuildLocator.BUILDING_CELL_SIZE*i; x <= pylon.getPoint().toTilePosition().getX() + BuildLocator.BUILDING_CELL_SIZE*i; x+=BuildLocator.BUILDING_CELL_SIZE){
+							for(int y = pylon.getPoint().toTilePosition().getY() - BuildLocator.BUILDING_CELL_SIZE*i; y <= pylon.getPoint().toTilePosition().getY() + BuildLocator.BUILDING_CELL_SIZE*i; y+=BuildLocator.BUILDING_CELL_SIZE){
+								TilePosition position = new TilePosition(x, y);
+								if (checked.contains(position))
+									continue;
+								checked.add(position);
+								Position point = position.toPosition().getPoint();
+								if (!position.isValid()){
+									Match.getInstance().drawTextMap(point, "Invalid");
+									continue;
+								}
+								if (BWTA.getRegion(position) == null || !BWTA.getRegion(position).equals(pylonRegion)){
+									Match.getInstance().drawTextMap(point, "Region");
+									continue;
+								}
+								if (Match.getInstance().canBuildHere(position, nextBuild, someWorker, false)) {
+									boolean legal = true;
+									if (legal){
+										for(BaseLocation base : pylonRegion.getBaseLocations()){
+											for(Unit mineral : base.getMinerals()){
+												if (mineral.getTilePosition().getDistance(point.toTilePosition()) < BuildLocator.MIN_MINERAL_DISTANCE){
+													Match.getInstance().drawTextMap(point, "Minerals");
+													legal = false;
+													break;
+												}
+											}
+										}
+									}
+									if (legal){
+										for(BaseLocation base : pylonRegion.getBaseLocations()){
+											for(Unit geyser : base.getGeysers()){
+												if (geyser.getPoint().toTilePosition().getDistance(point.toTilePosition()) < BuildLocator.MIN_GEYSER_DISTANCE){
+													Match.getInstance().drawTextMap(point, "Gas");
+													legal = false;
+													break;
+												}
+											}
+										}
+									}
+									if (legal){
+										for(Unit geyser : InformationManager.getInstance().refineries){
+											if (geyser.getPoint().toTilePosition().getDistance(point.toTilePosition()) < BuildLocator.MIN_GEYSER_DISTANCE){
+												Match.getInstance().drawTextMap(point, "Gas");
+												legal = false;
+												break;
+											}
+										}
+									}
+									if (legal){
+										for(Unit geyser : InformationManager.getInstance().refineriesInProd){
+											if (geyser.getPoint().toTilePosition().getDistance(point.toTilePosition()) < BuildLocator.MIN_GEYSER_DISTANCE){
+												Match.getInstance().drawTextMap(point, "Gas");
+												legal = false;
+												break;
+											}
+										}
+									}
+									if (legal){
+										Match.getInstance().drawBoxMap(position.toPosition().getX(), position.toPosition().getY(), position.toPosition().getX() + 32*nextBuild.tileWidth(), position.toPosition().getY() + 32*nextBuild.tileHeight(), Color.Green);
+									} else {
+										//Match.getInstance().drawBoxMap(position.toPosition().getX(), position.toPosition().getY(), position.toPosition().getX() + 32*nextBuild.tileWidth(), position.toPosition().getY() + 32*nextBuild.tileHeight(), Color.Red);
+									}
+								}
+								//Match.getInstance().drawBoxMap(position.toPosition().getX(), position.toPosition().getY(), position.toPosition().getX() + 32*nextBuild.tileWidth(), position.toPosition().getY() + 32*nextBuild.tileHeight(), Color.Red);
+								Match.getInstance().drawTextMap(point, "Blocked");
+							}
+						}
+					}
+				}
+			}
+		}
+		*/
 	}
 
 	@Override
@@ -305,6 +491,9 @@ public class InformationManager implements Manager, BWEventListener {
 		if (unit.getType().isResourceDepot() && unit.getPlayer().getID() == Self.getInstance().getID()){
 			bases.add(unit);
 		}
+		if (unit.getType() == UnitType.Protoss_Pylon && unit.getPlayer().getID() == Self.getInstance().getID()){
+			pylons.add(unit);
+		}
 	}
 
 	@Override
@@ -335,6 +524,8 @@ public class InformationManager implements Manager, BWEventListener {
 				}
 				this.ownBaseLocations.remove(baseLocation);
 				this.bases.remove(unit);
+			} else if (unit.getType() == UnitType.Protoss_Pylon){
+				pylons.remove(unit);
 			}
 		}
 		

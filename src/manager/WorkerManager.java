@@ -98,7 +98,9 @@ public class WorkerManager implements BWEventListener, Manager {
 		try {
 			nextBuild = BuildOrderManager.getInstance().getNextBuild();
 			if (nextBuild.type == BuildType.BUILDING && !buildAlreadyAssigned(nextBuild)){
+				BotLogger.getInstance().log(this, "Requesting build location for " + nextBuild.toString());
 				TilePosition position = BuildLocator.getInstance().getLocation(nextBuild.unitType);
+				BotLogger.getInstance().log(this, "Location returned " + position);
 				UnitAssignment worker = closestWorker(position);
 				int resTime = resourceTime(nextBuild.unitType);
 				int moveTime = moveTime(position, worker);
@@ -253,6 +255,8 @@ public class WorkerManager implements BWEventListener, Manager {
 		UnitAssignment closestWorker = null;
 		double closestDistance = Integer.MAX_VALUE;
 		for(UnitAssignment responsibility : assignments){
+			BotLogger.getInstance().log(this, "Unit: " + responsibility.unit );
+			BotLogger.getInstance().log(this, "Position: " + position );
 			double d = responsibility.unit.getDistance(position.toPosition());
 			if (d < closestDistance && responsibility.job instanceof UnitMineJob){
 				closestDistance = d;
@@ -278,19 +282,21 @@ public class WorkerManager implements BWEventListener, Manager {
 	@Override
 	public void visualize() {
 		for(UnitAssignment assignment : assignments){
-			Match.getInstance().drawTextMap(assignment.unit.getPosition().getX(), assignment.unit.getPosition().getY(), assignment.job.toString());
-			if (assignment.job instanceof UnitMineJob){
-				UnitMineJob mineJob = (UnitMineJob)assignment.job;
-				Match.getInstance().drawLineMap(assignment.unit.getPosition(), mineJob.mineralField.getPosition(), Color.Teal);
-				Match.getInstance().drawCircleMap(mineJob.mineralField.getPosition(), 10, Color.Teal);
-			} else if (assignment.job instanceof UnitBuildJob){
-				UnitBuildJob buildJob = (UnitBuildJob)assignment.job;
-				Position buildCenter = new Position(buildJob.position.toPosition().getX() + buildJob.unitType.tileWidth() * 16,
-						buildJob.position.toPosition().getY() + buildJob.unitType.tileHeight() * 16);
-				Match.getInstance().drawLineMap(assignment.unit.getPosition(), buildCenter, Color.Orange);
-				Position toPosition = new Position(buildJob.position.toPosition().getX() + buildJob.unitType.tileWidth() * 32, 
-						buildJob.position.toPosition().getY() + buildJob.unitType.tileHeight() * 32);		
-				Match.getInstance().drawBoxMap(buildJob.position.toPosition(), toPosition, Color.Orange);
+			if (assignment.job != null){
+				Match.getInstance().drawTextMap(assignment.unit.getPosition().getX(), assignment.unit.getPosition().getY(), assignment.job.toString());
+				if (assignment.job instanceof UnitMineJob){
+					UnitMineJob mineJob = (UnitMineJob)assignment.job;
+					Match.getInstance().drawLineMap(assignment.unit.getPosition(), mineJob.mineralField.getPosition(), Color.Teal);
+					Match.getInstance().drawCircleMap(mineJob.mineralField.getPosition(), 10, Color.Teal);
+				} else if (assignment.job instanceof UnitBuildJob){
+					UnitBuildJob buildJob = (UnitBuildJob)assignment.job;
+					Position buildCenter = new Position(buildJob.position.toPosition().getX() + buildJob.unitType.tileWidth() * 16,
+							buildJob.position.toPosition().getY() + buildJob.unitType.tileHeight() * 16);
+					Match.getInstance().drawLineMap(assignment.unit.getPosition(), buildCenter, Color.Orange);
+					Position toPosition = new Position(buildJob.position.toPosition().getX() + buildJob.unitType.tileWidth() * 32, 
+							buildJob.position.toPosition().getY() + buildJob.unitType.tileHeight() * 32);		
+					Match.getInstance().drawBoxMap(buildJob.position.toPosition(), toPosition, Color.Orange);
+				}
 			}
 		}
 		for(Integer unitID : MineralPrioritizor.getInstance().assigned.keySet()){
@@ -407,7 +413,14 @@ public class WorkerManager implements BWEventListener, Manager {
 	public void onUnitDestroy(Unit unit) {
 		if (unit.getPlayer().getID() == Self.getInstance().getID()){
 			if (unit.getType().isWorker()){
-				this.assignments.remove(unit);
+				UnitAssignment remove = null;
+				for (UnitAssignment assignment : assignments){
+					if (assignment.unit.getID() == unit.getID()){
+						remove = assignment;
+					}
+				}
+				if (remove != null)
+					this.assignments.remove(remove);
 			}
 		}
 	}

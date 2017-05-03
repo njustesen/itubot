@@ -4,10 +4,10 @@ import bwapi.Color;
 import bwapi.Enemy;
 import bwapi.Match;
 import bwapi.Position;
+import bwapi.Self;
 import bwapi.Unit;
-import bwapi.UnitCommandType;
 import bwapi.UnitType;
-import log.BotLogger;
+import bwapi.UpgradeType;
 public class UnitAttackJob extends UnitJob {
 
 	private static final int ATTACK_DISTANCE = 900;
@@ -28,6 +28,30 @@ public class UnitAttackJob extends UnitJob {
 		// Did last enemy die?
 		if (enemy != null && enemy.getHitPoints() < 1){
 			enemy = null;
+		}
+		
+		// Build scarabs
+		if (unit.getType() == UnitType.Protoss_Reaver){
+			int count = 5;
+			if (Self.getInstance().getUpgradeLevel(UpgradeType.Reaver_Capacity) == Self.getInstance().getMaxUpgradeLevel(UpgradeType.Reaver_Capacity)){
+				count = 10;
+			}
+			if (unit.getScarabCount() < count && !unit.isTraining() && Self.getInstance().minerals() >= UnitType.Protoss_Scarab.mineralPrice()){
+				unit.train(UnitType.Protoss_Scarab);
+				return;
+			}
+		}
+		
+		// Build interceptors
+		if (unit.getType() == UnitType.Protoss_Carrier){
+			int count = 4;
+			if (Self.getInstance().getUpgradeLevel(UpgradeType.Carrier_Capacity) == Self.getInstance().getMaxUpgradeLevel(UpgradeType.Carrier_Capacity)){
+				count = 8;
+			}
+			if (unit.getInterceptorCount() < count && !unit.isTraining() && Self.getInstance().minerals() >= UnitType.Protoss_Interceptor.mineralPrice()){
+				unit.train(UnitType.Protoss_Interceptor);
+				return;
+			}
 		}
 		
 		// Check for nearby attackable units
@@ -98,7 +122,7 @@ public class UnitAttackJob extends UnitJob {
 			unit.move(target);
 			enemy = null;
 		}
-		
+				
 	}
 	
 	private boolean isFirstPriority(Unit other) {

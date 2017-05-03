@@ -40,37 +40,49 @@ public class BuildOrderManager implements Manager {
 	}
 		
 	public Build getNextBuild() throws NoBuildOrderException{
+		/*
+		if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 8){
+			return new Build(UnitType.Protoss_Probe);
+		} else {
+			return new Build(UnitType.Protoss_Pylon);
+		}*/
 		
 		if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 8){
 			return new Build(UnitType.Protoss_Probe);
 		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 1){
 			return new Build(UnitType.Protoss_Pylon);
-		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 14){
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 11){
 			return new Build(UnitType.Protoss_Probe);
 		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Gateway) < 1){
 			return new Build(UnitType.Protoss_Gateway);
-		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 15){
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 12){
 			return new Build(UnitType.Protoss_Probe);
 		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 2){
 			return new Build(UnitType.Protoss_Pylon);
-		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 16){
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 13){
 			return new Build(UnitType.Protoss_Probe);
 		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Assimilator) < 1){
 			return new Build(UnitType.Protoss_Assimilator);
-		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 17){
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 14){
 			return new Build(UnitType.Protoss_Probe);
 		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Cybernetics_Core) < 1){
 			return new Build(UnitType.Protoss_Cybernetics_Core);
-		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 18){
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 15){
 			return new Build(UnitType.Protoss_Probe);
 		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 3){
 			return new Build(UnitType.Protoss_Pylon);
-		} else if (Self.getInstance().supplyTotal() + InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Pylon) * 8 - Self.getInstance().supplyUsed() < InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Gateway) * 3){
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Stargate) < 1){
+			return new Build(UnitType.Protoss_Stargate);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Fleet_Beacon) < 1){
+			return new Build(UnitType.Protoss_Fleet_Beacon);
+		} else if (InformationManager.getInstance().ownUpgradeCountTotal(UpgradeType.Carrier_Capacity) < 1 && InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Fleet_Beacon) == 1){
+			return new Build(UpgradeType.Carrier_Capacity);
+		} else if (Self.getInstance().supplyUsed() + 8 > Self.getInstance().supplyTotal()){
 			return new Build(UnitType.Protoss_Pylon);
-		} else if (InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Dragoon) < InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Gateway)){
-			return new Build(UnitType.Protoss_Dragoon);
-		} else if (InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Gateway) < 1 && InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Gateway) < 6){
-			return new Build(UnitType.Protoss_Gateway);
+		} else if (InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Carrier) < InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Stargate)){
+			return new Build(UnitType.Protoss_Carrier);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Stargate) < 2){
+			return new Build(UnitType.Protoss_Stargate);
 		} else {
 			return new Build(UnitType.Protoss_Probe);
 		}

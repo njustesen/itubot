@@ -1,18 +1,26 @@
 package module;
 
-import bwapi.BWAPI;
-import bwapi.Game;
+import java.util.ArrayList;
+import java.util.List;
+
+import bwapi.Color;
+import bwapi.Match;
+import bwapi.Position;
+import bwapi.Self;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwta.BWTA;
 import bwta.BaseLocation;
+import bwta.Region;
 import exception.NoBaseLocationsLeftException;
 import exception.NoWorkersException;
+import log.BotLogger;
 import manager.InformationManager;
 
 public class BuildLocator {
 
+	
 	// SINGLETON PATTERN
 	private static BuildLocator instance = null;
 	
@@ -26,6 +34,17 @@ public class BuildLocator {
 	public static void reset() {
 		instance = null;
 	}
+
+	public static final int MIN_MINERAL_DISTANCE = 3;
+	public static final int MIN_GEYSER_DISTANCE = 3;
+	public static final int MIN_BASE_DISTANCE = 5;
+	public static final int PYLON_CELL_SIZE = 5;
+	public static final int PYLON_GRID_SIZE = 12;
+	public static final int BUILDING_CELL_SIZE = 2;
+	public static final int BUILDING_GRID_SIZE = 7;
+	public static final int MIN_BUILDING_BASE_DISTANCE = 7;
+	public static final int MIN_BUILDING_MINERAL_DISTANCE = 5;
+	public static final int MIN_BUILDING_GEYSER_DISTANCE = 5;
 	
 	// CLASS
 	public BuildLocator(){
@@ -33,17 +52,13 @@ public class BuildLocator {
 	}
 	
 	public TilePosition getLocation(UnitType buildingType) throws NoWorkersException, NoBaseLocationsLeftException{
-		TilePosition ret = null;
-		int maxDist = 3;
-		int stopDist = 100;
-		Game game = BWAPI.getInstance().getGame();
-		
-		// TODO: Select base
-		TilePosition aroundTile = game.self().getStartLocation();
+
+		// Get random worker
 		Unit someWorker = null;
-		for (Unit u : game.getAllUnits()) {
-			if (u.getPlayer().equals(game.self()) && u.canBuild()){
+		for (Unit u : Self.getInstance().getUnits()) {
+			if (u.canBuild()){
 				someWorker = u;
+				break;
 			}
 		}
 		if (someWorker == null){
@@ -51,8 +66,10 @@ public class BuildLocator {
 		}
 		
 		// Refinery, Assimilator, Extractor
+		int stopDist = 100;
+		TilePosition aroundTile = Match.getInstance().self().getStartLocation();
 		if (buildingType.isRefinery()) {
-			for (Unit n : game.neutral().getUnits()) {
+			for (Unit n : Match.getInstance().neutral().getUnits()) {
 				if ((n.getType() == UnitType.Resource_Vespene_Geyser) &&
 						( Math.abs(n.getTilePosition().getX() - aroundTile.getX()) < stopDist ) &&
 						( Math.abs(n.getTilePosition().getY() - aroundTile.getY()) < stopDist )
@@ -65,8 +82,8 @@ public class BuildLocator {
 			BaseLocation best = null;
 			double bestScore = Integer.MIN_VALUE;
 			for(BaseLocation location : BWTA.getBaseLocations()){
-				if (game.canBuildHere(location.getTilePosition(), buildingType, someWorker, false)) {
-					double distanceToHome = aroundTile.toPosition().getDistance(location.getPosition());
+				if (Match.getInstance().canBuildHere(location.getTilePosition(), buildingType, null, false)) {
+					double distanceToHome = Self.getInstance().getStartLocation().toPosition().getDistance(location.getPosition());
 					double distanceToEnemy = 0;
 					for (BaseLocation oppBase : InformationManager.getInstance().possibleEnemyBasePositions){
 						distanceToEnemy += oppBase.getDistance(location.getPosition());
@@ -86,38 +103,148 @@ public class BuildLocator {
 			}
 		}
 
-		while ((maxDist < stopDist) && (ret == null)) {
-			for (int i=aroundTile.getX()-maxDist; i<=aroundTile.getX()+maxDist; i++) {
-				for (int j=aroundTile.getY()-maxDist; j<=aroundTile.getY()+maxDist; j++) {
-					if (game.canBuildHere(new TilePosition(i,j), buildingType, someWorker, false)) {
-						// units that are blocking the tile
-						boolean unitsInWay = false;
-						for (Unit u : game.getAllUnits()) {
-							//if (u.getID() == builder.getID()) continue;
-							if ((Math.abs(u.getTilePosition().getX()-i) < 4) && (Math.abs(u.getTilePosition().getY()-j) < 4)) unitsInWay = true;
-						}
-						if (!unitsInWay) {
-							return new TilePosition(i, j);
-						}
-						// creep for Zerg
-						if (buildingType.requiresCreep()) {
-							boolean creepMissing = false;
-							for (int k=i; k<=i+buildingType.tileWidth(); k++) {
-								for (int l=j; l<=j+buildingType.tileHeight(); l++) {
-									if (!game.hasCreep(k, l)) creepMissing = true;
-									break;
+		// Pylon
+		List<TilePosition> checked = new ArrayList<TilePosition>();
+		if (buildingType == Self.getInstance().getRace().getSupplyProvider()){
+			for(int i = 2; i < PYLON_GRID_SIZE; i++){
+				for(BaseLocation base : InformationManager.getInstance().ownBaseLocations){
+					Region baseRegion = BWTA.getRegion(base.getTilePosition());
+					for(int x = base.getPoint().toTilePosition().getX() - PYLON_CELL_SIZE*i; x <= base.getPoint().toTilePosition().getX() + PYLON_CELL_SIZE*i; x+=PYLON_CELL_SIZE){
+						for(int y = base.getPoint().toTilePosition().getY() - PYLON_CELL_SIZE*i; y <= base.getPoint().toTilePosition().getY() + PYLON_CELL_SIZE*i; y+=PYLON_CELL_SIZE){
+							TilePosition position = new TilePosition(x, y);
+							if (checked.contains(position))
+								continue;
+							checked.add(position);
+							Position point = position.toPosition().getPoint();
+							if (!position.isValid()){
+								BotLogger.getInstance().log(this, "Invalid: " + position);
+								continue;
+							}
+							if (BWTA.getRegion(position) == null || !BWTA.getRegion(position).equals(baseRegion)){
+								continue;
+							}
+							if (Match.getInstance().canBuildHere(position, buildingType, someWorker, false)) {
+								boolean legal = true;
+								if (base.getPoint().toTilePosition().getDistance(point.toTilePosition()) < MIN_BASE_DISTANCE){
+									legal = false;
+								}
+								if (legal){
+									for(Unit mineral : base.getMinerals()){
+										if (mineral.getTilePosition().getDistance(point.toTilePosition()) < MIN_MINERAL_DISTANCE){
+											legal = false;
+											break;
+										}
+									}
+								}
+								if (legal){
+									for(Unit geyser : base.getGeysers()){
+										if (geyser.getPoint().toTilePosition().getDistance(point.toTilePosition()) < MIN_GEYSER_DISTANCE){
+											legal = false;
+											break;
+										}
+									}
+								}
+								if (legal){
+									for(Unit geyser : InformationManager.getInstance().refineries){
+										if (geyser.getPoint().toTilePosition().getDistance(point.toTilePosition()) < MIN_GEYSER_DISTANCE){
+											legal = false;
+											break;
+										}
+									}
+								}
+								if (legal){
+									for(Unit geyser : InformationManager.getInstance().refineriesInProd){
+										if (geyser.getPoint().toTilePosition().getDistance(point.toTilePosition()) < MIN_GEYSER_DISTANCE){
+											legal = false;
+											break;
+										}
+									}
+								}
+								if (legal){
+									return position;
 								}
 							}
-							if (creepMissing) continue;
 						}
 					}
 				}
 			}
-			maxDist += 2;
 		}
-
-		if (ret == null) game.printf("Unable to find suitable build position for "+buildingType.toString());
-		return ret;
+		
+		// Other buildings
+		checked = new ArrayList<TilePosition>();
+		if (buildingType != Self.getInstance().getRace().getSupplyProvider()){
+			for(int i = 2; i < BUILDING_GRID_SIZE; i++){
+				for(Unit pylon : InformationManager.getInstance().pylons){
+					Region pylonRegion = BWTA.getRegion(pylon.getTilePosition());
+					for(int x = pylon.getPoint().toTilePosition().getX() - BUILDING_CELL_SIZE*i; x <= pylon.getPoint().toTilePosition().getX() + BUILDING_CELL_SIZE*i; x+=BUILDING_CELL_SIZE){
+						for(int y = pylon.getPoint().toTilePosition().getY() - BUILDING_CELL_SIZE*i; y <= pylon.getPoint().toTilePosition().getY() + BUILDING_CELL_SIZE*i; y+=BUILDING_CELL_SIZE){
+							TilePosition position = new TilePosition(x, y);
+							if (checked.contains(position))
+								continue;
+							checked.add(position);
+							Position point = position.toPosition().getPoint();
+							if (!position.isValid()){
+								continue;
+							}
+							if (BWTA.getRegion(position) == null || !BWTA.getRegion(position).equals(pylonRegion)){
+								continue;
+							}
+							if (Match.getInstance().canBuildHere(position, buildingType, someWorker, false)) {
+								boolean legal = true;
+								if (legal){
+									for(BaseLocation base : pylonRegion.getBaseLocations()){
+										if (base.getPoint().toTilePosition().getDistance(point.toTilePosition()) < MIN_BUILDING_BASE_DISTANCE){
+											legal = false;
+											break;
+										}
+										for(Unit mineral : base.getMinerals()){
+											if (mineral.getTilePosition().getDistance(point.toTilePosition()) < MIN_BUILDING_MINERAL_DISTANCE){
+												legal = false;
+												break;
+											}
+										}
+									}
+								}
+								if (legal){
+									for(BaseLocation base : pylonRegion.getBaseLocations()){
+										for(Unit geyser : base.getGeysers()){
+											if (geyser.getPoint().toTilePosition().getDistance(point.toTilePosition()) < MIN_BUILDING_GEYSER_DISTANCE){
+												legal = false;
+												break;
+											}
+										}
+									}
+								}
+								if (legal){
+									for(Unit geyser : InformationManager.getInstance().refineries){
+										if (geyser.getPoint().toTilePosition().getDistance(point.toTilePosition()) < MIN_BUILDING_GEYSER_DISTANCE){
+											legal = false;
+											break;
+										}
+									}
+								}
+								if (legal){
+									for(Unit geyser : InformationManager.getInstance().refineriesInProd){
+										if (geyser.getPoint().toTilePosition().getDistance(point.toTilePosition()) < MIN_BUILDING_GEYSER_DISTANCE){
+											legal = false;
+											break;
+										}
+									}
+								}
+								if (legal){
+									return position;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+				
+		BotLogger.getInstance().log(this, "Position not found!");
+		Match.getInstance().printf("Unable to find suitable build position for "+buildingType.toString());
+				
+		return null;
 		
 	}
 	
