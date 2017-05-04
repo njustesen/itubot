@@ -29,7 +29,6 @@ import extension.BWAPIHelper;
 import extension.TechTypes;
 import extension.UpgradeTypes;
 import log.BotLogger;
-import module.BuildLocator;
 import module.CombatPredictor;
 import module.GasPrioritizor;
 

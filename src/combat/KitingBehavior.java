@@ -64,10 +64,11 @@ public class KitingBehavior implements CombatBehavior {
 					Match.getInstance().drawTextMap(unit.getPosition(), "--Attack--");
 					if (unit.getType().isSpellcaster()){
 						castSpell(enemy);
+						hasAttacked = false;
 					} else {
 						unit.attack(enemy);
+						hasAttacked = false;
 					}
-					hasAttacked = false;
 				}
 			}
 		}
@@ -75,16 +76,21 @@ public class KitingBehavior implements CombatBehavior {
 	
 	private void castSpell(Unit enemy) {
 		if (unit.getType() == UnitType.Protoss_High_Templar){
-			BotLogger.getInstance().log(this, "Casting storm!");
-			unit.useTech(TechType.Psionic_Storm, enemy.getPosition());
+			if (unit.getDistance(enemy) <= 9*32){
+				BotLogger.getInstance().log(this, "Casting storm!");
+				unit.useTech(TechType.Psionic_Storm, enemy.getPosition());
+			} else {
+				unit.move(enemy.getPosition());
+			}
 		}
 	}
 
 	private boolean shouldKite(Unit enemy, int range, int cooldown) {
 		if (unit.getType() == UnitType.Protoss_High_Templar){
 			if (unit.getEnergy() >= 75 && Self.getInstance().hasResearched(TechType.Psionic_Storm)){
-				int targets = BWAPIHelper.getNumberOfUnitsAround(enemy.getTilePosition(), 3*32);
-				if (targets < 3){
+				int value = BWAPIHelper.getEnemyUnitValueAround(enemy.getTilePosition(), 3*32);
+				value -= BWAPIHelper.getFriendlyUnitValueAround(enemy.getTilePosition(), 3*32);
+				if (value < 3){
 					Match.getInstance().drawCircleMap(enemy.getPosition(), STORM_RADIUS, Color.Teal);
 					return true;
 				}

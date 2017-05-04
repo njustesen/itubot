@@ -10,7 +10,6 @@ import manager.InformationManager;
 import manager.Manager;
 import manager.SquadManager;
 import manager.WorkerManager;
-import module.BuildLocator;
 import module.MineralPrioritizor;
 
 public class Commander {
@@ -33,7 +32,6 @@ public class Commander {
 		WorkerManager.reset();
 		SquadManager.reset();
 		BuildLocationManager.reset();
-		BuildLocator.reset();
 		MineralPrioritizor.reset();
 		Commander.getInstance();
 	}

@@ -10,7 +10,7 @@ import bwapi.UnitType;
 import exception.NoBaseLocationsLeftException;
 import exception.NoWorkersException;
 import log.BotLogger;
-import module.BuildLocator;
+import manager.BuildLocationManager;
 
 public class UnitBuildJob extends UnitJob {
 
@@ -34,10 +34,12 @@ public class UnitBuildJob extends UnitJob {
 			UnitType test = getTestBuild();
 			if (Match.getInstance().canBuildHere(position, test, unit)){
 				Match.getInstance().drawTextMap(position.toPosition(), "("+position.getX()+","+position.getY() + ")");
-				Match.getInstance().drawBoxMap(new Position(position.toPosition().getX(), position.toPosition().getY()), new Position(position.toPosition().getX() + 32, position.toPosition().getY()+32), Color.Yellow);
+				Match.getInstance().drawBoxMap(new Position(position.toPosition().getX(), position.toPosition().getY()), new Position(position.toPosition().getX() + 32, position.toPosition().getY()+32), Color.Green);
 				unit.build(this.unitType, this.position);
 			} else {
-				position = BuildLocator.getInstance().getLocation(unitType);
+				Match.getInstance().drawTextMap(position.toPosition(), "("+position.getX()+","+position.getY() + ")");
+				Match.getInstance().drawBoxMap(new Position(position.toPosition().getX(), position.toPosition().getY()), new Position(position.toPosition().getX() + 32, position.toPosition().getY()+32), Color.Red);
+				position = BuildLocationManager.getInstance().getLocation(unitType);
 				unit.move(position.toPosition());
 			}
 		}

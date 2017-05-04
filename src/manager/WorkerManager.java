@@ -35,7 +35,6 @@ import job.UnitMineJob;
 import job.UnitScoutJob;
 import log.BotLogger;
 import module.BruteBuildLocator;
-import module.BuildLocator;
 import module.GasPrioritizor;
 import module.MineralPrioritizor;
 

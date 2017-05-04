@@ -86,14 +86,56 @@ public class BWAPIHelper {
 		return i;
 	}
 	
-	public static int getNumberOfUnitsAround(TilePosition position, int radius) {
-		int i = 0;
-		for(Observation observation : InformationManager.getInstance().observations){
-			if (observation.position.getDistance(position.toPosition()) <= radius){
-				i++;
+	public static int getFriendlyUnitValueAround(TilePosition position, int radius) {
+		int v = 0;
+		for(Unit unit : Self.getInstance().getUnits()){
+			if (unit.getType().isBuilding() && unit.getDistance(position.toPosition()) <= radius){
+				v += unit.getType().mineralPrice() + unit.getType().gasPrice();
 			}
 		}
-		return i;
+		return v;
+	}
+
+	public static int getEnemyUnitValueAround(TilePosition position, int radius) {
+		int v = 0;
+		for(Observation observation : InformationManager.getInstance().observations){
+			if (observation.position.getDistance(position.toPosition()) <= radius){
+				v += observation.type.mineralPrice() + observation.type.gasPrice();
+			}
+		}
+		return v;
+	}
+
+	
+	public static Unit getNearestMineral(Position position) {
+		Unit closest = null;
+		int closestDistance = Integer.MAX_VALUE;
+		for(Unit unit : Match.getInstance().getNeutralUnits()){
+			if (unit.getType().isMineralField() && unit.getPosition().isValid()){
+				int distance = (int) unit.getDistance(position);
+				if (distance < closestDistance){
+					closest = unit;
+					closestDistance = distance;
+				}
+			}
+		}
+		return closest;
+	}
+
+
+	public static Unit getNearestGas(Position position) {
+		Unit closest = null;
+		int closestDistance = Integer.MAX_VALUE;
+		for(Unit unit : Match.getInstance().getNeutralUnits()){
+			if ((unit.getType() == UnitType.Resource_Vespene_Geyser || unit.getType() == Self.getInstance().getRace().getRefinery()) && unit.getPosition().isValid()){
+				int distance = (int) unit.getDistance(position);
+				if (distance < closestDistance){
+					closest = unit;
+					closestDistance = distance;
+				}
+			}
+		}
+		return closest;
 	}
 
 	public static Unit getNewEnemyTarget(Unit unit, int attackDistance) {
