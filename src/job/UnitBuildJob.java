@@ -24,28 +24,18 @@ public class UnitBuildJob extends UnitJob {
 	}
 
 	public void perform() throws NoWorkersException, NoBaseLocationsLeftException {
-		/*
+
 		if (position == null){
-			// Explore base
-			
+			return;
 		}
-		*/
 		if (unit.getDistance(position.toPosition()) > unit.getType().sightRange()){
 			unit.move(position.toPosition());
 		} else {
 			UnitType test = getTestBuild();
 			if (Match.getInstance().canBuildHere(position, test, unit)){
-				BotLogger.getInstance().log(this, "I can build " + test + " at " + position);
 				Match.getInstance().drawTextMap(position.toPosition(), "("+position.getX()+","+position.getY() + ")");
 				Match.getInstance().drawBoxMap(new Position(position.toPosition().getX(), position.toPosition().getY()), new Position(position.toPosition().getX() + 32, position.toPosition().getY()+32), Color.Yellow);
 				unit.build(this.unitType, this.position);
-				/*
-				if (Match.getInstance().canBuildHere(position, UnitType.Protoss_Cybernetics_Core, unit)){
-					BotLogger.getInstance().log(this, "I can also build a cyber core at " + position);
-				} else {
-					BotLogger.getInstance().log(this, "I cannot build a cyber core at " + position);
-				}
-				*/
 			} else {
 				position = BuildLocator.getInstance().getLocation(unitType);
 				unit.move(position.toPosition());

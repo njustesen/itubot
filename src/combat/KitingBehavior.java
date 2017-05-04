@@ -62,13 +62,24 @@ public class KitingBehavior implements CombatBehavior {
 				moveTarget = null;
 				if (hasAttacked || newEnemy){
 					Match.getInstance().drawTextMap(unit.getPosition(), "--Attack--");
-					unit.attack(enemy);
+					if (unit.getType().isSpellcaster()){
+						castSpell(enemy);
+					} else {
+						unit.attack(enemy);
+					}
 					hasAttacked = false;
 				}
 			}
 		}
 	}
 	
+	private void castSpell(Unit enemy) {
+		if (unit.getType() == UnitType.Protoss_High_Templar){
+			BotLogger.getInstance().log(this, "Casting storm!");
+			unit.useTech(TechType.Psionic_Storm, enemy.getPosition());
+		}
+	}
+
 	private boolean shouldKite(Unit enemy, int range, int cooldown) {
 		if (unit.getType() == UnitType.Protoss_High_Templar){
 			if (unit.getEnergy() >= 75 && Self.getInstance().hasResearched(TechType.Psionic_Storm)){

@@ -28,6 +28,22 @@ public class BWAPIHelper {
 		return closest;
 	}
 	
+
+	public static Unit getNearestFriendlyBuilding(Position position, UnitType type) {
+		Unit closest = null;
+		int closestDistance = Integer.MAX_VALUE;
+		for(Unit unit : Self.getInstance().getUnits()){
+			if (unit.getType().isBuilding() && (type == null || unit.getType() == type)){
+				int distance = unit.getDistance(position);
+				if (distance < closestDistance){
+					closestDistance = distance;
+					closest = unit;
+				}
+			}
+		}
+		return closest;
+	}
+	
 	public static Unit getNearestEnemyUnit(Position position, UnitType type){
 		Unit closest = null;
 		int closestDistance = Integer.MAX_VALUE;
@@ -123,6 +139,7 @@ public class BWAPIHelper {
 				type == UnitType.Zerg_Spore_Colony || 
 				type.isSpellcaster());
 	}
+
 
 	
 }
