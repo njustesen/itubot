@@ -3,6 +3,7 @@ package commander;
 import java.util.ArrayList;
 import java.util.List;
 
+import manager.BuildLocationManager;
 import manager.BuildOrderManager;
 import manager.BuildingManager;
 import manager.InformationManager;
@@ -31,7 +32,7 @@ public class Commander {
 		BuildingManager.reset();
 		WorkerManager.reset();
 		SquadManager.reset();
-		
+		BuildLocationManager.reset();
 		BuildLocator.reset();
 		MineralPrioritizor.reset();
 		Commander.getInstance();
@@ -43,6 +44,7 @@ public class Commander {
 	public Commander(){
 		managers = new ArrayList<Manager>();
 		managers.add(InformationManager.getInstance());
+		managers.add(BuildLocationManager.getInstance());
 		managers.add(BuildOrderManager.getInstance());
 		managers.add(BuildingManager.getInstance());
 		managers.add(WorkerManager.getInstance());

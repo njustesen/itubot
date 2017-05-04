@@ -42,9 +42,9 @@ public class BuildOrderManager implements Manager {
 		
 	public Build getNextBuild() throws NoBuildOrderException{
 		
-		return dragoonBuild();
+		//return dragoonBuild();
 		//return zealotBuild();
-		//return highTemplarBuild();
+		return highTemplarBuild();
 		//return reaverBuild();
 		//return carrierBuild();
 		//return pylonBuild();

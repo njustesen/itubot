@@ -1,10 +1,16 @@
-package module;
+package manager;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.DebugGraphics;
+
+import bot.ITUBot;
+import bwapi.BWEventListener;
 import bwapi.Color;
 import bwapi.Match;
+import bwapi.Player;
 import bwapi.Position;
 import bwapi.Self;
 import bwapi.TilePosition;
@@ -16,17 +22,15 @@ import bwta.Region;
 import exception.NoBaseLocationsLeftException;
 import exception.NoWorkersException;
 import log.BotLogger;
-import manager.InformationManager;
 
-public class BuildLocator {
+public class BuildLocationManager implements Manager, BWEventListener {
 
-	
 	// SINGLETON PATTERN
-	private static BuildLocator instance = null;
+	private static BuildLocationManager instance = null;
 	
-	public static BuildLocator getInstance() {
+	public static BuildLocationManager getInstance() {
 	   if(instance == null) {
-		   instance = new BuildLocator();
+		   instance = new BuildLocationManager();
 	   }
 	   return instance;
 	}
@@ -34,36 +38,150 @@ public class BuildLocator {
 	public static void reset() {
 		instance = null;
 	}
-
-	public static final int MIN_PYLON_MINERAL_DISTANCE = 5;
-	public static final int MIN_PYLON_GEYSER_DISTANCE = 6;
-	public static final int MIN_BASE_DISTANCE = 5;
+	
+	public static final int MIN_PYLON_MINERAL_DISTANCE = 0;
+	public static final int MIN_PYLON_GEYSER_DISTANCE = 0;
+	public static final int MIN_PYLON_BASE_DISTANCE = 5;
 	public static final int PYLON_CELL_SIZE = 4;
 	public static final int PYLON_GRID_SIZE = 12;
 	public static final int BUILDING_CELL_SIZE = 2;
 	public static final int BUILDING_GRID_SIZE = 7;
 	public static final int MIN_BUILDING_BASE_DISTANCE = 4;
-	public static final int MIN_BUILDING_MINERAL_DISTANCE = 3;
-	public static final int MIN_BUILDING_GEYSER_DISTANCE = 3;
+	public static final int MIN_BUILDING_MINERAL_DISTANCE = 0;
+	public static final int MIN_BUILDING_GEYSER_DISTANCE = 0;
 	
 	// CLASS
-	public BuildLocator(){
+	public int[][] tiles;
+	
+	protected BuildLocationManager(){
+		ITUBot.getInstance().addListener(this);
+	}
 		
+	private void addBase(BaseLocation base) {
+		Region region = BWTA.getRegion(base.getPosition());
+		for (int x = 0; x < Match.getInstance().mapWidth(); x++){
+			for (int y = 0; y < Match.getInstance().mapHeight(); y++){
+				Region tileRegion = BWTA.getRegion(new TilePosition(x, y));
+				if (tileRegion != null && tileRegion.equals(region) && Match.getInstance().isBuildable(x, y, true)){
+					tiles[x][y] = 0;
+				} else {
+					tiles[x][y] = -1;
+				}
+			}
+		}
+		for(Unit unit : base.getMinerals()){
+			if (unit.exists()){
+				fillShortestPath(base, unit);
+			}
+		}
+		for(Unit unit : base.getGeysers()){
+			if (unit.exists()){
+				fillShortestPath(base, unit);
+			}
+		}
+	}
+	
+	private void fillShortestPath(BaseLocation base, Unit unit) {
+		double shortestDistance = Integer.MAX_VALUE;
+		List<TilePosition> shortestPath = null;
+		for (int x = base.getTilePosition().getX(); x < base.getTilePosition().getX() + UnitType.Protoss_Nexus.tileWidth(); x++){
+			for (int y = base.getTilePosition().getY(); y < base.getTilePosition().getY() + UnitType.Protoss_Nexus.tileHeight(); y++){
+				TilePosition a = new TilePosition(x, y);
+				BotLogger.getInstance().log(this, "base corner=" + a);
+				for (int xx = unit.getTilePosition().getX(); xx < unit.getTilePosition().getX() + unit.getType().tileWidth(); xx++){
+					for (int yy = unit.getTilePosition().getY(); yy < unit.getTilePosition().getY() + unit.getType().tileHeight(); yy++){
+						if (a.getDistance(xx,yy) < shortestDistance){
+							TilePosition b = new TilePosition(xx, yy);
+							shortestDistance = a.getDistance(b);
+							BotLogger.getInstance().log(this, "shortestDistance=" + shortestDistance + " to " + b);
+							shortestPath = BWTA.getShortestPath(a, b);
+						}
+					}
+				}
+				
+			}
+		}
+		if (shortestPath != null){
+			fillPath(shortestPath);
+		} else {
+			BotLogger.getInstance().log(this, "No path found.");
+		}
+	}
+
+	private void fillPath(List<TilePosition> path) {
+		for(TilePosition tile : path){
+			tiles[tile.getX()][tile.getY()] = 2;
+		}
+	}
+
+	private void removeBase(BaseLocation base) {
+		Region region = BWTA.getRegion(base.getPosition());
+		for (int x = 0; x < Match.getInstance().mapWidth(); x++){
+			for (int y = 0; y < Match.getInstance().mapHeight(); y++){
+				Region tileRegion = BWTA.getRegion(new TilePosition(x, y));
+				if (tileRegion != null && tileRegion.equals(region)){
+					tiles[x][y] = -1;
+				}
+			}
+		}
+	}
+
+	private void fill(Unit unit) {
+		for (int x = unit.getTilePosition().getX(); x < unit.getTilePosition().getX() + unit.getType().tileWidth(); x++){
+			for (int y = unit.getTilePosition().getY(); y < unit.getTilePosition().getY() + unit.getType().tileHeight(); y++){
+				tiles[x][y] = 1;
+			}
+		}
+	}
+	
+	private void clear(Unit unit) {
+		for (BaseLocation base : InformationManager.getInstance().ownBaseLocations){
+			if (unit.getTilePosition().equals(base.getTilePosition())){
+				removeBase(base);
+				return;
+			}
+		}
+		for (int x = unit.getTilePosition().getX(); x < unit.getTilePosition().getX() + unit.getType().tileWidth(); x++){
+			for (int y = unit.getTilePosition().getY(); y < unit.getTilePosition().getY() + unit.getType().tileHeight(); y++){
+				tiles[x][y] = 0;
+			}
+		}
+	}
+	
+	private boolean isFree(TilePosition position, UnitType buildingType) {
+		for (int x = position.getX(); x < buildingType.tileWidth(); x++){
+			for (int y = position.getY(); y < buildingType.tileHeight(); y++){
+				if (x >= Match.getInstance().mapWidth() || x < 0 || y >= Match.getInstance().mapHeight() || y < 0){
+					return false;
+				}
+				if (tiles[x][y] != 0){
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public void execute() {
+	}
+	
+	@Override
+	public void visualize() {
+		for (int x = 0; x < tiles.length; x++){
+			for (int y = 0; y < tiles[0].length; y++){
+				if (tiles[x][y] == 0){
+					Match.getInstance().drawBoxMap((x*32)+1, (y*32)+1, ((x+1)*32)-2, ((y+1)*32)-2, Color.Green);
+				} else if (tiles[x][y] == 1){
+					Match.getInstance().drawBoxMap((x*32)+1, (y*32)+1, ((x+1)*32)-2, ((y+1)*32)-2, Color.Red);
+				} else if (tiles[x][y] == 2){
+					Match.getInstance().drawBoxMap((x*32)+1, (y*32)+1, ((x+1)*32)-2, ((y+1)*32)-2, Color.Purple);
+				}
+			}
+		}
 	}
 	
 	public TilePosition getLocation(UnitType buildingType) throws NoWorkersException, NoBaseLocationsLeftException{
-
-		// Get random worker
-		Unit someWorker = null;
-		for (Unit u : Self.getInstance().getUnits()) {
-			if (u.canBuild()){
-				someWorker = u;
-				break;
-			}
-		}
-		if (someWorker == null){
-			throw new NoWorkersException();
-		}
 		
 		// Refinery, Assimilator, Extractor
 		int stopDist = 100;
@@ -122,9 +240,9 @@ public class BuildLocator {
 							if (BWTA.getRegion(position) == null || !BWTA.getRegion(position).equals(baseRegion)){
 								continue;
 							}
-							if (Match.getInstance().canBuildHere(position, buildingType, someWorker, false)) {
+							if (isFree(position, buildingType)) {
 								boolean legal = true;
-								if (base.getPoint().toTilePosition().getDistance(point.toTilePosition()) < MIN_BASE_DISTANCE){
+								if (base.getPoint().toTilePosition().getDistance(point.toTilePosition()) < MIN_PYLON_BASE_DISTANCE){
 									legal = false;
 								}
 								if (legal){
@@ -188,8 +306,7 @@ public class BuildLocator {
 							if (BWTA.getRegion(position) == null || !BWTA.getRegion(position).equals(pylonRegion)){
 								continue;
 							}
-							if (Match.getInstance().canBuildHere(position, buildingType, someWorker, false)) {
-								//TilePosition position = new TilePositi;
+							if (isFree(position, buildingType)) {
 								boolean legal = true;
 								if (legal){
 									for(BaseLocation base : pylonRegion.getBaseLocations()){
@@ -247,5 +364,97 @@ public class BuildLocator {
 		return null;
 		
 	}
-	
+
+	@Override
+	public void onEnd(boolean arg0) {
+	}
+
+	@Override
+	public void onFrame() {
+		
+	}
+
+	@Override
+	public void onNukeDetect(Position arg0) {
+	}
+
+	@Override
+	public void onPlayerDropped(Player arg0) {
+	}
+
+	@Override
+	public void onPlayerLeft(Player arg0) {
+	}
+
+	@Override
+	public void onReceiveText(Player arg0, String arg1) {
+	}
+
+	@Override
+	public void onSaveGame(String arg0) {
+	}
+
+	@Override
+	public void onSendText(String arg0) {
+	}
+
+	@Override
+	public void onStart() {
+		tiles = new int[Match.getInstance().mapWidth()][Match.getInstance().mapHeight()];
+		addBase(InformationManager.getInstance().ownMainBaseLocation);
+	}
+
+	@Override
+	public void onUnitComplete(Unit unit) {
+		
+	}
+
+	@Override
+	public void onUnitCreate(Unit unit) {
+		if (unit.getType().isBuilding() && unit.getPlayer().getID() == Self.getInstance().getID()){
+			fill(unit);
+		}
+	}
+
+	@Override
+	public void onUnitDestroy(Unit unit) {
+		if (unit.getType().isBuilding() && unit.getPlayer().getID() == Self.getInstance().getID()){
+			Region region = BWTA.getRegion(unit.getPosition());
+			for(BaseLocation base : InformationManager.getInstance().ownBaseLocations){
+				Region baseRegion = BWTA.getRegion(base.getPosition());
+				if (baseRegion.equals(region)){
+					clear(unit);
+				}
+			}
+		}
+		
+	}
+
+	@Override
+	public void onUnitDiscover(Unit unit) {
+
+	}
+
+	@Override
+	public void onUnitEvade(Unit unit) {
+
+	}
+
+	@Override
+	public void onUnitHide(Unit arg0) {
+	}
+
+	@Override
+	public void onUnitMorph(Unit arg0) {
+	}
+
+	@Override
+	public void onUnitRenegade(Unit arg0) {
+	}
+
+	@Override
+	public void onUnitShow(Unit unit) {
+	}
+
+
 }

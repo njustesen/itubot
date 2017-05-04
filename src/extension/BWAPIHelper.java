@@ -1,12 +1,15 @@
 package extension;
 
+import abstraction.Observation;
 import bwapi.Enemy;
+import bwapi.Match;
 import bwapi.Position;
 import bwapi.Self;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.WeaponType;
+import manager.InformationManager;
 
 public class BWAPIHelper {
 
@@ -28,12 +31,12 @@ public class BWAPIHelper {
 	public static Unit getNearestEnemyUnit(Position position, UnitType type){
 		Unit closest = null;
 		int closestDistance = Integer.MAX_VALUE;
-		for(Unit unit : Enemy.getInstance().getUnits()){
-			if (type == null || unit.getType() == type){
-				int distance = unit.getDistance(position);
+		for(Observation observation : InformationManager.getInstance().observations){
+			if (type == null || observation.type == type){
+				int distance = (int) observation.position.getDistance(position);
 				if (distance < closestDistance){
 					closestDistance = distance;
-					closest = unit;
+					closest = Match.getInstance().getUnit(observation.id);
 				}
 			}
 		}
@@ -59,8 +62,8 @@ public class BWAPIHelper {
 
 	public static int getNumberOfUnitsAround(Position position, int radius) {
 		int i = 0;
-		for(Unit unit : Enemy.getInstance().getUnits()){
-			if (unit.getDistance(position) <= radius){
+		for(Observation observation : InformationManager.getInstance().observations){
+			if (observation.position.getDistance(position) <= radius){
 				i++;
 			}
 		}
@@ -69,8 +72,8 @@ public class BWAPIHelper {
 	
 	public static int getNumberOfUnitsAround(TilePosition position, int radius) {
 		int i = 0;
-		for(Unit unit : Enemy.getInstance().getUnits()){
-			if (unit.getTilePosition().getDistance(position) <= radius){
+		for(Observation observation : InformationManager.getInstance().observations){
+			if (observation.position.getDistance(position.toPosition()) <= radius){
 				i++;
 			}
 		}
@@ -83,14 +86,17 @@ public class BWAPIHelper {
 		Unit b = null;
 		int disA = attackDistance;
 		int disB = attackDistance;
-		for (Unit other : Enemy.getInstance().getUnits()){
-			if (unit.canAttack(other) || unit.getType().isSpellcaster()){
-				if (isFirstPriority(other) && unit.getDistance(other) < disA){
-					a = other;
-					disA = unit.getDistance(other);
-				} else if (unit.getDistance(other) < disB) {
-					b = other;
-					disB = unit.getDistance(other);
+		boolean ground = unit.getType().groundWeapon() != null;
+		boolean air = unit.getType().airWeapon() != null;
+		for(Observation observation : InformationManager.getInstance().observations){
+			if (ground && !observation.type.isFlyer() || air && observation.type.isFlyer() || unit.getType().isSpellcaster()){
+				int distance = unit.getDistance(observation.position);
+				if (isFirstPriority(observation.type) && distance < disA){
+					a = Match.getInstance().getUnit(observation.id);
+					disA = distance;
+				} else if (distance < disB) {
+					b = Match.getInstance().getUnit(observation.id);
+					disB = distance;
 				}
 			}
 		}
@@ -107,15 +113,15 @@ public class BWAPIHelper {
 		
 	}
 	
-	private static boolean isFirstPriority(Unit other) {
-		return (!other.getType().isBuilding() ||
-				other.getType() == UnitType.Protoss_Observer || 
-				other.getType() == UnitType.Terran_Missile_Turret || 
-				other.getType() == UnitType.Terran_Bunker || 
-				other.getType() == UnitType.Protoss_Photon_Cannon || 
-				other.getType() == UnitType.Zerg_Sunken_Colony || 
-				other.getType() == UnitType.Zerg_Spore_Colony || 
-				other.getType().isSpellcaster());
+	private static boolean isFirstPriority(UnitType type) {
+		return (!type.isBuilding() ||
+				type == UnitType.Protoss_Observer || 
+				type == UnitType.Terran_Missile_Turret || 
+				type == UnitType.Terran_Bunker || 
+				type == UnitType.Protoss_Photon_Cannon || 
+				type == UnitType.Zerg_Sunken_Colony || 
+				type == UnitType.Zerg_Spore_Colony || 
+				type.isSpellcaster());
 	}
 
 	

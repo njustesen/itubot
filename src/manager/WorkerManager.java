@@ -34,6 +34,7 @@ import job.UnitJob;
 import job.UnitMineJob;
 import job.UnitScoutJob;
 import log.BotLogger;
+import module.BruteBuildLocator;
 import module.BuildLocator;
 import module.GasPrioritizor;
 import module.MineralPrioritizor;
@@ -104,16 +105,10 @@ public class WorkerManager implements BWEventListener, Manager {
 			nextBuild = BuildOrderManager.getInstance().getNextBuild();
 			if (nextBuild.type == BuildType.BUILDING && !buildAlreadyAssigned(nextBuild)){
 				BotLogger.getInstance().log(this, "Requesting build location for " + nextBuild.toString());
-				TilePosition position = BuildLocator.getInstance().getLocation(nextBuild.unitType);
+				TilePosition position = BuildLocationManager.getInstance().getLocation(nextBuild.unitType);
 				BotLogger.getInstance().log(this, "Location returned " + position);
 				UnitAssignment worker = closestWorker(position);
 				int resTime = resourceTime(nextBuild.unitType);
-				if (position == null && Self.getInstance().getRace() == Race.Protoss) {
-					nextBuild = new Build(UnitType.Protoss_Pylon);
-					position = BuildLocator.getInstance().getLocation(nextBuild.unitType);
-					BotLogger.getInstance().log(this, "Location returned " + position);
-					worker = closestWorker(position);
-				}
 				int moveTime = moveTime(position, worker.unit);
 				if (canBuildNow(nextBuild.unitType) || resTime <= moveTime){
 					if (worker.job instanceof UnitMineJob){
@@ -299,12 +294,15 @@ public class WorkerManager implements BWEventListener, Manager {
 					Match.getInstance().drawCircleMap(mineJob.mineralField.getPosition(), 10, Color.Teal);
 				} else if (assignment.job instanceof UnitBuildJob){
 					UnitBuildJob buildJob = (UnitBuildJob)assignment.job;
-					Position buildCenter = new Position(buildJob.position.toPosition().getX() + buildJob.unitType.tileWidth() * 16,
-							buildJob.position.toPosition().getY() + buildJob.unitType.tileHeight() * 16);
-					Match.getInstance().drawLineMap(assignment.unit.getPosition(), buildCenter, Color.Orange);
-					Position toPosition = new Position(buildJob.position.toPosition().getX() + buildJob.unitType.tileWidth() * 32, 
-							buildJob.position.toPosition().getY() + buildJob.unitType.tileHeight() * 32);		
-					Match.getInstance().drawBoxMap(buildJob.position.toPosition(), toPosition, Color.Orange);
+					if (buildJob.position != null){
+						Position buildCenter = new Position(buildJob.position.toPosition().getX() + buildJob.unitType.tileWidth() * 16,
+								buildJob.position.toPosition().getY() + buildJob.unitType.tileHeight() * 16);
+						Match.getInstance().drawLineMap(assignment.unit.getPosition(), buildCenter, Color.Blue);
+						Position toPosition = new Position(buildJob.position.toPosition().getX() + buildJob.unitType.tileWidth() * 32, 
+								buildJob.position.toPosition().getY() + buildJob.unitType.tileHeight() * 32);		
+						
+						Match.getInstance().drawBoxMap(buildJob.position.toPosition(), toPosition, Color.Blue);
+					}
 				}
 			}
 		}

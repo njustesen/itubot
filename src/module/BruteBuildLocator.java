@@ -8,9 +8,12 @@ import bwapi.Self;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwta.BWTA;
+import bwta.Region;
 import exception.NoSpaceLeftForBuildingException;
 import exception.NoWorkersException;
 import log.BotLogger;
+import manager.InformationManager;
 
 public class BruteBuildLocator {
 
@@ -58,27 +61,34 @@ public class BruteBuildLocator {
 			}
 		}
 		
-		// Iterate all tiles
-		TilePosition bestPosition = null;
-		double bestScore = Integer.MIN_VALUE;
+		Region region = BWTA.getRegion(InformationManager.getInstance().ownMainBaseLocation.getTilePosition());
+		TilePosition position = bestInRegion(region, buildingType, someWorker);
+		if (position == null){
+			for(Region r : region.getReachableRegions()){
+				position = bestInRegion(r, buildingType, someWorker);
+				if (position != null){
+					return position;
+				}
+			}
+		}
+		
+		throw new NoSpaceLeftForBuildingException();
+		
+	}
+	
+	private TilePosition bestInRegion(Region region, UnitType buildingType, Unit someWorker){
+		// Iterate all tiles in region
 		for (int x = 0; x < Match.getInstance().mapWidth(); x++){
 			for (int y = 0; y < Match.getInstance().mapHeight(); y++){
 				TilePosition position = new TilePosition(x, y);
-				if (Match.getInstance().canBuildHere(position, buildingType, someWorker, false)){
-					double score = getScore(buildingType, position);
-					if (score > bestScore){
-						bestPosition = position;
-						bestScore = score;
+				if (BWTA.getRegion(position).equals(region)){
+					if (Match.getInstance().canBuildHere(position, buildingType, someWorker, false)){
+						return position;
 					}
 				}
 			}
 		}
-		if (bestPosition==null){
-			
-			throw new NoSpaceLeftForBuildingException();
-		}
-		return bestPosition;
-		
+		return null;
 	}
 
 	private double getScore(UnitType buildingType, TilePosition position) {

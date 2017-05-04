@@ -12,16 +12,16 @@ import log.BotLogger;
 
 public class KitingBehavior implements CombatBehavior {
 
+	private static final int STORM_RADIUS = 3*32;
+	
 	public Unit unit;
 	public Position moveTarget;
-	private int lastAttackFrame;
 	private boolean hasAttacked;
 	
 	public KitingBehavior(Unit unit) {
 		super();
 		this.unit = unit;
 		this.moveTarget = null;
-		this.lastAttackFrame = 0;
 		this.hasAttacked = true;
 	}
 
@@ -50,13 +50,10 @@ public class KitingBehavior implements CombatBehavior {
 			cooldown = unit.getType().groundWeapon().damageCooldown();
 		}
 		
-		BotLogger.getInstance().log(this, "Range="+range);
-		BotLogger.getInstance().log(this, "Cooldown="+cooldown);
-		
 		if (unit.isStartingAttack() || unit.isAttackFrame()){
 			hasAttacked = true;
 		} else {
-			if (hasAttacked && shouldKite2(enemy, range, cooldown)){
+			if (hasAttacked && shouldKite(enemy, range, cooldown)){
 				moveTarget = BWAPIHelper.getKitePosition(unit, enemy, range);
 				unit.move(moveTarget);
 				//hasAttacked = false;
@@ -65,7 +62,6 @@ public class KitingBehavior implements CombatBehavior {
 				moveTarget = null;
 				if (hasAttacked || newEnemy){
 					Match.getInstance().drawTextMap(unit.getPosition(), "--Attack--");
-					lastAttackFrame = Match.getInstance().getFrameCount();
 					unit.attack(enemy);
 					hasAttacked = false;
 				}
@@ -73,29 +69,19 @@ public class KitingBehavior implements CombatBehavior {
 		}
 	}
 	
-	private boolean shouldKite2(Unit enemy, int range, int cooldown) {
-		if (unit.getType() == UnitType.Protoss_High_Templar){
-			if (unit.getEnergy() >= 75 && Self.getInstance().hasResearched(TechType.Psionic_Storm)){
-				int targets = BWAPIHelper.getNumberOfUnitsAround(enemy.getTilePosition(), 3*32);
-				return (targets < 3);
-			} else {
-				return false;
-			}
-		} else if (unit.getDistance(enemy) < range*0.9){
-			return true;
-		}
-		return false;
-	}
-
 	private boolean shouldKite(Unit enemy, int range, int cooldown) {
 		if (unit.getType() == UnitType.Protoss_High_Templar){
 			if (unit.getEnergy() >= 75 && Self.getInstance().hasResearched(TechType.Psionic_Storm)){
 				int targets = BWAPIHelper.getNumberOfUnitsAround(enemy.getTilePosition(), 3*32);
-				return (targets < 3);
+				if (targets < 3){
+					Match.getInstance().drawCircleMap(enemy.getPosition(), STORM_RADIUS, Color.Teal);
+					return true;
+				}
+				return false;
 			} else {
 				return false;
 			}
-		} else if (unit.getDistance(enemy) < range*0.9 && Match.getInstance().getFrameCount() - lastAttackFrame > cooldown/2 && Match.getInstance().getFrameCount() - lastAttackFrame < cooldown){
+		} else if (unit.getDistance(enemy) < range*0.9){
 			return true;
 		}
 		return false;
