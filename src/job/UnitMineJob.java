@@ -1,15 +1,11 @@
 package job;
 
-import abstraction.Observation;
 import bwapi.Match;
 import bwapi.Position;
 import bwapi.Unit;
-import bwapi.UnitType;
 import bwapi.WeaponType;
 import bwta.BWTA;
 import extension.BWAPIHelper;
-import log.BotLogger;
-import manager.InformationManager;
 
 public class UnitMineJob extends UnitJob {
 	
@@ -17,13 +13,14 @@ public class UnitMineJob extends UnitJob {
 	
 	private Unit lastMineralField;
 	
-	public UnitMineJob(Unit mineralField) {
+	public UnitMineJob(Unit unit, Unit mineralField) {
+		super(unit);
 		this.mineralField = mineralField;
 		this.lastMineralField = mineralField;
 	}
 
 	@Override
-	public void perform(Unit unit) {
+	public void perform() {
 			
 		// Enemy units nearby
 		Unit enemy = BWAPIHelper.getNearestEnemyUnit(unit.getPosition(), null);

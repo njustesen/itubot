@@ -43,7 +43,7 @@ public class UnitAssignment {
 	public void perform() {
 		if (job != null){
 			try {
-				job.perform(unit);
+				job.perform();
 			} catch (ITUBotException e) {
 				e.printStackTrace();
 			}

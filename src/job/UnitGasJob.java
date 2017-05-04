@@ -7,12 +7,13 @@ public class UnitGasJob extends UnitJob {
 	
 	public Unit refinery;
 	
-	public UnitGasJob(Unit refinery) {
+	public UnitGasJob(Unit unit, Unit refinery) {
+		super(unit);
 		this.refinery = refinery;
 	}
 
 	@Override
-	public void perform(Unit unit) {
+	public void perform() {
 		if (unit.isCarryingMinerals()){
 			if (Match.getInstance().getFrameCount() % 24 == 0){
 				unit.returnCargo();

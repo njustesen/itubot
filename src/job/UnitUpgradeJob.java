@@ -7,12 +7,13 @@ public class UnitUpgradeJob extends UnitJob {
 
 	public UpgradeType upgradeType;
 	
-	public UnitUpgradeJob(UpgradeType upgradeType) {
+	public UnitUpgradeJob(Unit unit, UpgradeType upgradeType) {
+		super(unit);
 		this.upgradeType = upgradeType;
 	}
 	
 	@Override
-	public void perform(Unit unit) {
+	public void perform() {
 		if (!unit.isResearching() && !unit.isUpgrading() && !unit.isTraining() && !unit.isFlying()){
 			unit.upgrade(this.upgradeType);
 		}

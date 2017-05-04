@@ -13,12 +13,13 @@ public class UnitBuildJob extends UnitJob {
 	public UnitType unitType;
 	public TilePosition position;
 	
-	public UnitBuildJob(TilePosition position, UnitType unitType) {
+	public UnitBuildJob(Unit unit, UnitType unitType, TilePosition position) {
+		super(unit);
 		this.position = position;
 		this.unitType = unitType;
 	}
 
-	public void perform(Unit unit) throws NoWorkersException, NoBaseLocationsLeftException {
+	public void perform() throws NoWorkersException, NoBaseLocationsLeftException {
 		if (unit.getDistance(position.toPosition()) > unit.getType().sightRange()){
 			unit.move(position.toPosition());
 		} else {

@@ -2,13 +2,15 @@ package job;
 
 import bwapi.Unit;
 import exception.ITUBotException;
-import exception.NoPossibleBasePositionsException;
 
 public abstract class UnitJob {
 
-	public UnitJob() {
+	public Unit unit;
+	
+	public UnitJob(Unit unit) {
+		this.unit = unit;
 	}
 
-	public abstract void perform(Unit unit) throws ITUBotException;
+	public abstract void perform() throws ITUBotException;
 	
 }

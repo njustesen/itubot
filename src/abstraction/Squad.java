@@ -8,8 +8,8 @@ import bwapi.Position;
 import bwapi.Self;
 import bwapi.Unit;
 import bwapi.Unitset;
-import job.UnitAttackJob;
-import job.UnitRetreatJob;
+import job.UnitCombatJob;
+import log.BotLogger;
 import manager.InformationManager;
 import manager.SquadManager;
 import module.AssaultPrioritizor;
@@ -37,10 +37,13 @@ public class Squad {
 	}
 	
 	public void add(Unit unit) {
-		if (target != null)
-			assignments.add(new UnitAssignment(unit, new UnitAttackJob(target)));
-		else
+		if (unit == null){
+			BotLogger.getInstance().log(this, "Unit is null");
+		} else if (target != null){
+			assignments.add(new UnitAssignment(unit, new UnitCombatJob(unit, target, true)));
+		} else {
 			assignments.add(new UnitAssignment(unit, null));
+		}
 	}
 	
 	public void remove(Unit unit) {
@@ -109,10 +112,10 @@ public class Squad {
 				Position home = InformationManager.getInstance().ownMainBaseLocation.getPosition();
 				text = "Retreating";
 				for (UnitAssignment assignment : assignments){
-					if (assignment.job instanceof UnitRetreatJob)
-						((UnitRetreatJob)assignment.job).target = home;
+					if (assignment.job instanceof UnitCombatJob)
+						((UnitCombatJob)assignment.job).target = home;
 					else
-						assignment.job = new UnitRetreatJob(home);
+						assignment.job = new UnitCombatJob(assignment.unit, home, false);
 				}
 			} else if (target == null){
 				int largest = 0;
@@ -128,18 +131,26 @@ public class Squad {
 				Position center = largestSquad.getCenter();
 				text = "Merging " + center;
 				for (UnitAssignment assignment : assignments){
-					if (assignment.job instanceof UnitRetreatJob)
-						((UnitRetreatJob)assignment.job).target = center;
-					else
-						assignment.job = new UnitRetreatJob(center);
+					if (assignment.job instanceof UnitCombatJob){
+						((UnitCombatJob)assignment.job).target = center;
+						((UnitCombatJob)assignment.job).attack = false;
+					}else{
+						assignment.job = new UnitCombatJob(assignment.unit, center, false);
+					}
 				}
 			} else {
 				text = "Attacking " + target;
-				for(UnitAssignment assignement : assignments){
-					if (assignement.job != null && assignement.job instanceof UnitAttackJob){
-						((UnitAttackJob)assignement.job).target = target;
+				for(UnitAssignment assignment : assignments){
+					if (assignment.job != null && assignment.job instanceof UnitCombatJob){
+						((UnitCombatJob)assignment.job).target = target;
+						((UnitCombatJob)assignment.job).attack = true;
+					} else if (assignment.unit != null){
+						if (assignment.unit == null){
+							BotLogger.getInstance().log(this, "Unit is null");
+						}
+						assignment.job = new UnitCombatJob(assignment.unit, target, true);
 					} else {
-						assignement.job = new UnitAttackJob(target);
+						BotLogger.getInstance().log(this, "Unit is null");
 					}
 				}
 			}

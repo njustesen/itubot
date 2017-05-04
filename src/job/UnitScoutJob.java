@@ -17,14 +17,15 @@ public class UnitScoutJob extends UnitJob {
 	public int lastHP;
 	public int lastFlee;
 	
-	public UnitScoutJob() {
+	public UnitScoutJob(Unit unit) {
+		super(unit);
 		this.target = null;
 		this.enemy = null;
 		this.lastHP = -1;
 	}
 	
 	@Override
-	public void perform(Unit unit) throws NoPossibleBasePositionsException {
+	public void perform() throws NoPossibleBasePositionsException {
 		
 		// Setup hp
 		if (lastHP == -1){

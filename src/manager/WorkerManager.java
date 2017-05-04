@@ -71,6 +71,9 @@ public class WorkerManager implements BWEventListener, Manager {
 		for (UnitAssignment assignment : assignments){
 			if (assignment.job == null){
 				assignment.job = newMineJob(assignment.unit);
+			} else if (assignment.job instanceof UnitScoutJob 
+					&& assignment.unit.getDistance(InformationManager.getInstance().ownMainBaseLocation.getPosition()) < 500){
+				assignment.job = newMineJob(assignment.unit);
 			}
 		}
 		
@@ -111,14 +114,14 @@ public class WorkerManager implements BWEventListener, Manager {
 					BotLogger.getInstance().log(this, "Location returned " + position);
 					worker = closestWorker(position);
 				}
-				int moveTime = moveTime(position, worker);
+				int moveTime = moveTime(position, worker.unit);
 				if (canBuildNow(nextBuild.unitType) || resTime <= moveTime){
 					if (worker.job instanceof UnitMineJob){
 						MineralPrioritizor.getInstance().ressign(((UnitMineJob)worker.job).mineralField);
 					} else if (worker.job instanceof UnitGasJob){
 						MineralPrioritizor.getInstance().ressign(((UnitGasJob)worker.job).refinery);
 					}
-					worker.job = new UnitBuildJob(position, nextBuild.unitType);
+					worker.job = new UnitBuildJob(worker.unit, nextBuild.unitType, position);
 				}
 			}
 		} catch (NoWorkersException e) {
@@ -131,7 +134,7 @@ public class WorkerManager implements BWEventListener, Manager {
 		
 		// If one pylon and not scouting
 		if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) > 0 && 
-				InformationManager.getInstance().possibleEnemyBasePositions.size() > 1){
+				InformationManager.getInstance().enemyBaseLocation == null){
 			boolean scouting = false;
 			for(UnitAssignment assignment : assignments){
 				if (assignment.job instanceof UnitScoutJob){
@@ -167,10 +170,10 @@ public class WorkerManager implements BWEventListener, Manager {
 		return (int) Math.max(estimateGas, estimateMinerals);
 	}
 
-	private int moveTime(TilePosition position, UnitAssignment assignment) {
+	private int moveTime(TilePosition position, Unit unit) {
 		
-		int distance = (int) (BWTA.getGroundDistance(position, assignment.unit.getPosition().toTilePosition()));
-		int time = (int) ((double)distance / (double)assignment.unit.getType().topSpeed());
+		int distance = (int) (BWTA.getGroundDistance(position, unit.getPosition().toTilePosition()));
+		int time = (int) ((double)distance / (double)unit.getType().topSpeed());
 		
 		return time;
 		
@@ -188,11 +191,11 @@ public class WorkerManager implements BWEventListener, Manager {
 	}
 
 	private void moveMinerToGas() throws NoFreeRefineryException {
-		for(UnitAssignment responsibility : assignments){
-			if (responsibility.job instanceof UnitMineJob && !responsibility.unit.isCarryingMinerals()){
-				Unit refinery = GasPrioritizor.getInstance().bestRefinery(responsibility.unit);
-				MineralPrioritizor.getInstance().ressign(((UnitMineJob)responsibility.job).mineralField);
-				responsibility.job = new UnitGasJob(refinery);
+		for(UnitAssignment assignment : assignments){
+			if (assignment.job instanceof UnitMineJob && !assignment.unit.isCarryingMinerals()){
+				Unit refinery = GasPrioritizor.getInstance().bestRefinery(assignment.unit);
+				MineralPrioritizor.getInstance().ressign(((UnitMineJob)assignment.job).mineralField);
+				assignment.job = new UnitGasJob(assignment.unit, refinery);
 				GasPrioritizor.getInstance().assign(refinery);
 				return;
 			}
@@ -200,10 +203,10 @@ public class WorkerManager implements BWEventListener, Manager {
 	}
 	
 	private void moveMinerToScout() throws NoFreeRefineryException {
-		for(UnitAssignment responsibility : assignments){
-			if (responsibility.job instanceof UnitMineJob && !responsibility.unit.isCarryingMinerals()){
-				MineralPrioritizor.getInstance().ressign(((UnitMineJob)responsibility.job).mineralField);
-				responsibility.job = new UnitScoutJob();
+		for(UnitAssignment assignment : assignments){
+			if (assignment.job instanceof UnitMineJob && !assignment.unit.isCarryingMinerals()){
+				MineralPrioritizor.getInstance().ressign(((UnitMineJob)assignment.job).mineralField);
+				assignment.job = new UnitScoutJob(assignment.unit);
 				return;
 			}
 		}
@@ -211,8 +214,8 @@ public class WorkerManager implements BWEventListener, Manager {
 	
 	private int gasSpotsLeft() {
 		int n = InformationManager.getInstance().refineries.size()*3;
-		for(UnitAssignment responsibility : assignments){
-			if (responsibility.job instanceof UnitGasJob){
+		for(UnitAssignment assignment : assignments){
+			if (assignment.job instanceof UnitGasJob){
 				n--;
 			}
 		}
@@ -324,7 +327,7 @@ public class WorkerManager implements BWEventListener, Manager {
 	private UnitJob newMineJob(Unit unit) throws NoMinableMineralsException {
 		Unit minePatch = MineralPrioritizor.getInstance().bestMineralField(unit);
 		MineralPrioritizor.getInstance().assign(minePatch);
-		return new UnitMineJob(minePatch);
+		return new UnitMineJob(unit, minePatch);
 	}
 	
 
@@ -341,19 +344,6 @@ public class WorkerManager implements BWEventListener, Manager {
 				}
 			}
 		}
-	}
-
-	private BaseLocation closestBaseLocation(Unit unit) {
-		BaseLocation closestLocation = null;
-		double closestDistance = Integer.MAX_VALUE;
-		for(BaseLocation location : InformationManager.getInstance().ownBaseLocations){
-			double distance = unit.getDistance(location);
-			if (distance < closestDistance){
-				closestDistance = distance;
-				closestLocation = location;
-			}
-		}
-		return closestLocation;
 	}
 
 	@Override

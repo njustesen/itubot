@@ -57,22 +57,19 @@ public class BuildingManager implements Manager, BWEventListener {
 				return;
 			}
 			if (nextBuild.type == BuildType.UNIT){
-				UnitAssignment trainer = getProductionBuilding(nextBuild.unitType);
-				if (trainer == null){
-				} else {
-					trainer.job = new UnitTrainJob(nextBuild.unitType);
+				UnitAssignment buildingJob = getProductionBuilding(nextBuild.unitType);
+				if (buildingJob != null){
+					buildingJob.job = new UnitTrainJob(buildingJob.unit, nextBuild.unitType);
 				}
 			} else if (nextBuild.type == BuildType.TECH){
-				UnitAssignment trainer = getProductionBuilding(nextBuild.techType);
-				if (trainer == null){
-				} else {
-					trainer.job = new UnitTechJob(nextBuild.techType);
+				UnitAssignment buildingJob = getProductionBuilding(nextBuild.techType);
+				if (buildingJob != null){
+					buildingJob.job = new UnitTechJob(buildingJob.unit, nextBuild.techType);
 				}
 			} else if (nextBuild.type == BuildType.UPGRADE){
-				UnitAssignment trainer = getProductionBuilding(nextBuild.upgradeType);
-				if (trainer == null){
-				} else {
-					trainer.job = new UnitUpgradeJob(nextBuild.upgradeType);
+				UnitAssignment buildingJob = getProductionBuilding(nextBuild.upgradeType);
+				if (buildingJob != null){
+					buildingJob.job = new UnitUpgradeJob(buildingJob.unit, nextBuild.upgradeType);
 				}
 			}
 		} catch (NoBuildOrderException e) {

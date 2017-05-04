@@ -20,7 +20,7 @@ import bwapi.Position;
 import bwapi.Self;
 import bwapi.Unit;
 import bwapi.UnitType;
-import job.UnitAttackJob;
+import job.UnitCombatJob;
 import log.BotLogger;
 
 public class SquadManager implements Manager, BWEventListener {
@@ -113,18 +113,20 @@ public class SquadManager implements Manager, BWEventListener {
 			for (UnitAssignment assignment : squad.assignments){
 				Match.getInstance().drawTextMap(assignment.unit.getX(), assignment.unit.getY(), ""+squad.id);
 				// Draw units
-				if (assignment.job != null && assignment.job instanceof UnitAttackJob){
+				if (assignment.job != null && assignment.job instanceof UnitCombatJob){
 					Match.getInstance().drawCircleMap(assignment.unit.getPosition(), assignment.unit.getType().width()/2, Color.Green);
-					if (((UnitAttackJob)assignment.job).target != null){
-						Position target = ((UnitAttackJob)assignment.job).target;
+					if (((UnitCombatJob)assignment.job).target != null){
+						Position target = ((UnitCombatJob)assignment.job).target;
 						Match.getInstance().drawCircleMap(target, 12, Color.Red);
 						Match.getInstance().drawLineMap(assignment.unit.getPosition(), target, Color.Red);
 					}
+					/*
 					if (((UnitAttackJob)assignment.job).moveTarget != null){
 						Position target = ((UnitAttackJob)assignment.job).moveTarget;
 						Match.getInstance().drawLineMap(assignment.unit.getPosition(), target, Color.Blue);
 						Match.getInstance().drawCircleMap(target, 4, Color.Red);
 					}
+					*/
 				}
 			}
 			Position center = squad.getCenter();
