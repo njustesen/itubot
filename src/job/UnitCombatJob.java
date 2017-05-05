@@ -105,7 +105,10 @@ public class UnitCombatJob extends UnitJob {
 		boolean newTarget = false;
 		if (unit.getType() == UnitType.Protoss_High_Templar && unit.getEnergy() >= 75 && Self.getInstance().hasResearched(TechType.Psionic_Storm)){
 			int bestValue = Integer.MIN_VALUE;
-			for (Unit enemy : BWAPIHelper.getEnemyUnitsAround(unit.getPosition(), 12*32)){
+			for (Unit enemy : BWAPIHelper.getEnemyUnitsAround(unit.getPosition(), null, 12*32)){
+				if (enemy.getType().isBuilding()){
+					continue;
+				}
 				int enemyValue = BWAPIHelper.getEnemyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
 				int ownValue = BWAPIHelper.getFriendlyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
 				if (enemyValue / 2 > ownValue && enemyValue >= MIN_STORM_VALUE && enemyValue - ownValue > bestValue){
@@ -115,7 +118,10 @@ public class UnitCombatJob extends UnitJob {
 			}
 		} else if  (unit.getType() == UnitType.Protoss_Arbiter && unit.getEnergy() >= 100 && Self.getInstance().hasResearched(TechType.Stasis_Field)){
 			int bestValue = Integer.MIN_VALUE;
-			for (Unit enemy : BWAPIHelper.getEnemyUnitsAround(unit.getPosition(), 12*32)){
+			for (Unit enemy : BWAPIHelper.getEnemyUnitsAround(unit.getPosition(), null, 12*32)){
+				if (enemy.getType().isBuilding()){
+					continue;
+				}
 				int enemyValue = BWAPIHelper.getEnemyUnitValueAround(enemy.getTilePosition(), STASIS_RADIUS);
 				int ownValue = BWAPIHelper.getFriendlyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
 				if (enemyValue / 2 > ownValue && enemyValue >= MIN_STASIS_VALUE && enemyValue - ownValue > bestValue){

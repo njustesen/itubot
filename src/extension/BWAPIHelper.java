@@ -97,16 +97,6 @@ public class BWAPIHelper {
 		double multiplier = range / length;
 		return new Position((int)(unit.getPosition().getX() + x * multiplier), (int)(unit.getPosition().getY() + y * multiplier));
 	}
-
-	public static int getNumberOfUnitsAround(Position position, int radius) {
-		int i = 0;
-		for(Observation observation : InformationManager.getInstance().observations){
-			if (observation.position.getDistance(position) <= radius){
-				i++;
-			}
-		}
-		return i;
-	}
 	
 	public static int getFriendlyUnitValueAround(TilePosition position, int radius) {
 		int v = 0;
@@ -130,19 +120,36 @@ public class BWAPIHelper {
 		return v;
 	}
 	
-	public static List<Unit> getEnemyUnitsAround(Position position, int radius) {
+	public static List<Unit> getEnemyUnitsAround(Position position, UnitType unitType, int radius) {
 		List<Unit> units = new ArrayList<Unit>();
 		for(Observation observation : InformationManager.getInstance().observations){
-			if (observation.type.isBuilding())
-				continue;
 			Unit unit = Match.getInstance().getUnit(observation.id);
-			if (unit.getPosition().isValid() && unit.getDistance(position) <= radius){
+			if ((unitType == null || unit.getType() == unitType) && unit.getPosition().isValid() && unit.getDistance(position) <= radius){
 				units.add(unit);
 			}
 		}
 		return units;
 	}
 	
+	public static List<Unit> getFriendlyUnitsAround(TilePosition position, UnitType unitType, int radius) {
+		List<Unit> units = new ArrayList<Unit>();
+		for(Unit unit : Self.getInstance().getUnits()){
+			if ((unitType == null || unit.getType() == unitType) && unit.getDistance(position.toPosition()) <= radius){
+				units.add(unit);
+			}
+		}
+		return units;
+	}
+	
+	public static List<Unit> getMineralsAround(TilePosition tilePosition, int radius) {
+		List<Unit> units = new ArrayList<Unit>();
+		for(Unit unit : Match.getInstance().getMinerals()){
+			if (unit.getDistance(tilePosition.toPosition()) <= radius){
+				units.add(unit);
+			}
+		}
+		return units;
+	}
 
 	
 	public static Unit getNearestMineral(Position position) {

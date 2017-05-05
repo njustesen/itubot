@@ -104,18 +104,20 @@ public class WorkerManager implements BWEventListener, Manager {
 			nextBuild = BuildOrderManager.getInstance().getNextBuild();
 			if (nextBuild.type == BuildType.BUILDING && !buildAlreadyAssigned(nextBuild)){
 				BotLogger.getInstance().log(this, "Requesting build location for " + nextBuild.toString());
-				TilePosition position = BuildLocationManager.getInstance().getLocation(nextBuild.unitType, null);
+				TilePosition position = BuildLocationManager.getInstance().getLocation(nextBuild.unitType);
 				BotLogger.getInstance().log(this, "Location returned " + position);
-				UnitAssignment worker = closestWorker(position);
-				int resTime = resourceTime(nextBuild.unitType);
-				int moveTime = moveTime(position, worker.unit);
-				if (canBuildNow(nextBuild.unitType) || resTime <= moveTime){
-					if (worker.job instanceof UnitMineJob){
-						MineralPrioritizor.getInstance().ressign(((UnitMineJob)worker.job).mineralField);
-					} else if (worker.job instanceof UnitGasJob){
-						MineralPrioritizor.getInstance().ressign(((UnitGasJob)worker.job).refinery);
+				if (position != null){
+					UnitAssignment worker = closestWorker(position);
+					int resTime = resourceTime(nextBuild.unitType);
+					int moveTime = moveTime(position, worker.unit);
+					if (canBuildNow(nextBuild.unitType) || resTime <= moveTime){
+						if (worker.job instanceof UnitMineJob){
+							MineralPrioritizor.getInstance().ressign(((UnitMineJob)worker.job).mineralField);
+						} else if (worker.job instanceof UnitGasJob){
+							MineralPrioritizor.getInstance().ressign(((UnitGasJob)worker.job).refinery);
+						}
+						worker.job = new UnitBuildJob(worker.unit, nextBuild.unitType, position);
 					}
-					worker.job = new UnitBuildJob(worker.unit, nextBuild.unitType, position);
 				}
 			}
 		} catch (NoWorkersException e) {

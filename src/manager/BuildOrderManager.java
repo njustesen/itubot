@@ -67,22 +67,16 @@ public class BuildOrderManager implements Manager {
 			return new Build(UnitType.Protoss_Probe);
 		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 2){
 			return new Build(UnitType.Protoss_Pylon);
-		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 13){
+		} else if (Self.getInstance().supplyUsed() + 4 > Self.getInstance().supplyTotal() && InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Pylon) < 1){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Probe) == 0){
 			return new Build(UnitType.Protoss_Probe);
 		} else if (InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Photon_Cannon) == 0){
 			return new Build(UnitType.Protoss_Photon_Cannon);
-		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 18){
-			return new Build(UnitType.Protoss_Probe);
-		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Nexus) < 2){
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Nexus)  * 16 < InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe)){
 			return new Build(UnitType.Protoss_Nexus);
-		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 26){
-			return new Build(UnitType.Protoss_Probe);
-		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Nexus) < 3){
-			return new Build(UnitType.Protoss_Nexus);
-		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 32){
-			return new Build(UnitType.Protoss_Probe);
-		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Nexus) < 4){
-			return new Build(UnitType.Protoss_Nexus);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Nexus) * 4 > InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe)){
+			return new Build(UnitType.Protoss_Pylon);
 		} else {
 			return new Build(UnitType.Protoss_Probe);
 		}
