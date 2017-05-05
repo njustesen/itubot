@@ -42,8 +42,8 @@ public class BuildOrderManager implements Manager {
 		
 	public Build getNextBuild() throws NoBuildOrderException{
 		
-		return new Build(UnitType.Protoss_Nexus);
-		//return cannonBuild();
+		//return new Build(UnitType.Protoss_Nexus);
+		return cannonBuild();
 		//return arbiterBuild();
 		//return dragoonBuild();
 		//return zealotBuild();
