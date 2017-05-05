@@ -82,21 +82,32 @@ public class KitingBehavior implements CombatBehavior {
 			} else {
 				unit.move(enemy.getPosition());
 			}
+		} else if (unit.getType() == UnitType.Protoss_Arbiter){
+			if (unit.getDistance(enemy) <= 9*32){
+				BotLogger.getInstance().log(this, "Casting stasis field!");
+				unit.useTech(TechType.Stasis_Field, enemy);
+			} else {
+				unit.move(enemy.getPosition());
+			}
 		}
 	}
 
 	private boolean shouldKite(Unit enemy, int range, int cooldown) {
+		if (enemy == null)
+			return true;
 		if (unit.getType() == UnitType.Protoss_High_Templar){
-			if (unit.getEnergy() >= 75 && Self.getInstance().hasResearched(TechType.Psionic_Storm)){
-				int value = BWAPIHelper.getEnemyUnitValueAround(enemy.getTilePosition(), 3*32);
-				value -= BWAPIHelper.getFriendlyUnitValueAround(enemy.getTilePosition(), 3*32);
-				if (value < 3){
-					Match.getInstance().drawCircleMap(enemy.getPosition(), STORM_RADIUS, Color.Teal);
-					return true;
-				}
-				return false;
-			} else {
-				return false;
+			if (!Self.getInstance().hasResearched(TechType.Psionic_Storm)){
+				return true;
+			}
+			if (unit.getEnergy() < 75){
+				return true;
+			}
+		} if (unit.getType() == UnitType.Protoss_Arbiter){
+			if (!Self.getInstance().hasResearched(TechType.Stasis_Field)){
+				return true;
+			}
+			if (unit.getEnergy() < 100){
+				return true;
 			}
 		} else if (unit.getDistance(enemy) < range*0.9){
 			return true;

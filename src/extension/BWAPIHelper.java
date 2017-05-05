@@ -1,7 +1,10 @@
 package extension;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import abstraction.Observation;
-import bwapi.Enemy;
+import abstraction.Squad;
 import bwapi.Match;
 import bwapi.Position;
 import bwapi.Self;
@@ -10,18 +13,34 @@ import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.WeaponType;
 import manager.InformationManager;
+import manager.SquadManager;
 
 public class BWAPIHelper {
 
+	public static Unit getNearestFriendlyUnit(Unit notThisUnit, UnitType type){
+		Unit closest = null;
+		int closestDistance = Integer.MAX_VALUE;
+		for(Unit other : Self.getInstance().getUnits()){
+			if (type == null || other.getType() == type && notThisUnit.getID() != other.getID()){
+				int distance = other.getDistance(other);
+				if (distance < closestDistance){
+					closestDistance = distance;
+					closest = other;
+				}
+			}
+		}
+		return closest;
+	}
+	
 	public static Unit getNearestFriendlyUnit(Position position, UnitType type){
 		Unit closest = null;
 		int closestDistance = Integer.MAX_VALUE;
-		for(Unit unit : Self.getInstance().getUnits()){
-			if (type == null || unit.getType() == type){
-				int distance = unit.getDistance(position);
+		for(Unit other : Self.getInstance().getUnits()){
+			if (type == null || other.getType() == type){
+				int distance = other.getDistance(position);
 				if (distance < closestDistance){
 					closestDistance = distance;
-					closest = unit;
+					closest = other;
 				}
 			}
 		}
@@ -69,6 +88,9 @@ public class BWAPIHelper {
 	}
 	
 	public static Position getKitePosition(Unit unit, Unit enemy, int range) {
+		if (unit.getType() == UnitType.Protoss_Arbiter || unit.getType() == UnitType.Protoss_Observer){
+			return SquadManager.getInstance().getSquad(unit).getCenter();
+		}
 		int x = unit.getPosition().getX() - enemy.getPosition().getX();
 		int y = unit.getPosition().getY() - enemy.getPosition().getY();
 		double length = new Position(x,y).getDistance(new Position(0,0));
@@ -99,12 +121,28 @@ public class BWAPIHelper {
 	public static int getEnemyUnitValueAround(TilePosition position, int radius) {
 		int v = 0;
 		for(Observation observation : InformationManager.getInstance().observations){
+			if (observation.type.isBuilding())
+				continue;
 			if (observation.position.getDistance(position.toPosition()) <= radius){
 				v += observation.type.mineralPrice() + observation.type.gasPrice();
 			}
 		}
 		return v;
 	}
+	
+	public static List<Unit> getEnemyUnitsAround(Position position, int radius) {
+		List<Unit> units = new ArrayList<Unit>();
+		for(Observation observation : InformationManager.getInstance().observations){
+			if (observation.type.isBuilding())
+				continue;
+			Unit unit = Match.getInstance().getUnit(observation.id);
+			if (unit.getPosition().isValid() && unit.getDistance(position) <= radius){
+				units.add(unit);
+			}
+		}
+		return units;
+	}
+	
 
 	
 	public static Unit getNearestMineral(Position position) {
@@ -182,6 +220,4 @@ public class BWAPIHelper {
 				type.isSpellcaster());
 	}
 
-
-	
 }

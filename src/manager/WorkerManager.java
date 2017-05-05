@@ -104,7 +104,7 @@ public class WorkerManager implements BWEventListener, Manager {
 			nextBuild = BuildOrderManager.getInstance().getNextBuild();
 			if (nextBuild.type == BuildType.BUILDING && !buildAlreadyAssigned(nextBuild)){
 				BotLogger.getInstance().log(this, "Requesting build location for " + nextBuild.toString());
-				TilePosition position = BuildLocationManager.getInstance().getLocation(nextBuild.unitType);
+				TilePosition position = BuildLocationManager.getInstance().getLocation(nextBuild.unitType, null);
 				BotLogger.getInstance().log(this, "Location returned " + position);
 				UnitAssignment worker = closestWorker(position);
 				int resTime = resourceTime(nextBuild.unitType);

@@ -1,6 +1,7 @@
 package manager;
 
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -101,18 +102,19 @@ public class BuildLocationManager implements Manager, BWEventListener {
 		}
 		for(Unit unit : base.getMinerals()){
 			if (unit.exists()){
-				fillShortestPath(base, unit);
+				fillShortestPaths(base, unit);
 			}
 		}
 		for(Unit unit : base.getGeysers()){
 			if (unit.exists()){
-				fillShortestPath(base, unit);
+				fillShortestPaths(base, unit);
 			}
 		}
 	}
 	
-	private void fillShortestPath(BaseLocation base, Unit unit) {
+	private void fillShortestPaths(BaseLocation base, Unit unit) {
 		double shortestDistance = Integer.MAX_VALUE;
+		List<List<TilePosition>> shortestPaths = new ArrayList<List<TilePosition>>();
 		List<TilePosition> shortestPath = null;
 		for (int x = base.getTilePosition().getX(); x < base.getTilePosition().getX() + UnitType.Protoss_Nexus.tileWidth(); x++){
 			for (int y = base.getTilePosition().getY(); y < base.getTilePosition().getY() + UnitType.Protoss_Nexus.tileHeight(); y++){
@@ -130,13 +132,15 @@ public class BuildLocationManager implements Manager, BWEventListener {
 						}
 					}
 				}
-				
+				if (shortestPath != null){
+					shortestPaths.add(shortestPath);
+					shortestPath = null;
+					shortestDistance = Integer.MAX_VALUE;
+				}
 			}
 		}
-		if (shortestPath != null){
-			fillPath(shortestPath);
-		} else {
-			BotLogger.getInstance().log(this, "No path found.");
+		for (List<TilePosition> path : shortestPaths){
+			fillPath(path);
 		}
 	}
 
@@ -191,16 +195,17 @@ public class BuildLocationManager implements Manager, BWEventListener {
 					//BotLogger.getInstance().log(this, position + " out of map.");
 					return false;
 				}
+				if (buildingType.requiresPsi() && psi[x][y] <= 0){
+					//BotLogger.getInstance().log(this, position + " without psi.");
+					return false;
+				}
 				if (tiles[x][y] != 0 || blocked[x][y] != 0){
 					//BotLogger.getInstance().log(this, position + " not free.");
 					return false;
 				}
 			}
 		}
-		if (buildingType.requiresPsi() && psi[position.getX()][position.getY()] <= 0){
-			//BotLogger.getInstance().log(this, position + " without psi.");
-			return false;
-		}
+		
 		return true;
 	}
 
@@ -208,7 +213,7 @@ public class BuildLocationManager implements Manager, BWEventListener {
 	public void execute() {
 		blocked = new int[Match.getInstance().mapWidth()][Match.getInstance().mapHeight()];
 		for (Unit unit : Self.getInstance().getUnits()){
-			if (!unit.getType().isBuilding()){
+			if (!unit.getType().isBuilding() && !unit.getType().isWorker()){
 				blocked[unit.getTilePosition().getX()][unit.getTilePosition().getY()] = 1;
 			}
 		}
@@ -235,7 +240,7 @@ public class BuildLocationManager implements Manager, BWEventListener {
 		}
 	}
 	
-	public TilePosition getLocation(UnitType buildingType) throws NoWorkersException, NoBaseLocationsLeftException{
+	public TilePosition getLocation(UnitType buildingType, TilePosition notPosition) throws NoWorkersException, NoBaseLocationsLeftException{
 		
 		// Refinery, Assimilator, Extractor
 		int stopDist = 100;
@@ -281,6 +286,8 @@ public class BuildLocationManager implements Manager, BWEventListener {
 		for (int x = 0; x < tiles.length; x++){
 			for (int y = 0; y < tiles[0].length; y++){
 				TilePosition position = new TilePosition(x, y);
+				if (position.equals(notPosition))
+					continue;
 				if (isFree(position, buildingType)) {
 					double score = score(position, buildingType);
 					if (score > bestScore){
@@ -292,7 +299,7 @@ public class BuildLocationManager implements Manager, BWEventListener {
 		}
 		
 		if (best != null){
-			BotLogger.getInstance().log(this, best + " found with a score: " + bestScore);
+			//BotLogger.getInstance().log(this, best + " found with a score: " + bestScore);
 			return best;
 		}
 		

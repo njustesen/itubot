@@ -63,6 +63,18 @@ public class SquadManager implements Manager, BWEventListener {
 		}
 	}
 	
+
+	public Squad getSquad(Unit unit) {
+		for(Squad squad : squads){
+			for(UnitAssignment assignment : squad.assignments){
+				if (assignment.unit.getID() == unit.getID()){
+					return squad;
+				}
+			}
+		}
+		return null;
+	}
+	
 	private void splitAndMerge() {
 		// Split spread-out squads
 		List<Squad> newSquads = new ArrayList<Squad>();
@@ -242,5 +254,6 @@ public class SquadManager implements Manager, BWEventListener {
 	@Override
 	public void onUnitShow(Unit arg0) {
 	}
+
 	
 }

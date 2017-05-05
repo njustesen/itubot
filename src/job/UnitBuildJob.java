@@ -39,7 +39,7 @@ public class UnitBuildJob extends UnitJob {
 			} else {
 				Match.getInstance().drawTextMap(position.toPosition(), "("+position.getX()+","+position.getY() + ")");
 				Match.getInstance().drawBoxMap(new Position(position.toPosition().getX(), position.toPosition().getY()), new Position(position.toPosition().getX() + 32, position.toPosition().getY()+32), Color.Red);
-				position = BuildLocationManager.getInstance().getLocation(unitType);
+				position = BuildLocationManager.getInstance().getLocation(unitType, position);
 				unit.move(position.toPosition());
 			}
 		}

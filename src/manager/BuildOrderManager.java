@@ -42,12 +42,63 @@ public class BuildOrderManager implements Manager {
 		
 	public Build getNextBuild() throws NoBuildOrderException{
 		
+		return arbiterBuild();
 		//return dragoonBuild();
 		//return zealotBuild();
-		return highTemplarBuild();
+		//return highTemplarBuild();
 		//return reaverBuild();
 		//return carrierBuild();
 		//return pylonBuild();
+		
+	}
+
+	private Build arbiterBuild() {
+		
+		if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 8){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 1){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 11){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Gateway) < 1){
+			return new Build(UnitType.Protoss_Gateway);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 12){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 2){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 13){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Assimilator) < 1){
+			return new Build(UnitType.Protoss_Assimilator);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 14){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Cybernetics_Core) < 1){
+			return new Build(UnitType.Protoss_Cybernetics_Core);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 15){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 3){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Stargate) < 1){
+			return new Build(UnitType.Protoss_Stargate);
+		} else if (Self.getInstance().supplyUsed() + 8 > Self.getInstance().supplyTotal() && InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Pylon) < 1){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Zealot) < 1){
+			return new Build(UnitType.Protoss_Zealot);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Citadel_of_Adun) < 1){
+			return new Build(UnitType.Protoss_Citadel_of_Adun);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Templar_Archives) < 1){
+			return new Build(UnitType.Protoss_Templar_Archives);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Arbiter_Tribunal) < 1){
+			return new Build(UnitType.Protoss_Arbiter_Tribunal);
+		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Arbiter_Tribunal) >= 1 && InformationManager.getInstance().ownTechCountTotal(TechType.Stasis_Field) < 1){
+			return new Build(TechType.Stasis_Field);
+		} else if (InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Arbiter_Tribunal) >= 1 && InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Arbiter) < 1){
+			return new Build(UnitType.Protoss_Arbiter);
+		} else if (InformationManager.getInstance().ownUpgradeCountTotal(UpgradeType.Khaydarin_Amulet) < 1){
+			return new Build(UpgradeType.Khaydarin_Amulet);
+		} else {
+			return new Build(UnitType.Protoss_Probe);
+		}
 		
 	}
 

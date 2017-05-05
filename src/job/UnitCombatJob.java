@@ -1,5 +1,7 @@
 package job;
 
+import bwapi.Color;
+import bwapi.Match;
 import bwapi.Position;
 import bwapi.Self;
 import bwapi.TechType;
@@ -10,12 +12,17 @@ import combat.CombatBehavior;
 import combat.KitingBehavior;
 import combat.MeleeBehavior;
 import extension.BWAPIHelper;
+import log.BotLogger;
 
 public class UnitCombatJob extends UnitJob {
 
 	private static final int ATTACK_DISTANCE = 1500;
 	private static final int RETREAT_DISTANCE = 32*5;
 	private static final int ARCHON_MERGE_DISTANCE = 500;
+	private static final int STORM_RADIUS = 3*32;
+	private static final int MIN_STORM_VALUE = 200;
+	private static final int STASIS_RADIUS = 3*32;
+	private static final int MIN_STASIS_VALUE = 300;
 	
 	public Position target;
 	public boolean attack;
@@ -58,13 +65,15 @@ public class UnitCombatJob extends UnitJob {
 			Unit otherEnemy = BWAPIHelper.getNearestEnemyUnit(unit.getPosition(), null);
 			boolean inAttack = (unit.getDistance(otherEnemy) <= attackDistance());
 			if (inAttack && attack && unit.getEnergy() < 50){
-				Unit otherTemplar = BWAPIHelper.getNearestFriendlyUnit(unit.getPosition(), UnitType.Protoss_High_Templar);
-				if (otherTemplar != null && unit.getDistance(otherTemplar) < ARCHON_MERGE_DISTANCE){
+				Unit otherTemplar = BWAPIHelper.getNearestFriendlyUnit(unit, UnitType.Protoss_High_Templar);
+				if (otherTemplar != null && otherTemplar.getEnergy() < 50 && unit.getDistance(otherTemplar) < ARCHON_MERGE_DISTANCE){
 					unit.useTech(TechType.Archon_Warp, otherTemplar);
+					Match.getInstance().drawLineMap(unit.getPosition(), otherTemplar.getPosition(), Color.White);
+					Match.getInstance().drawCircleMap(otherTemplar.getPosition(), 8, Color.White);
+					Match.getInstance().drawCircleMap(unit.getPosition(), 4, Color.White);
 					return;
 				}
 			}
-			
 		}
 		
 		// Build scarabs
@@ -92,8 +101,32 @@ public class UnitCombatJob extends UnitJob {
 		}
 		
 		// Find target
-		Unit newEnemy = BWAPIHelper.getNewEnemyTarget(unit, attackDistance());
+		Unit newEnemy = null;
 		boolean newTarget = false;
+		if (unit.getType() == UnitType.Protoss_High_Templar && unit.getEnergy() >= 75 && Self.getInstance().hasResearched(TechType.Psionic_Storm)){
+			int bestValue = Integer.MIN_VALUE;
+			for (Unit enemy : BWAPIHelper.getEnemyUnitsAround(unit.getPosition(), 12*32)){
+				int enemyValue = BWAPIHelper.getEnemyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
+				int ownValue = BWAPIHelper.getFriendlyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
+				if (enemyValue / 2 > ownValue && enemyValue >= MIN_STORM_VALUE && enemyValue - ownValue > bestValue){
+					bestValue = enemyValue - ownValue;
+					newEnemy = enemy;
+				}
+			}
+		} else if  (unit.getType() == UnitType.Protoss_Arbiter && unit.getEnergy() >= 100 && Self.getInstance().hasResearched(TechType.Stasis_Field)){
+			int bestValue = Integer.MIN_VALUE;
+			for (Unit enemy : BWAPIHelper.getEnemyUnitsAround(unit.getPosition(), 12*32)){
+				int enemyValue = BWAPIHelper.getEnemyUnitValueAround(enemy.getTilePosition(), STASIS_RADIUS);
+				int ownValue = BWAPIHelper.getFriendlyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
+				if (enemyValue / 2 > ownValue && enemyValue >= MIN_STASIS_VALUE && enemyValue - ownValue > bestValue){
+					bestValue = enemyValue - ownValue;
+					newEnemy = enemy;
+				}
+			}
+		} else {
+			newEnemy = BWAPIHelper.getNewEnemyTarget(unit, attackDistance());
+		}
+		
 		if (newEnemy != null && (enemy == null || newEnemy.getID() != enemy.getID())){
 			enemy = newEnemy;
 			newTarget = true;
