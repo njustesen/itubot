@@ -86,25 +86,26 @@ public class BuildLocationManager implements Manager, BWEventListener {
 	}
 		
 	private void addBase(BaseLocation base) {
+		BotLogger.getInstance().log(this, "Adding base at " + base);
 		Region region = BWTA.getRegion(base.getPosition());
-		List<Region> regions = region.getReachableRegions();
-		regions.add(region);
-		BotLogger.getInstance().log(this, "Adding " + regions.size() + " regions.");
+		BotLogger.getInstance().log(this, "Region " + region.getCenter());
 		for (int x = 0; x < Match.getInstance().mapWidth(); x++){
 			for (int y = 0; y < Match.getInstance().mapHeight(); y++){
 				Region tileRegion = BWTA.getRegion(new TilePosition(x, y));
-				if (tileRegion != null && regions.contains(tileRegion) && Match.getInstance().isBuildable(x, y, true)){
+				if (tileRegion != null && region.equals(tileRegion) && Match.getInstance().isBuildable(x, y, true)){
 					if (tiles[x][y] == -1){
 						tiles[x][y] = 0;
 					}
 				}
 			}
 		}
+		BotLogger.getInstance().log(this, "Removing mineral tiles");
 		for(Unit unit : base.getMinerals()){
 			if (unit.exists()){
 				fillShortestPaths(base, unit);
 			}
 		}
+		BotLogger.getInstance().log(this, "Removing gas tiles");
 		for(Unit unit : base.getGeysers()){
 			if (unit.exists()){
 				fillShortestPaths(base, unit);
@@ -259,7 +260,11 @@ public class BuildLocationManager implements Manager, BWEventListener {
 			BaseLocation best = null;
 			double bestScore = Integer.MIN_VALUE;
 			for(BaseLocation location : BWTA.getBaseLocations()){
-				if (Match.getInstance().canBuildHere(location.getTilePosition(), buildingType, null, false)) {
+				if (InformationManager.getInstance().ownBaseLocations.contains(location)) {
+					//BotLogger.getInstance().log(this, location + " is our base already");
+				} else if (InformationManager.getInstance().possibleEnemyBasePositions.contains(location)){
+					//BotLogger.getInstance().log(this, location + " might be taken by the enemy");
+				} else {
 					double distanceToHome = Self.getInstance().getStartLocation().toPosition().getDistance(location.getPosition());
 					double distanceToEnemy = 0;
 					for (BaseLocation oppBase : InformationManager.getInstance().possibleEnemyBasePositions){
@@ -268,6 +273,7 @@ public class BuildLocationManager implements Manager, BWEventListener {
 					distanceToEnemy = distanceToEnemy / InformationManager.getInstance().possibleEnemyBasePositions.size();
 					double score = distanceToEnemy - distanceToHome;
 					if (score > bestScore){
+						//BotLogger.getInstance().log(this, "Best score " + score);
 						bestScore = score;
 						best = location;
 					}
@@ -276,6 +282,7 @@ public class BuildLocationManager implements Manager, BWEventListener {
 			if (best == null){
 				throw new NoBaseLocationsLeftException();
 			} else {
+				//BotLogger.getInstance().log(this, "Returning best location " + best.getTilePosition());
 				return best.getTilePosition();
 			}
 		}
@@ -330,6 +337,7 @@ public class BuildLocationManager implements Manager, BWEventListener {
 		} else if (buildingType.canAttack()){
 			Unit nexus = BWAPIHelper.getNearestFriendlyUnit(tilePosition.toPosition(), UnitType.Protoss_Nexus);
 			score -= Math.min(10, nexus.getDistance(tilePosition.toPosition()) / 32);
+			// TODO:Distance to other attacking buildings
 		} else if (buildingType.canProduce()){
 			Unit nexus = BWAPIHelper.getNearestFriendlyUnit(tilePosition.toPosition(), UnitType.Protoss_Nexus);
 			score -= Math.min(7, nexus.getDistance(tilePosition.toPosition()) / 32);
@@ -397,10 +405,18 @@ public class BuildLocationManager implements Manager, BWEventListener {
 	public void onUnitCreate(Unit unit) {
 		if (unit.getType().isBuilding() && unit.getPlayer().getID() == Self.getInstance().getID()){
 			fill(unit);
-			for(BaseLocation base : InformationManager.getInstance().ownBaseLocations){
-				if (unit.getDistance(base) < 100){
-					addBase(base);
+			if (unit.getType().isResourceDepot()){
+				BotLogger.getInstance().log(this, "Nexus build");
+				BotLogger.getInstance().log(this, InformationManager.getInstance().ownBaseLocations.size() + " base locations known");
+				for(BaseLocation base : InformationManager.getInstance().ownBaseLocations){
+					if (unit.getTilePosition().equals(base.getTilePosition())){
+						BotLogger.getInstance().log(this, "Base location " + base.getTilePosition());
+						addBase(base);
+						return;
+					}
 				}
+				BotLogger.getInstance().log(this, "No base location found");
+				
 			}
 			if (unit.getType() == UnitType.Protoss_Pylon){
 				addPsi(unit);

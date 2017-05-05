@@ -130,21 +130,7 @@ public class InformationManager implements Manager, BWEventListener {
 				if (unit.getType().isRefinery()){
 					this.refineries.add(unit);
 				}
-				if (unit.getType().isResourceDepot()){
-					BaseLocation baseLocation = null;
-					int closest = Integer.MAX_VALUE;
-					for(BaseLocation location : BWTA.getBaseLocations()){
-						int distance = unit.getDistance(location.getPosition());
-						if (distance < closest){
-							closest = distance;
-							baseLocation = location;
-						}
-					}
-					if (!this.ownBaseLocations.contains(baseLocation)){
-						this.ownBaseLocations.add(baseLocation);
-						BotLogger.getInstance().log(this, "Adding new base location: " + baseLocation);
-					}
-				}
+				
 			}
 		}
 		for(Unit unit : Enemy.getInstance().getUnits()){
@@ -304,16 +290,26 @@ public class InformationManager implements Manager, BWEventListener {
 
 	@Override
 	public void onUnitComplete(Unit unit) {
-		if (unit.getType().isResourceDepot() && unit.getPlayer().getID() == Self.getInstance().getID()){
-			bases.add(unit);
-		}
-		if (unit.getType() == UnitType.Protoss_Pylon && unit.getPlayer().getID() == Self.getInstance().getID()){
-			pylons.add(unit);
-		}
+		
 	}
 
 	@Override
 	public void onUnitCreate(Unit unit) {
+		if (unit.getType().isResourceDepot()){
+			bases.add(unit);
+			BaseLocation baseLocation = null;
+			for(BaseLocation location : BWTA.getBaseLocations()){
+				if (unit.getTilePosition().equals(location.getTilePosition())){
+					baseLocation = location;
+				}
+			}
+			if (baseLocation != null){
+				this.ownBaseLocations.add(baseLocation);
+			}
+		}
+		if (unit.getType() == UnitType.Protoss_Pylon){
+			pylons.add(unit);
+		}
 	}
 
 	@Override
@@ -331,8 +327,15 @@ public class InformationManager implements Manager, BWEventListener {
 			BotLogger.getInstance().log(this, "After removing " + observations.size());
 		} else {
 			if (unit.getType().isResourceDepot()){
-				BaseLocation baseLocation = BWTA.getNearestBaseLocation(unit.getPosition());
-				this.ownBaseLocations.remove(baseLocation);
+				BaseLocation baseLocation = null;
+				for(BaseLocation location : BWTA.getBaseLocations()){
+					if (unit.getTilePosition().equals(location.getTilePosition())){
+						baseLocation = location;
+					}
+				}
+				if (baseLocation != null){
+					this.ownBaseLocations.remove(baseLocation);
+				}
 				this.bases.remove(unit);
 			} else if (unit.getType() == UnitType.Protoss_Pylon){
 				pylons.remove(unit);

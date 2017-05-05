@@ -42,13 +42,50 @@ public class BuildOrderManager implements Manager {
 		
 	public Build getNextBuild() throws NoBuildOrderException{
 		
-		return arbiterBuild();
+		return new Build(UnitType.Protoss_Nexus);
+		//return cannonBuild();
+		//return arbiterBuild();
 		//return dragoonBuild();
 		//return zealotBuild();
 		//return highTemplarBuild();
 		//return reaverBuild();
 		//return carrierBuild();
 		//return pylonBuild();
+		
+	}
+
+	private Build cannonBuild() {
+		if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 8){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 1){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 11){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Forge) < 1){
+			return new Build(UnitType.Protoss_Forge);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 12){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 2){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 13){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Photon_Cannon) == 0){
+			return new Build(UnitType.Protoss_Photon_Cannon);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 18){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Nexus) < 2){
+			return new Build(UnitType.Protoss_Nexus);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 26){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Nexus) < 3){
+			return new Build(UnitType.Protoss_Nexus);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 32){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Nexus) < 4){
+			return new Build(UnitType.Protoss_Nexus);
+		} else {
+			return new Build(UnitType.Protoss_Probe);
+		}
 		
 	}
 
