@@ -43,7 +43,7 @@ public class BuildOrderManager implements Manager {
 	public Build getNextBuild() throws NoBuildOrderException{
 		
 		//return new Build(UnitType.Protoss_Nexus);
-		return cannonBuild();
+		//return cannonBuild();
 		//return arbiterBuild();
 		//return dragoonBuild();
 		//return zealotBuild();
@@ -51,7 +51,36 @@ public class BuildOrderManager implements Manager {
 		//return reaverBuild();
 		//return carrierBuild();
 		//return pylonBuild();
+		return nexusBuild();
 		
+	}
+	
+	private Build nexusBuild() {
+		if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 8){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 1){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 11){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Forge) < 1){
+			return new Build(UnitType.Protoss_Forge);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe) < 12){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Pylon) < 2){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (Self.getInstance().supplyUsed() + 4 > Self.getInstance().supplyTotal() && InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Pylon) < 1){
+			return new Build(UnitType.Protoss_Pylon);
+		} else if (InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Probe) == 0){
+			return new Build(UnitType.Protoss_Probe);
+		} else if (InformationManager.getInstance().ownUnitCountInProd(UnitType.Protoss_Photon_Cannon) == 0){
+			return new Build(UnitType.Protoss_Photon_Cannon);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Nexus)  * 8 < InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Probe)){
+			return new Build(UnitType.Protoss_Nexus);
+		} else if (InformationManager.getInstance().ownUnitCountTotal(UnitType.Protoss_Nexus) * 4 > InformationManager.getInstance().ownUnitCount(UnitType.Protoss_Probe)){
+			return new Build(UnitType.Protoss_Pylon);
+		} else {
+			return new Build(UnitType.Protoss_Probe);
+		}	
 	}
 
 	private Build cannonBuild() {

@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import abstraction.Observation;
 import bot.ITUBot;
 import bwapi.BWEventListener;
 import bwapi.Color;
@@ -311,14 +312,19 @@ public class BuildLocationManager implements Manager, BWEventListener {
 					//BotLogger.getInstance().log(this, location + " is our base already");
 				} else if (InformationManager.getInstance().possibleEnemyBasePositions.contains(location)){
 					//BotLogger.getInstance().log(this, location + " might be taken by the enemy");
+				} else if (location.isIsland()){
+					// TODO: Use dropships to expand to islands
 				} else {
 					double distanceToHome = Self.getInstance().getStartLocation().toPosition().getDistance(location.getPosition());
 					double distanceToEnemy = 0;
-					for (BaseLocation oppBase : InformationManager.getInstance().possibleEnemyBasePositions){
-						distanceToEnemy += oppBase.getDistance(location.getPosition());
+					for (Observation observation : InformationManager.getInstance().observations){
+						distanceToEnemy += observation.position.getDistance(location.getPosition());
 					}
-					distanceToEnemy = distanceToEnemy / InformationManager.getInstance().possibleEnemyBasePositions.size();
+					distanceToEnemy = distanceToEnemy / InformationManager.getInstance().observations.size();
+					BotLogger.getInstance().log(this, "distanceToEnemy: " + distanceToEnemy);
 					double score = distanceToEnemy - distanceToHome;
+					BotLogger.getInstance().log(this, "distanceToHome: " + distanceToHome);
+					BotLogger.getInstance().log(this, "score: " + score);
 					if (score > bestScore){
 						//BotLogger.getInstance().log(this, "Best score " + score);
 						bestScore = score;
