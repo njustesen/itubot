@@ -109,7 +109,7 @@ public class Squad {
 			
 			// Attack or merge
 			if (target == null && SquadManager.getInstance().squads.size() == 1){
-				Position home = InformationManager.getInstance().ownMainBaseLocation.getPosition();
+				Position home = AssaultPrioritizor.getInstance().getRallyPoint();
 				text = "Retreating";
 				for (UnitAssignment assignment : assignments){
 					if (assignment.job instanceof UnitCombatJob)

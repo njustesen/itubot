@@ -47,11 +47,11 @@ public class BuildOrderManager implements Manager {
 		//return arbiterBuild();
 		//return dragoonBuild();
 		//return zealotBuild();
-		//return highTemplarBuild();
+		return highTemplarBuild();
 		//return reaverBuild();
 		//return carrierBuild();
 		//return pylonBuild();
-		return nexusBuild();
+		//return nexusBuild();
 		
 	}
 	

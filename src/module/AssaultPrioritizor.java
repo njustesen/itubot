@@ -50,5 +50,18 @@ public class AssaultPrioritizor {
 			return null;
 		}
 	}
+
+	public Position getRallyPoint() {
+		double shortestDistance = Integer.MAX_VALUE;
+		BaseLocation bestBase = null;
+		for(BaseLocation location : InformationManager.getInstance().ownBaseLocations){
+			double distance = location.getPosition().getDistance(InformationManager.getInstance().enemyBaseLocation);
+			if (distance < shortestDistance){
+				shortestDistance = distance;
+				bestBase = location;
+			}
+		}
+		return bestBase.getPosition();
+	}
 		
 }
