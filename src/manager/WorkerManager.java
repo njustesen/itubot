@@ -304,6 +304,12 @@ public class WorkerManager implements BWEventListener, Manager {
 						
 						Match.getInstance().drawBoxMap(buildJob.position.toPosition(), toPosition, Color.Blue);
 					}
+				} else if (assignment.job instanceof UnitScoutJob){
+					UnitScoutJob scoutJob = (UnitScoutJob)assignment.job;
+					if (scoutJob.route != null){
+						Match.getInstance().drawBoxMap(scoutJob.route.toPosition(), new Position(scoutJob.route.toPosition().getX() + 32, scoutJob.route.toPosition().getY() + 32), Color.Cyan);
+						Match.getInstance().drawLineMap(scoutJob.unit.getPosition(), new Position(scoutJob.route.toPosition().getX() + 16, scoutJob.route.toPosition().getY() + 16), Color.Cyan);
+					}
 				}
 			}
 		}

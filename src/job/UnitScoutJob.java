@@ -1,12 +1,21 @@
 package job;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.sound.midi.MidiDevice.Info;
+
+import abstraction.Observation;
 import bwapi.Enemy;
 import bwapi.Match;
 import bwapi.Position;
 import bwapi.Race;
+import bwapi.TilePosition;
 import bwapi.Unit;
 import bwta.BWTA;
 import bwta.BaseLocation;
+import bwta.Chokepoint;
 import exception.NoPossibleBasePositionsException;
 import extension.BWAPIHelper;
 import manager.InformationManager;
@@ -16,57 +25,41 @@ public class UnitScoutJob extends UnitJob {
 	public Unit enemy;
 	public int lastHP;
 	public int lastFlee;
+	public TilePosition route;
 	
 	public UnitScoutJob(Unit unit) {
 		super(unit);
 		this.target = null;
 		this.enemy = null;
-		this.lastHP = -1;
+		this.lastHP = unit.getHitPoints();
+		this.route = null;
 	}
 	
 	@Override
 	public void perform() throws NoPossibleBasePositionsException {
 		
-		// Setup hp
-		if (lastHP == -1){
-			lastHP = unit.getHitPoints();
-		}
-		
 		// If found 
 		if (InformationManager.getInstance().enemyBaseLocation != null){
 			
-			// If not enemy target
-			if (this.enemy == null){
-				
-				// Find mineral patches closest to base
-				Position location = BWTA.getNearestBaseLocation(unit.getPosition()).getPosition();
-				
-				// Move towards minerals
-				if (unit.getDistance(location) > 80){
-					unit.move(location);
+			BaseLocation base = InformationManager.getInstance().enemyBaseLocation;
+			if(route == null || unit.getDistance(route.toPosition()) < 98){
+				List<TilePosition> positions = new ArrayList<TilePosition>();
+				positions.add(base.getTilePosition());
+				for(Chokepoint choke : BWTA.getRegion(base.getPosition()).getChokepoints()){
+					positions.add(choke.getPoint().toTilePosition());
 				}
-				
-				// Find target enemy unit
-				Unit closestWorker = BWAPIHelper.getNearestEnemyUnit(unit.getPosition(),Enemy.getInstance().getRace().getWorker());
-				
-				// Move towards minerals
-				if (closestWorker != null){
-					enemy = closestWorker;
-					if (Match.getInstance().getFrameCount() % 20 == 0){
-						unit.attack(enemy);
+				for(Observation observation : InformationManager.getInstance().observations){
+					if (observation.type.isBuilding()){
+						positions.add(observation.position.toTilePosition());
 					}
 				}
-				
-			} else {
-				if (enemy.getHitPoints() < 1){
-					enemy = null;
-				} else if (unit.getHitPoints() < lastHP){
-					lastHP = unit.getHitPoints();
-					unit.move(InformationManager.getInstance().ownMainBaseLocation.getPosition());
-					lastFlee = Match.getInstance().getFrameCount();
-				} else if (lastFlee + 23*12 < Match.getInstance().getFrameCount()){
-					enemy = null;
-				}
+				Collections.shuffle(positions);
+				route = positions.get(0);
+				unit.move(route.toPosition());
+			}
+		
+			if (unit.getDistance(route.toPosition()) < 32){
+				route = null;
 			}
 			
 		} else {
@@ -108,7 +101,7 @@ public class UnitScoutJob extends UnitJob {
 			}
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		return "Scout";
