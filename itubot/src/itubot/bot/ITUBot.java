@@ -7,10 +7,10 @@ import bwapi.Player;
 import bwapi.Position;
 import bwapi.Unit;
 import bwta.BWTA;
+import dl4j.supervised.BuildOrderTrainer;
 import itubot.bwapi.*;
 import itubot.commander.Commander;
 import itubot.log.BotLogger;
-import supervised.BuildOrderTrainer;
 
 public class ITUBot implements BWEventListener {
 

@@ -1,4 +1,4 @@
-package supervised;
+package dl4j.supervised;
 
 
 import org.nd4j.linalg.activations.Activation;
