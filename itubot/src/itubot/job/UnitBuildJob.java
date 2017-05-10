@@ -10,7 +10,7 @@ import itubot.bwapi.Match;
 import itubot.exception.NoBaseLocationsLeftException;
 import itubot.exception.NoWorkersException;
 import itubot.log.BotLogger;
-import itubot.manager.BuildLocationManager;
+import itubot.manager.buildlocation.ScoreBasedBuildLocationManager;
 
 public class UnitBuildJob extends UnitJob {
 

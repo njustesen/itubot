@@ -6,14 +6,15 @@ import java.util.List;
 import bwapi.Position;
 import bwapi.Unit;
 import bwapi.Unitset;
+import itubot.bot.ITUBot;
 import itubot.bwapi.Match;
 import itubot.bwapi.Self;
 import itubot.job.UnitCombatJob;
 import itubot.log.BotLogger;
-import itubot.manager.InformationManager;
-import itubot.manager.SquadManager;
-import itubot.module.AssaultPrioritizor;
-import itubot.module.CombatPredictor;
+import itubot.manager.assualt.AssaultManager;
+import itubot.manager.assualt.CombatPredictor;
+import itubot.manager.information.InformationManager;
+import itubot.manager.squad.SquadManager;
 
 public class Squad {
 
@@ -30,8 +31,8 @@ public class Squad {
 		this.target = null;
 		this.id = created+1;
 		created++;
-		if (InformationManager.getInstance().enemyBaseLocation != null){
-			target = InformationManager.getInstance().enemyBaseLocation.getPosition();
+		if (ITUBot.getInstance().informationManager.getEnemyBaseLocation() != null){
+			target = ITUBot.getInstance().informationManager.getEnemyBaseLocation().getPosition();
 		}
 		text = "Idle";
 	}
@@ -102,14 +103,14 @@ public class Squad {
 
 	private void assignJobs() {
 		// Adjust target - Attack if only one possible base location
-		if (InformationManager.getInstance().enemyBaseLocation != null){
+		if (ITUBot.getInstance().informationManager.getEnemyBaseLocation() != null){
 
 			// Target enemy base
-			target = AssaultPrioritizor.getInstance().getTarget(this);
+			target = ITUBot.getInstance().assualtManager.getTarget(this);
 			
 			// Attack or merge
-			if (target == null && SquadManager.getInstance().squads.size() == 1){
-				Position home = AssaultPrioritizor.getInstance().getRallyPoint();
+			if (target == null && ITUBot.getInstance().squadManager.getSquads().size() == 1){
+				Position home = ITUBot.getInstance().assualtManager.getRallyPoint();
 				text = "Retreating";
 				for (UnitAssignment assignment : assignments){
 					if (assignment.job instanceof UnitCombatJob)
@@ -120,7 +121,7 @@ public class Squad {
 			} else if (target == null){
 				int largest = 0;
 				Squad largestSquad = null;
-				for(Squad squad : SquadManager.getInstance().squads){
+				for(Squad squad : ITUBot.getInstance().squadManager.getSquads()){
 					if (squad.id != this.id){
 						if (squad.assignments.size() > largest){
 							largest = squad.assignments.size();

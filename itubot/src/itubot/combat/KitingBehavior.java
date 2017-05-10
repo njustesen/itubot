@@ -7,7 +7,7 @@ import bwapi.Unit;
 import bwapi.UnitType;
 import itubot.bwapi.Match;
 import itubot.bwapi.Self;
-import itubot.extension.BWAPIHelper;
+import itubot.extension.BwapiHelper;
 import itubot.log.BotLogger;
 
 public class KitingBehavior implements CombatBehavior {
@@ -54,7 +54,7 @@ public class KitingBehavior implements CombatBehavior {
 			hasAttacked = true;
 		} else {
 			if (hasAttacked && shouldKite(enemy, range, cooldown)){
-				moveTarget = BWAPIHelper.getKitePosition(unit, enemy, range);
+				moveTarget = BwapiHelper.getKitePosition(unit, enemy, range);
 				unit.move(moveTarget);
 				//hasAttacked = false;
 				Match.getInstance().drawTextMap(unit.getPosition(), "Move");

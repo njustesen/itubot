@@ -4,15 +4,14 @@ import bwapi.Position;
 import bwapi.Unit;
 import bwapi.WeaponType;
 import bwta.BWTA;
+import itubot.bot.ITUBot;
 import itubot.bwapi.Match;
 import itubot.exception.NoMinableMineralsException;
-import itubot.extension.BWAPIHelper;
-import itubot.module.MineralPrioritizor;
+import itubot.extension.BwapiHelper;
 
 public class UnitMineJob extends UnitJob {
 	
 	public Unit mineralField;
-	
 	private Unit lastMineralField;
 	
 	public UnitMineJob(Unit unit, Unit mineralField) {
@@ -25,7 +24,7 @@ public class UnitMineJob extends UnitJob {
 	public void perform() {
 			
 		// Enemy units nearby
-		Unit enemy = BWAPIHelper.getNearestEnemyUnit(unit.getPosition(), null);
+		Unit enemy = BwapiHelper.getNearestEnemyUnit(unit.getPosition(), null);
 		if (enemy != null){
 			if (enemy.getType().isWorker()
 					&& unit.getDistance(enemy) < 100 
@@ -35,13 +34,13 @@ public class UnitMineJob extends UnitJob {
 				}
 				return;
 			} else {
-				WeaponType weapon = BWAPIHelper.getWeaponAgainst(enemy, unit); 
+				WeaponType weapon = BwapiHelper.getWeaponAgainst(enemy, unit); 
 				if (weapon != null && unit.getDistance(enemy) <= weapon.maxRange() * 2){
-					Position position = BWAPIHelper.getKitePosition(unit, enemy, weapon.maxRange());
+					Position position = BwapiHelper.getKitePosition(unit, enemy, weapon.maxRange());
 					unit.move(position);
 					return;
 				} else if (enemy.getType().isSpellcaster() && unit.getDistance(enemy) <= 12){
-					Position position = BWAPIHelper.getKitePosition(unit, enemy, weapon.maxRange());
+					Position position = BwapiHelper.getKitePosition(unit, enemy, weapon.maxRange());
 					unit.move(position);
 					return;
 				}
@@ -51,7 +50,7 @@ public class UnitMineJob extends UnitJob {
 		// Else - gather minerals
 		if (mineralField.getResources() <= 0){
 			try {
-				mineralField = MineralPrioritizor.getInstance().bestMineralField(unit);
+				mineralField = ITUBot.getInstance().mineralManager.bestMineralField(unit);
 			} catch (NoMinableMineralsException e) {
 				e.printStackTrace();
 			}

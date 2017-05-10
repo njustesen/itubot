@@ -11,7 +11,7 @@ import itubot.bwapi.Self;
 import itubot.combat.CombatBehavior;
 import itubot.combat.KitingBehavior;
 import itubot.combat.MeleeBehavior;
-import itubot.extension.BWAPIHelper;
+import itubot.extension.BwapiHelper;
 import itubot.log.BotLogger;
 
 public class UnitCombatJob extends UnitJob {
@@ -62,10 +62,10 @@ public class UnitCombatJob extends UnitJob {
 		
 		// Merge into archon
 		if (unit.getType() == UnitType.Protoss_High_Templar){
-			Unit otherEnemy = BWAPIHelper.getNearestEnemyUnit(unit.getPosition(), null);
+			Unit otherEnemy = BwapiHelper.getNearestEnemyUnit(unit.getPosition(), null);
 			boolean inAttack = (unit.getDistance(otherEnemy) <= attackDistance());
 			if (inAttack && attack && unit.getEnergy() < 50){
-				Unit otherTemplar = BWAPIHelper.getNearestFriendlyUnit(unit, UnitType.Protoss_High_Templar);
+				Unit otherTemplar = BwapiHelper.getNearestFriendlyUnit(unit, UnitType.Protoss_High_Templar);
 				if (otherTemplar != null && otherTemplar.getEnergy() < 50 && unit.getDistance(otherTemplar) < ARCHON_MERGE_DISTANCE){
 					unit.useTech(TechType.Archon_Warp, otherTemplar);
 					Match.getInstance().drawLineMap(unit.getPosition(), otherTemplar.getPosition(), Color.White);
@@ -105,12 +105,12 @@ public class UnitCombatJob extends UnitJob {
 		boolean newTarget = false;
 		if (unit.getType() == UnitType.Protoss_High_Templar && unit.getEnergy() >= 75 && Self.getInstance().hasResearched(TechType.Psionic_Storm)){
 			int bestValue = Integer.MIN_VALUE;
-			for (Unit enemy : BWAPIHelper.getEnemyUnitsAround(unit.getPosition(), null, 12*32)){
+			for (Unit enemy : BwapiHelper.getEnemyUnitsAround(unit.getPosition(), null, 12*32)){
 				if (enemy.getType().isBuilding()){
 					continue;
 				}
-				int enemyValue = BWAPIHelper.getEnemyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
-				int ownValue = BWAPIHelper.getFriendlyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
+				int enemyValue = BwapiHelper.getEnemyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
+				int ownValue = BwapiHelper.getFriendlyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
 				if (enemyValue / 2 > ownValue && enemyValue >= MIN_STORM_VALUE && enemyValue - ownValue > bestValue){
 					bestValue = enemyValue - ownValue;
 					newEnemy = enemy;
@@ -118,19 +118,19 @@ public class UnitCombatJob extends UnitJob {
 			}
 		} else if  (unit.getType() == UnitType.Protoss_Arbiter && unit.getEnergy() >= 100 && Self.getInstance().hasResearched(TechType.Stasis_Field)){
 			int bestValue = Integer.MIN_VALUE;
-			for (Unit enemy : BWAPIHelper.getEnemyUnitsAround(unit.getPosition(), null, 12*32)){
+			for (Unit enemy : BwapiHelper.getEnemyUnitsAround(unit.getPosition(), null, 12*32)){
 				if (enemy.getType().isBuilding()){
 					continue;
 				}
-				int enemyValue = BWAPIHelper.getEnemyUnitValueAround(enemy.getTilePosition(), STASIS_RADIUS);
-				int ownValue = BWAPIHelper.getFriendlyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
+				int enemyValue = BwapiHelper.getEnemyUnitValueAround(enemy.getTilePosition(), STASIS_RADIUS);
+				int ownValue = BwapiHelper.getFriendlyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
 				if (enemyValue / 2 > ownValue && enemyValue >= MIN_STASIS_VALUE && enemyValue - ownValue > bestValue){
 					bestValue = enemyValue - ownValue;
 					newEnemy = enemy;
 				}
 			}
 		} else {
-			newEnemy = BWAPIHelper.getNewEnemyTarget(unit, attackDistance());
+			newEnemy = BwapiHelper.getNewEnemyTarget(unit, attackDistance());
 		}
 		
 		if (newEnemy != null && (enemy == null || newEnemy.getID() != enemy.getID())){

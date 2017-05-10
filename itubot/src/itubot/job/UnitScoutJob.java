@@ -14,11 +14,12 @@ import bwta.BWTA;
 import bwta.BaseLocation;
 import bwta.Chokepoint;
 import itubot.abstraction.Observation;
+import itubot.bot.ITUBot;
 import itubot.bwapi.Enemy;
 import itubot.bwapi.Match;
 import itubot.exception.NoPossibleBasePositionsException;
-import itubot.extension.BWAPIHelper;
-import itubot.manager.InformationManager;
+import itubot.extension.BwapiHelper;
+import itubot.manager.information.InformationManager;
 public class UnitScoutJob extends UnitJob {
 
 	public BaseLocation target;
@@ -39,16 +40,16 @@ public class UnitScoutJob extends UnitJob {
 	public void perform() throws NoPossibleBasePositionsException {
 		
 		// If found 
-		if (InformationManager.getInstance().enemyBaseLocation != null){
+		if (ITUBot.getInstance().informationManager.getEnemyBaseLocation() != null){
 			
-			BaseLocation base = InformationManager.getInstance().enemyBaseLocation;
+			BaseLocation base = ITUBot.getInstance().informationManager.getEnemyBaseLocation();
 			if(route == null || unit.getDistance(route.toPosition()) < 98){
 				List<TilePosition> positions = new ArrayList<TilePosition>();
 				positions.add(base.getTilePosition());
 				for(Chokepoint choke : BWTA.getRegion(base.getPosition()).getChokepoints()){
 					positions.add(choke.getPoint().toTilePosition());
 				}
-				for(Observation observation : InformationManager.getInstance().observations){
+				for(Observation observation : ITUBot.getInstance().informationManager.getObservations()){
 					if (observation.type.isBuilding()){
 						positions.add(observation.position.toTilePosition());
 					}
@@ -68,7 +69,7 @@ public class UnitScoutJob extends UnitJob {
 			if (target == null){
 				BaseLocation closest = null;
 				int closestDistance = Integer.MAX_VALUE;
-				for (BaseLocation location : InformationManager.getInstance().possibleEnemyBasePositions){
+				for (BaseLocation location : ITUBot.getInstance().informationManager.getPossibleEnemyBasePositions()){
 					int distance = unit.getDistance(location.getPosition());
 					if (distance < closestDistance){
 						closestDistance = distance;
@@ -89,9 +90,7 @@ public class UnitScoutJob extends UnitJob {
 			}
 			if (unit.getDistance(target) < sight){
 				// Has spotted enemy base?
-				if (InformationManager.getInstance().enemyBaseLocation == null){
-					InformationManager.getInstance().possibleEnemyBasePositions.remove(target);
-				}
+				ITUBot.getInstance().informationManager.spotEnemyBaseLocation(target);
 				target = null;
 			}
 			
