@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="dl4j-examples/arbiter-examples/src/main/java"/>
+	<classpathentry kind="src" path="dl4j-examples/datavec-examples/src/main/java"/>
+	<classpathentry kind="src" path="dl4j-examples/dl4j-cuda-specific-examples/src/main/java"/>
+	<classpathentry kind="src" path="dl4j-examples/dl4j-examples/src/main/java"/>
+	<classpathentry kind="src" path="dl4j-examples/dl4j-spark-examples/dl4j-spark/src/main/java"/>
+	<classpathentry kind="src" path="dl4j-examples/lstm-hdfs/src/main/java"/>
+	<classpathentry kind="src" path="dl4j-examples/nd4j-examples/src/main/java"/>
+	<classpathentry kind="src" path="dl4j-examples/rl4j-examples/src/main/java"/>
+	<classpathentry kind="src" path="dl4j/src"/>
+	<classpathentry kind="src" path="itubot/src"/>
+	<classpathentry kind="lib" path="dl4j-examples/arbiter-examples/target/arbiter-examples-0.8-SNAPSHOT-bin.jar"/>
+	<classpathentry kind="lib" path="dl4j-examples/arbiter-examples/target/arbiter-examples-0.8-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="dl4j-examples/datavec-examples/target/datavec-examples-0.8-SNAPSHOT-bin.jar"/>
+	<classpathentry kind="lib" path="dl4j-examples/datavec-examples/target/datavec-examples-0.8-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="dl4j-examples/dl4j-cuda-specific-examples/target/dl4j-cuda-specific-examples-0.8-SNAPSHOT-bin.jar"/>
+	<classpathentry kind="lib" path="dl4j-examples/dl4j-cuda-specific-examples/target/dl4j-cuda-specific-examples-0.8-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="dl4j-examples/dl4j-examples/target/dl4j-examples-0.8-SNAPSHOT-bin.jar"/>
+	<classpathentry kind="lib" path="dl4j-examples/dl4j-examples/target/dl4j-examples-0.8-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="dl4j-examples/dl4j-spark-examples/dl4j-spark/target/dl4j-spark-0.8-SNAPSHOT-bin.jar"/>
+	<classpathentry kind="lib" path="dl4j-examples/dl4j-spark-examples/dl4j-spark/target/dl4j-spark-0.8-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="dl4j-examples/lstm-hdfs/target/lstm-hdfs-0.8-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="dl4j-examples/nd4j-examples/target/nd4j-examples-0.8-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="dl4j-examples/rl4j-examples/target/original-rl4j-examples-0.8-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="dl4j-examples/rl4j-examples/target/rl4j-examples-0.8-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="dl4j/target/deeplearning4j-examples-parent-0.8-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="itubot/lib/dl4j-examples-0.8-SNAPSHOT-bin.jar"/>
+	<classpathentry kind="lib" path="itubot/lib/dl4j-examples-0.8-SNAPSHOT.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="dl4j/dl4j/target/classes"/>
+</classpath>

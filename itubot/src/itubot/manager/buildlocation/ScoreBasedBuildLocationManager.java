@@ -306,10 +306,10 @@ public class ScoreBasedBuildLocationManager implements IBuildLocationManager {
 						distanceToEnemy += observation.position.getDistance(location.getPosition());
 					}
 					distanceToEnemy = distanceToEnemy / ITUBot.getInstance().informationManager.getObservations().size();
-					BotLogger.getInstance().log(this, "distanceToEnemy: " + distanceToEnemy);
+					//BotLogger.getInstance().log(this, "distanceToEnemy: " + distanceToEnemy);
 					double score = distanceToEnemy - distanceToHome;
-					BotLogger.getInstance().log(this, "distanceToHome: " + distanceToHome);
-					BotLogger.getInstance().log(this, "score: " + score);
+					//BotLogger.getInstance().log(this, "distanceToHome: " + distanceToHome);
+					//BotLogger.getInstance().log(this, "score: " + score);
 					if (score > bestScore){
 						//BotLogger.getInstance().log(this, "Best score " + score);
 						bestScore = score;

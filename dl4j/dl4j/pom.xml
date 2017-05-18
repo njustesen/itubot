@@ -3,15 +3,15 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dl4j-examples</artifactId>
+    <artifactId>dl4j</artifactId>
 
     <parent>
         <groupId>org.deeplearning4j</groupId>
-        <artifactId>deeplearning4j-examples-parent</artifactId>
-        <version>0.8-SNAPSHOT</version>
+        <artifactId>dl4j-parent</artifactId>
+        <version>0.1</version>
     </parent>
 
-    <name>DeepLearning4j Examples</name>
+    <name>DL4J</name>
 
     <repositories>
         <repository>

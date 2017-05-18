@@ -2,12 +2,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <groupId>org.deeplearning4j</groupId>
-    <artifactId>deeplearning4j-examples-parent</artifactId>
-    <version>0.8-SNAPSHOT</version>
+    <artifactId>dl4j-parent</artifactId>
+    <version>0.1</version>
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
 
-    <name>DeepLearning4j Examples Parent</name>
+    <name>DL4J Parent</name>
     <description>Examples of training different data sets</description>
     <properties>
         <!-- Change the nd4j.backend property to nd4j-cuda-7.5-platform or nd4j-cuda-8.0-platform to use CUDA GPUs -->
@@ -45,13 +45,14 @@
     </properties>
 
     <modules>
-        <module>dl4j-examples</module>
+        <module>dl4j</module>
         
         
         
         
         
         
+	
     </modules>
 
     <!-- Maven Enforcer: Ensures user has an up to date version of Maven before building -->
@@ -93,6 +94,7 @@
               <directory>nd4j-examples</directory>
               <directory>rl4j-examples</directory>
               <directory>arbiter-examples</directory>
+	      <directory>lstm-hdfs</directory>
             </directories>
           </configuration>
         </plugin>

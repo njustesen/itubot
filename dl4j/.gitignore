@@ -1,5 +1,4 @@
 target/
-data/
 .idea/*
 *.iml
 logs/
@@ -43,3 +42,4 @@ Word2vec-index/
 *.json
 *end.model
 
+/bin/
