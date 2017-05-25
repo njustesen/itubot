@@ -1,0 +1,380 @@
+2017-05-18 14:39:19,975 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:39:19,985 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:39:20,006 - [INFO] - from org.nd4j.linalg.factory.Nd4jBackend in main
+                
+Loaded [CpuBackend] backend
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:40:32,573 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:40:32,594 - [INFO] - from org.nd4j.linalg.factory.Nd4jBackend in main
+                
+Loaded [CpuBackend] backend
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:27,750 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:27,771 - [INFO] - from org.nd4j.linalg.factory.Nd4jBackend in main
+                
+Loaded [CpuBackend] backend
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:51,059 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:41:51,080 - [INFO] - from org.nd4j.linalg.factory.Nd4jBackend in main
+                
+Loaded [CpuBackend] backend
+
+2017-05-18 14:50:58,308 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:50:58,310 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:50:58,310 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer0" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:50:58,310 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:50:58,311 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:50:58,311 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer1" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:50:58,311 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:50:58,311 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:50:58,311 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer2" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:50:58,311 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:50:58,311 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:50:58,311 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer3" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:50:58,311 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:50:58,311 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:50:58,311 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer4" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:50:58,311 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" momentum has been set but will not be applied unless the updater is set to NESTEROVS.
+
+2017-05-18 14:50:58,311 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" adamMeanDecay is automatically set to 0.9. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:50:58,311 - [WARN] - from org.deeplearning4j.nn.conf.layers.LayerValidation in main
+                
+Layer "layer5" adamVarDecay is automatically set to 0.999. Add adamVarDecay to configuration to change the value.
+
+2017-05-18 14:50:58,333 - [INFO] - from org.nd4j.linalg.factory.Nd4jBackend in main
+                
+Loaded [CpuBackend] backend
+

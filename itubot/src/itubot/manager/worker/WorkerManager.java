@@ -48,12 +48,14 @@ public class WorkerManager implements IWorkerManager {
 	
 	public void execute() throws NoFreeRefineryException, NoMinableMineralsException, NoSpaceLeftForBuildingException, NoBaseLocationsLeftException {
 		
-		// Mine with workers without a job
+		// Mine with workers without a job or cant build
 		for (UnitAssignment assignment : assignments){
 			if (assignment.job == null){
 				assignment.job = newMineJob(assignment.unit);
 			} else if (assignment.job instanceof UnitScoutJob 
 					&& assignment.unit.getDistance(ITUBot.getInstance().informationManager.getOwnMainBaseLocation().getPosition()) < 500){
+				assignment.job = newMineJob(assignment.unit);
+			} else if (assignment.job instanceof UnitBuildJob && !((UnitBuildJob)assignment.job).canBuild){
 				assignment.job = newMineJob(assignment.unit);
 			}
 		}
@@ -221,7 +223,10 @@ public class WorkerManager implements IWorkerManager {
 		for(UnitAssignment responsibility : assignments){
 			if (responsibility.job instanceof UnitBuildJob){
 				if (((UnitBuildJob)responsibility.job).unitType.equals(nextBuild.unitType)){
-					return true;
+					if (((UnitBuildJob)responsibility.job).canBuild)
+						return true;
+					else
+						return false;
 				}
 			}
 		}

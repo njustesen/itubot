@@ -48,9 +48,9 @@ public class BuildingManager implements IBuildingManager {
 		
 		// Check next build
 		Build nextBuild = ITUBot.getInstance().buildOrderManager.getNextBuild();
-		if (alreadyAssigned(nextBuild)){
-			return;
-		}
+		//if (alreadyAssigned(nextBuild)){
+		//	return;
+		//}
 		if (nextBuild.type == BuildType.UNIT){
 			UnitAssignment buildingJob = getProductionBuilding(nextBuild.unitType);
 			if (buildingJob != null){

@@ -1,6 +1,8 @@
 package itubot.manager.buildorder;
+/*
+import org.deeplearning4j.itubot.buildprediction.ActionSelection;
+import org.deeplearning4j.itubot.buildprediction.BuildSelector;
 
-import java.io.IOException;
 import bwapi.Player;
 import bwapi.Position;
 import bwapi.Unit;
@@ -8,23 +10,25 @@ import bwapi.UnitType;
 import itubot.abstraction.Build;
 import itubot.bwapi.Self;
 import itubot.exception.ITUBotException;
+import itubot.log.BotLogger;
 
 public class SupervisedBuildOrderManager implements IBuildOrderManager {
-	/*
-	private ACTION_SELECTION_METHOD selection;
-	private API api;
 	
-	public SupervisedBuildOrderManager(String modelFileName, ACTION_SELECTION_METHOD selection) throws IOException {
-		//this.selection = selection;
-		//this.api = new API(modelFileName);
+	private BuildSelector selector;
+	
+	public SupervisedBuildOrderManager(ActionSelection selection){
+		try {
+			this.selector = new BuildSelector(selection);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
-	*/
 	
 	@Override
 	public Build getNextBuild() {
-		/*
+		
 		double[] stateArray = new double[210];
-		String buildName = api.getBuild(stateArray, selection);
+		String buildName = selector.getBuild(stateArray);
 		UnitType type;
 		try {
 			type = StringToUnitTypeConverter.toUnitType(buildName);
@@ -38,9 +42,8 @@ public class SupervisedBuildOrderManager implements IBuildOrderManager {
 		} catch (SecurityException e) {
 			e.printStackTrace();
 		}
+		BotLogger.getInstance().log(this, "Unit type not returned.");
 		return new Build(Self.getInstance().getRace().getWorker());
-		*/
-		return null;
 	}
 	
 	@Override
@@ -165,3 +168,4 @@ public class SupervisedBuildOrderManager implements IBuildOrderManager {
 
 
 }
+*/

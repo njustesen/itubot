@@ -242,8 +242,7 @@ public class SquadManager implements ISquadManager {
 
 	@Override
 	public List<Squad> getSquads() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.squads;
 	}
 
 	

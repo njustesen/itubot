@@ -258,6 +258,9 @@ public class InformationManager implements IInformationManager {
 				}
 			}
 		}
+		if (possibleEnemyBasePositions.size() == 1){
+			enemyBaseLocation = possibleEnemyBasePositions.get(0);
+		}
 	}
 
 	@Override

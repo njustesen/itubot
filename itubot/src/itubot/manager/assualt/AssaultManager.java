@@ -7,6 +7,7 @@ import bwta.BaseLocation;
 import itubot.abstraction.Observation;
 import itubot.abstraction.Squad;
 import itubot.bot.ITUBot;
+import itubot.bwapi.Match;
 import itubot.exception.ITUBotException;
 import itubot.manager.information.InformationManager;
 
@@ -21,6 +22,8 @@ public class AssaultManager implements IAssualtManager {
 	}
 	
 	public Position getTarget(Squad squad){
+		//return new Position((int)(Math.random()*Match.getInstance().mapWidth()*32), (int)(Math.random()*Match.getInstance().mapHeight()*32));
+		
 		for(Observation observation : ITUBot.getInstance().informationManager.getObservations()){
 			for(BaseLocation base : ITUBot.getInstance().informationManager.getOwnBaseLocations()){
 				if (observation.position.getDistance(base.getPosition()) < UNDER_ATTACK_DISTANCE){
@@ -39,6 +42,7 @@ public class AssaultManager implements IAssualtManager {
 		} else {
 			return null;
 		}
+		
 	}
 
 	public Position getRallyPoint() {

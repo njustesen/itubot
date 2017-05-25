@@ -2,8 +2,6 @@ package itubot.bot;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.deeplearning4j.examples.feedforward.classification.MLPClassifierLinear;
-
 import bwapi.BWEventListener;
 import bwapi.Player;
 import bwapi.Position;
@@ -15,11 +13,11 @@ import itubot.manager.assualt.AssaultManager;
 import itubot.manager.assualt.IAssualtManager;
 import itubot.manager.building.BuildingManager;
 import itubot.manager.building.IBuildingManager;
+import itubot.manager.buildlocation.FastScoreBuildLocationManager;
 import itubot.manager.buildlocation.IBuildLocationManager;
 import itubot.manager.buildlocation.ScoreBasedBuildLocationManager;
 import itubot.manager.buildorder.IBuildOrderManager;
 import itubot.manager.buildorder.ScriptedBuildOrderManager;
-import itubot.manager.buildorder.SupervisedBuildOrderManager;
 import itubot.manager.gas.GasManager;
 import itubot.manager.gas.IGasManager;
 import itubot.manager.information.IInformationManager;
@@ -34,8 +32,8 @@ import itubot.manager.worker.WorkerManager;
 public class ITUBot implements BWEventListener {
 	
     public static void main(String[] args) {
-        MLPClassifierLinear classifier = new MLPClassifierLinear();
-        System.out.println("Classifer="+classifier.getClass().toString());
+        //MLPClassifierLinear classifier = new MLPClassifierLinear();
+        //System.out.println("Classifer="+classifier.getClass().toString());
         ITUBot.getInstance().execute();
         
     }
@@ -70,14 +68,8 @@ public class ITUBot implements BWEventListener {
 		this.gasManager = new GasManager();
 		this.assualtManager = new AssaultManager();
 		this.buildOrderManager = new ScriptedBuildOrderManager();
-		/*
-		try {
-			this.buildOrderManager = new SupervisedBuildOrderManager("model.zip", ACTION_SELECTION_METHOD.GREEDY);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		*/
-		this.buildLocationManager = new ScoreBasedBuildLocationManager();
+		//this.buildOrderManager = new SupervisedBuildOrderManager(ActionSelection.PROBABILISTIC);
+		this.buildLocationManager = new FastScoreBuildLocationManager();
 		this.buildingManager = new BuildingManager();
 		this.workerManager = new WorkerManager();
 		this.squadManager = new SquadManager();
@@ -110,7 +102,7 @@ public class ITUBot implements BWEventListener {
 		}
 		for(IManager manager : managers){
 			try{
-				manager.visualize();
+				//manager.visualize();
 			} catch (Exception e){
 				e.printStackTrace();
 			}
