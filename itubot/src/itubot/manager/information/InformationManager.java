@@ -1,6 +1,8 @@
 package itubot.manager.information;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +10,7 @@ import java.util.Map;
 import bwapi.Color;
 import bwapi.Player;
 import bwapi.Position;
+import bwapi.Race;
 import bwapi.TechType;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -22,6 +25,7 @@ import itubot.bwapi.Self;
 import itubot.extension.TechTypes;
 import itubot.extension.UpgradeTypes;
 import itubot.log.BotLogger;
+import itubot.util.TypeRepository;
 
 public class InformationManager implements IInformationManager {
 
@@ -38,23 +42,27 @@ public class InformationManager implements IInformationManager {
 	private List<Unit> pylons;
 	
 	private Map<UnitType, Integer> ownUnitsInProduction;
+	private Map<UnitType, List<Integer>> ownUnitsInProgress;
 	private Map<UnitType, Integer> ownUnits;
 	private Map<UnitType, Integer> oppUnits;
 	
 	private HashMap<UpgradeType, Integer> ownUpgrades;
 	private HashMap<UpgradeType, Integer> ownUpgradesInProduction;
+	private HashMap<UpgradeType, Integer> ownUpgradesInProgress;
 	private HashMap<TechType, Integer> ownTechs;
 	private HashMap<TechType, Integer> ownTechsInProduction;
+	private HashMap<TechType, Integer> ownTechsInProgress;
 	
 	public InformationManager(){
 		this.ownUnits = new HashMap<UnitType, Integer>();
 		this.ownUnitsInProduction = new HashMap<UnitType, Integer>();
+		this.ownUnitsInProgress = new HashMap<UnitType, List<Integer>>();
 		this.ownUpgrades = new HashMap<UpgradeType, Integer>();
 		this.ownUpgradesInProduction = new HashMap<UpgradeType, Integer>();
+		this.ownUpgradesInProgress = new HashMap<UpgradeType, Integer>();
 		this.ownTechs = new HashMap<TechType, Integer>();
 		this.ownTechsInProduction = new HashMap<TechType, Integer>();
-		this.ownUnits = new HashMap<UnitType, Integer>();
-		this.ownUnitsInProduction = new HashMap<UnitType, Integer>();
+		this.ownTechsInProgress = new HashMap<TechType, Integer>();
 		
 		this.oppUnits = new HashMap<UnitType, Integer>();
 		this.observations = new ArrayList<Observation>();
@@ -74,10 +82,13 @@ public class InformationManager implements IInformationManager {
 	public void execute() {
 		this.ownUnits.clear();
 		this.ownUnitsInProduction.clear();
+		this.ownUnitsInProgress.clear();
 		this.ownTechs.clear();
 		this.ownTechsInProduction.clear();
+		this.ownTechsInProgress.clear();
 		this.ownUpgrades.clear();
 		this.ownUpgradesInProduction.clear();
+		this.ownUpgradesInProgress.clear();
 		this.oppUnits.clear();
 		this.refineries.clear();
 		this.refineriesInProd.clear();
@@ -86,12 +97,22 @@ public class InformationManager implements IInformationManager {
 			
 			if (unit.isBeingConstructed()){
 				int i = 0;
+				// Production
 				if (this.ownUnitsInProduction.containsKey(unit.getType())){
 					i = this.ownUnitsInProduction.get(unit.getType());
 				}
 				this.ownUnitsInProduction.put(unit.getType(), i+1);
 				if (unit.getType().isRefinery()){
 					this.refineriesInProd.add(unit);
+				}
+				// Progress
+				if (!this.ownUnitsInProgress.containsKey(unit.getType())){
+					this.ownUnitsInProgress.put(unit.getType(), new ArrayList<Integer>());
+				}
+				if (unit.getType().isBuilding()){
+					this.ownUnitsInProgress.get(unit.getType()).add(unit.getRemainingBuildTime());
+				} else {
+					this.ownUnitsInProgress.get(unit.getType()).add(unit.getRemainingTrainTime());
 				}
 			} else {
 				int i = 0;
@@ -102,7 +123,12 @@ public class InformationManager implements IInformationManager {
 				if (unit.getType().isRefinery()){
 					this.refineries.add(unit);
 				}
-				
+				if (unit.getTech() != TechType.None){
+					this.ownTechsInProgress.put(unit.getTech(), unit.getRemainingResearchTime());
+				}
+				if (unit.getUpgrade() != UpgradeType.None){
+					this.ownUpgradesInProgress.put(unit.getUpgrade(), unit.getRemainingResearchTime());
+				}
 			}
 		}
 		for(Unit unit : Enemy.getInstance().getUnits()){
@@ -415,6 +441,144 @@ public class InformationManager implements IInformationManager {
 		if (enemyBaseLocation == null){
 			possibleEnemyBasePositions.remove(target);
 		}
+	}
+
+	@Override
+	public Double[] toArray(boolean underConstruction, boolean progress, boolean oppMaterial, boolean supply){
+		
+		List<Double> list = new ArrayList<Double>();
+		
+		list.addAll(ownMaterial());
+		list.addAll(inProduction());
+		list.addAll(inProgress());
+		list.addAll(oppMaterial());
+		list.addAll(supply());
+		
+		Double[] arr = list.toArray(new Double[list.size()]);
+		
+		return arr;
+		
+	}
+	
+	private List<Double> supply() {
+		List<Double> sup = new ArrayList<Double>();
+		sup.add((double)Self.getInstance().supplyTotal() / 200);
+		sup.add((double)Self.getInstance().supplyUsed() / 200);
+		sup.add(Math.min(1,((double)(Self.getInstance().supplyTotal()) - (double)(Self.getInstance().supplyUsed()) / 16)));
+		return sup;
+	}
+
+	private List<Double> ownMaterial(){
+		double[] arr = new double[TypeRepository.protossUnits.size() + TypeRepository.protossTechs.size()  + TypeRepository.protossUpgrades.size()];
+		if (Self.getInstance().getRace() == Race.Terran)
+			arr = new double[TypeRepository.terranUnits.size() + TypeRepository.terranTechs.size()  + TypeRepository.terranUpgrades.size()];
+		else if (Self.getInstance().getRace() == Race.Zerg)
+			arr = new double[TypeRepository.zergUnits.size() + TypeRepository.zergTechs.size()  + TypeRepository.zergUpgrades.size()];
+		List<Double> own = new ArrayList<Double>();
+		for (double d : arr)
+			own.add(d);
+		
+		for(UnitType unitType : ownUnits.keySet()){
+			int id = TypeRepository.getUnitIdForRace(unitType, Self.getInstance().getRace());
+			own.set(id, (double)ownUnits.get(unitType) / 64);
+			// TODO: Scarabs and interceptors?
+		}
+		
+		for(TechType techType : ownTechs.keySet()){
+			int id = TypeRepository.getTechIdForRace(techType, Self.getInstance().getRace(), true);
+			if (id > -1)
+				own.set(id, 0.0+ownTechs.get(techType));
+		}
+		
+		for(UpgradeType upgradeType : ownUpgrades.keySet()){
+			int id = TypeRepository.getUpgradeIdForRace(upgradeType, Self.getInstance().getRace(), true);
+			if (id > -1)
+				own.set(id, 0.0+ownUpgrades.get(upgradeType));
+		}
+		
+		return own;
+	}
+	
+	private List<Double> oppMaterial(){
+		double[] arr = new double[TypeRepository.protossUnits.size()];
+		if (Enemy.getInstance().getRace() == Race.Terran)
+			arr = new double[TypeRepository.terranUnits.size()];
+		else if (Enemy.getInstance().getRace() == Race.Zerg)
+			arr = new double[TypeRepository.zergUnits.size()];
+		List<Double> opp = new ArrayList<Double>();
+		for (double d : arr)
+			opp.add(d);
+		
+		// TODO: RAndom?!
+		
+		for(UnitType unitType : oppUnits.keySet()){
+			int id = TypeRepository.getUnitIdForRace(unitType, Enemy.getInstance().getRace());
+			opp.set(id, (double)oppUnits.get(unitType) / 64);
+		}
+		
+		return opp;
+	}
+	
+	private List<Double> inProduction(){
+		double[] arr = new double[TypeRepository.protossUnits.size() + TypeRepository.protossTechs.size()  + TypeRepository.protossUpgrades.size()];
+		if (Self.getInstance().getRace() == Race.Terran)
+			arr = new double[TypeRepository.terranUnits.size() + TypeRepository.terranTechs.size()  + TypeRepository.terranUpgrades.size()];
+		else if (Self.getInstance().getRace() == Race.Zerg)
+			arr = new double[TypeRepository.zergUnits.size() + TypeRepository.zergTechs.size()  + TypeRepository.zergUpgrades.size()];
+		List<Double> own = new ArrayList<Double>();
+		for (double d : arr)
+			own.add(d);
+		
+		for(UnitType unitType : ownUnitsInProduction.keySet()){
+			int id = TypeRepository.getUnitIdForRace(unitType, Self.getInstance().getRace());
+			own.set(id, (double)ownUnitsInProduction.get(unitType) / 16);
+			// TODO: Scarabs and interceptors?
+		}
+		
+		for(TechType techType : ownTechsInProduction.keySet()){
+			int id = TypeRepository.getTechIdForRace(techType, Self.getInstance().getRace(), true);
+			if (id > -1)
+				own.set(id, (double)ownTechsInProduction.get(techType) / 16);
+		}
+		
+		for(UpgradeType upgradeType : ownUpgradesInProduction.keySet()){
+			int id = TypeRepository.getUpgradeIdForRace(upgradeType, Self.getInstance().getRace(), true);
+			if (id > -1)
+				own.set(id, (double)ownUpgradesInProduction.get(upgradeType) / 16);
+		}
+		
+		return own;
+	}
+	
+	private List<Double> inProgress(){
+		double[] arr = new double[TypeRepository.protossUnits.size() + TypeRepository.protossTechs.size()  + TypeRepository.protossUpgrades.size()];
+		if (Self.getInstance().getRace() == Race.Terran)
+			arr = new double[TypeRepository.terranUnits.size() + TypeRepository.terranTechs.size()  + TypeRepository.terranUpgrades.size()];
+		else if (Self.getInstance().getRace() == Race.Zerg)
+			arr = new double[TypeRepository.zergUnits.size() + TypeRepository.zergTechs.size()  + TypeRepository.zergUpgrades.size()];
+		List<Double> own = new ArrayList<Double>();
+		for (double d : arr)
+			own.add(d);
+		
+		for(UnitType unitType : ownUnitsInProgress.keySet()){
+			int id = TypeRepository.getUnitIdForRace(unitType, Self.getInstance().getRace());
+			own.set(id, (double)ownUnits.get(unitType) / 16);
+			// TODO: Scarabs and interceptors?
+		}
+		
+		for(TechType techType : ownTechsInProgress.keySet()){
+			int id = TypeRepository.getTechIdForRace(techType, Self.getInstance().getRace(), true);
+			if (id > -1)
+				own.set(id, (double)ownTechsInProgress.get(techType) / 16);
+		}
+		
+		for(UpgradeType upgradeType : ownUpgradesInProgress.keySet()){
+			int id = TypeRepository.getUpgradeIdForRace(upgradeType, Self.getInstance().getRace(), true);
+			if (id > -1)
+				own.set(id, (double)ownUpgradesInProgress.get(upgradeType) / 16);
+		}
+		
+		return own;
 	}
 
 }

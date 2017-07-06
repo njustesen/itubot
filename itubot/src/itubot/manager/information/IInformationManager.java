@@ -13,6 +13,8 @@ import itubot.abstraction.Observation;
 import itubot.manager.IManager;
 
 public interface IInformationManager extends IManager {
+	
+	public Double[] toArray(boolean underConstruction, boolean progress, boolean oppMaterial, boolean supply);
 
 	public List<BaseLocation> getPossibleEnemyBasePositions();
 

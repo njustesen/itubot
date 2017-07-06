@@ -1,4 +1,6 @@
 package itubot.bot;
+import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +20,7 @@ import itubot.manager.buildlocation.IBuildLocationManager;
 import itubot.manager.buildlocation.ScoreBasedBuildLocationManager;
 import itubot.manager.buildorder.IBuildOrderManager;
 import itubot.manager.buildorder.ScriptedBuildOrderManager;
+import itubot.manager.buildorder.TcpBuildOrderManager;
 import itubot.manager.gas.GasManager;
 import itubot.manager.gas.IGasManager;
 import itubot.manager.information.IInformationManager;
@@ -67,8 +70,13 @@ public class ITUBot implements BWEventListener {
 		this.mineralManager = new MineralManager();
 		this.gasManager = new GasManager();
 		this.assualtManager = new AssaultManager();
-		this.buildOrderManager = new ScriptedBuildOrderManager();
+		//this.buildOrderManager = new ScriptedBuildOrderManager();
 		//this.buildOrderManager = new SupervisedBuildOrderManager(ActionSelection.PROBABILISTIC);
+		try {
+			this.buildOrderManager = new TcpBuildOrderManager(6789);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		this.buildLocationManager = new FastScoreBuildLocationManager();
 		this.buildingManager = new BuildingManager();
 		this.workerManager = new WorkerManager();
