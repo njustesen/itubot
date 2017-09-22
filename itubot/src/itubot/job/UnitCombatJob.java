@@ -13,11 +13,12 @@ import itubot.combat.KitingBehavior;
 import itubot.combat.MeleeBehavior;
 import itubot.extension.BwapiHelper;
 import itubot.log.BotLogger;
+import jdk.nashorn.internal.runtime.DebugLogger;
 
 public class UnitCombatJob extends UnitJob {
 
 	private static final int ATTACK_DISTANCE = 1500;
-	private static final int RETREAT_DISTANCE = 32*5;
+	private static final int RETREAT_DISTANCE = 32*3;
 	private static final int ARCHON_MERGE_DISTANCE = 500;
 	private static final int STORM_RADIUS = 3*32;
 	private static final int MIN_STORM_VALUE = 200;
@@ -105,47 +106,57 @@ public class UnitCombatJob extends UnitJob {
 		boolean newTarget = false;
 		if (unit.getType() == UnitType.Protoss_High_Templar && unit.getEnergy() >= 75 && Self.getInstance().hasResearched(TechType.Psionic_Storm)){
 			int bestValue = Integer.MIN_VALUE;
-			for (Unit enemy : BwapiHelper.getEnemyUnitsAround(unit.getPosition(), null, 12*32)){
-				if (enemy.getType().isBuilding()){
+			for (Unit u : BwapiHelper.getEnemyUnitsAround(unit.getPosition(), null, 12*32)){
+				if (u.getType().isBuilding()){
 					continue;
 				}
-				int enemyValue = BwapiHelper.getEnemyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
-				int ownValue = BwapiHelper.getFriendlyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
+				int enemyValue = BwapiHelper.getEnemyUnitValueAround(u.getTilePosition(), STORM_RADIUS);
+				int ownValue = BwapiHelper.getFriendlyUnitValueAround(u.getTilePosition(), STORM_RADIUS);
 				if (enemyValue / 2 > ownValue && enemyValue >= MIN_STORM_VALUE && enemyValue - ownValue > bestValue){
 					bestValue = enemyValue - ownValue;
-					newEnemy = enemy;
+					newEnemy = u;
 				}
 			}
 		} else if  (unit.getType() == UnitType.Protoss_Arbiter && unit.getEnergy() >= 100 && Self.getInstance().hasResearched(TechType.Stasis_Field)){
 			int bestValue = Integer.MIN_VALUE;
-			for (Unit enemy : BwapiHelper.getEnemyUnitsAround(unit.getPosition(), null, 12*32)){
-				if (enemy.getType().isBuilding()){
+			for (Unit u : BwapiHelper.getEnemyUnitsAround(unit.getPosition(), null, 12*32)){
+				if (u.getType().isBuilding()){
 					continue;
 				}
-				int enemyValue = BwapiHelper.getEnemyUnitValueAround(enemy.getTilePosition(), STASIS_RADIUS);
-				int ownValue = BwapiHelper.getFriendlyUnitValueAround(enemy.getTilePosition(), STORM_RADIUS);
+				int enemyValue = BwapiHelper.getEnemyUnitValueAround(u.getTilePosition(), STASIS_RADIUS);
+				int ownValue = BwapiHelper.getFriendlyUnitValueAround(u.getTilePosition(), STORM_RADIUS);
 				if (enemyValue / 2 > ownValue && enemyValue >= MIN_STASIS_VALUE && enemyValue - ownValue > bestValue){
 					bestValue = enemyValue - ownValue;
-					newEnemy = enemy;
+					newEnemy = u;
 				}
 			}
 		} else {
 			newEnemy = BwapiHelper.getNewEnemyTarget(unit, attackDistance());
 		}
 		
-		if (newEnemy != null && (enemy == null || newEnemy.getID() != enemy.getID())){
+		if (newEnemy != null && !newEnemy.equals(enemy)){
 			enemy = newEnemy;
 			newTarget = true;
 		}
 		
 		// Attack target if any found
-		if (enemy != null && enemy.getDistance(unit) < attackDistance()){
-			behavior.command(target, enemy, newTarget);
+		if (enemy != null){
+			Position position = new Position(enemy.getPosition().getX(), enemy.getPosition().getY());
+			if (!position.isValid()){
+				System.out.println(enemy.getType() + ": " + position);
+			} else if (enemy.getDistance(unit) < attackDistance()){ 
+				behavior.command(position, enemy, newTarget);
+			} else if (target != null){
+				unit.move(target);
+				Match.getInstance().drawTextMap(unit.getPosition(), "Engage");
+				enemy = null;
+			}
 		} else if (target != null){
 			unit.move(target);
-			enemy = null;
+			Match.getInstance().drawLineMap(this.unit.getPosition(), target, Color.Blue);
+			Match.getInstance().drawTextMap(unit.getPosition(), "EngageNull");
 		}
-				
+		
 	}
 	
 	@Override

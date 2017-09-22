@@ -157,7 +157,13 @@ public class Squad {
 			}
 		}
 	}
+
+	public int mergeDistance() {
+		return (int)(64 + (32 * Math.pow(assignments.size(), 0.5) ));
+	}
 	
-	
+	public int splitDistance() {
+		return (int)(256 + (32 * Math.pow(assignments.size(), 0.75) ));
+	}
 
 }

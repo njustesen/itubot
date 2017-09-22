@@ -57,6 +57,15 @@ public class WorkerManager implements IWorkerManager {
 				assignment.job = newMineJob(assignment.unit);
 			} else if (assignment.job instanceof UnitBuildJob && !((UnitBuildJob)assignment.job).canBuild){
 				assignment.job = newMineJob(assignment.unit);
+			} else if (assignment.job instanceof UnitBuildJob && ((UnitBuildJob)assignment.job).unitType != ITUBot.getInstance().buildOrderManager.getNextBuild().unitType){
+				//assignment.job = newMineJob(assignment.unit);
+			}
+		}
+		
+		// Reassign to minerals
+		for (UnitAssignment assignment : assignments){
+			if (assignment.job instanceof UnitMineJob && (((UnitMineJob)assignment.job).mineralField == null || ((UnitMineJob)assignment.job).mineralField.getResources() <= 0)){
+				assignment.job = newMineJob(assignment.unit);
 			}
 		}
 		
@@ -248,11 +257,18 @@ public class WorkerManager implements IWorkerManager {
 		for(UnitAssignment responsibility : assignments){
 			double d = responsibility.unit.getDistance(position.toPosition());
 			if (d < closestDistance && responsibility.job instanceof UnitMineJob){
-				closestDistance = d;
-				closestWorker = responsibility;
+				if (isPath(responsibility.unit.getTilePosition(), position)){
+					closestDistance = d;
+					closestWorker = responsibility;
+				}
 			}
 		}
 		return closestWorker;
+	}
+
+	private boolean isPath(TilePosition a, TilePosition b) {
+		List<TilePosition> path = BWTA.getShortestPath(a, b);
+		return (path != null && path.contains(a) && path.contains(b));
 	}
 
 	private void stopBuildJobs(UnitType type) {

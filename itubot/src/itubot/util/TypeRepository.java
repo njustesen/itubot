@@ -1,6 +1,7 @@
 package itubot.util;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import bwapi.Player;
 import bwapi.Race;
@@ -124,11 +125,11 @@ public class TypeRepository {
 		add(TechType.Hallucination);
 		add(TechType.Recall);
 		add(TechType.Stasis_Field);
-		add(TechType.Archon_Warp);
+		//add(TechType.Archon_Warp);
 		add(TechType.Disruption_Web);
 		add(TechType.Mind_Control);
-		add(TechType.Dark_Archon_Meld);
-		add(TechType.Feedback);
+		//add(TechType.Dark_Archon_Meld);
+		//add(TechType.Feedback);
 		add(TechType.Maelstrom);
 	}};
 	
@@ -137,16 +138,16 @@ public class TypeRepository {
 		add(TechType.Lockdown);
 		add(TechType.EMP_Shockwave);
 		add(TechType.Spider_Mines);
-		add(TechType.Scanner_Sweep);
+		//add(TechType.Scanner_Sweep);
 		add(TechType.Tank_Siege_Mode);
-		add(TechType.Defensive_Matrix);
+		//add(TechType.Defensive_Matrix);
 		add(TechType.Irradiate);
 		add(TechType.Yamato_Gun);
 		add(TechType.Cloaking_Field);
 		add(TechType.Personnel_Cloaking);
 		add(TechType.Restoration);
 		add(TechType.Optical_Flare);
-		add(TechType.Nuclear_Strike);
+		//add(TechType.Nuclear_Strike);
 	}};
 	
 	public static ArrayList<TechType> zergTechs = new ArrayList<TechType>() {{
@@ -301,6 +302,19 @@ public class TypeRepository {
 				return new Build(zergTechs.get(zergUnits.size() + id));
 			if (id < zergUnits.size() + zergTechs.size() + zergUpgrades.size())
 				return new Build(zergUpgrades.get(zergUnits.size() + zergTechs.size() + id));
+		}
+		return null;
+	}
+
+	public static List<UnitType> unitsForRace(Race race) {
+		if (race == Race.Protoss){
+			return protossUnits;
+		} 
+		if (race == Race.Terran){
+			return terranUnits;
+		}
+		if (race == Race.Zerg){
+			return zergUnits;
 		}
 		return null;
 	}

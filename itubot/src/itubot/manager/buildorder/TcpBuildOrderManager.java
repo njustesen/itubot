@@ -18,6 +18,9 @@ import itubot.util.TypeRepository;
 public class TcpBuildOrderManager implements IBuildOrderManager {
 	
 	private TcpClient client;
+	private String cachedRequestOwnUnits;
+	private String cachedResponse;
+	private int observations;
 	
 	public TcpBuildOrderManager(int port) throws UnknownHostException, IOException{
 		this.client = new TcpClient(port);
@@ -26,13 +29,36 @@ public class TcpBuildOrderManager implements IBuildOrderManager {
 	@Override
 	public Build getNextBuild() {
 		Double[] stateArray = ITUBot.getInstance().informationManager.toArray(true, true, true, true);
-		String message = stateArray.toString();
+		StringBuilder builder = new StringBuilder();
+		builder.append("[");
+		boolean first = true;
+		for (Double d : stateArray){
+			if (first)
+				first = false;
+			else 
+				builder.append(",");
+			builder.append(d);
+		}
+		builder.append("]");
+		String request = builder.toString();
+		String own = request.substring(1, TypeRepository.unitsForRace(Self.getInstance().getRace()).size()+1);
+		int currentObservations = ITUBot.getInstance().informationManager.getObservations().size();
+		
 		String response;
-		try {
-			response = client.send(message);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return new Build(UnitType.Protoss_Probe);
+		if (own.equals(cachedRequestOwnUnits) && observations == currentObservations){
+			response = this.cachedResponse;
+		} else {
+			observations = currentObservations;
+			cachedRequestOwnUnits = own;
+			try {
+				System.out.println("Sending request");
+				response = client.send(request);
+				System.out.println("Response recieved: " + response);
+				this.cachedResponse = response;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return new Build(UnitType.Protoss_Probe);
+			}
 		}
 		
 		int id = Integer.parseInt(response);

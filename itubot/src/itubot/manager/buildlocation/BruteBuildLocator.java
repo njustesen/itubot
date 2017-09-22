@@ -377,5 +377,11 @@ public class BruteBuildLocator implements IBuildLocationManager {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public boolean isFree(TilePosition position, UnitType buildingType) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 }

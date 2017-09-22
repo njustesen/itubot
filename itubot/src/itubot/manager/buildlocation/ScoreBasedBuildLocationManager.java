@@ -222,7 +222,9 @@ public class ScoreBasedBuildLocationManager implements IBuildLocationManager {
 		}
 	}
 	
-	private boolean isFree(TilePosition position, UnitType buildingType) {
+	public boolean isFree(TilePosition position, UnitType buildingType) {
+		if (buildingType.isRefinery())
+			return true;
 		for (int x = position.getX(); x < position.getX() + buildingType.tileWidth(); x++){
 			for (int y = position.getY(); y < position.getY() + buildingType.tileHeight(); y++){
 				if (x >= Match.getInstance().mapWidth() || x < 0 || y >= Match.getInstance().mapHeight() || y < 0){
@@ -299,6 +301,8 @@ public class ScoreBasedBuildLocationManager implements IBuildLocationManager {
 					//BotLogger.getInstance().log(this, location + " might be taken by the enemy");
 				} else if (location.isIsland()){
 					// TODO: Use dropships to expand to islands
+				} else if (Match.getInstance().hasCreep(location.getTilePosition())){
+					// Cant expand on creep
 				} else {
 					double distanceToHome = Self.getInstance().getStartLocation().toPosition().getDistance(location.getPosition());
 					double distanceToEnemy = 0;

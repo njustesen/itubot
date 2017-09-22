@@ -70,13 +70,15 @@ public class ITUBot implements BWEventListener {
 		this.mineralManager = new MineralManager();
 		this.gasManager = new GasManager();
 		this.assualtManager = new AssaultManager();
-		//this.buildOrderManager = new ScriptedBuildOrderManager();
+		this.buildOrderManager = new ScriptedBuildOrderManager();
 		//this.buildOrderManager = new SupervisedBuildOrderManager(ActionSelection.PROBABILISTIC);
+		/*
 		try {
 			this.buildOrderManager = new TcpBuildOrderManager(6789);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		*/
 		this.buildLocationManager = new FastScoreBuildLocationManager();
 		this.buildingManager = new BuildingManager();
 		this.workerManager = new WorkerManager();
@@ -110,7 +112,9 @@ public class ITUBot implements BWEventListener {
 		}
 		for(IManager manager : managers){
 			try{
-				//manager.visualize();
+				if (!(manager instanceof IBuildLocationManager)){
+					manager.visualize();
+				}
 			} catch (Exception e){
 				e.printStackTrace();
 			}

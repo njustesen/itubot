@@ -63,5 +63,12 @@ public interface IInformationManager extends IManager {
 	public int ownUnitCountTotal(UnitType unitType);
 	
 	public int ownUnitCountInProd(UnitType unitType);
+
+	public int availableGeysers();
+	
+	public int supplyUsed();
+	
+	public int supplyTotal();
+	
 	
 }

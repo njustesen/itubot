@@ -33,6 +33,8 @@ public class MeleeBehavior implements CombatBehavior {
 			Match.getInstance().drawTextMap(unit.getPosition(), "--Attack--");
 			lastAttackFrame = Match.getInstance().getFrameCount();
 			unit.attack(enemy);
+		} else {
+			Match.getInstance().drawTextMap(unit.getPosition(), "--Cooldown--");
 		}
 	}
 	

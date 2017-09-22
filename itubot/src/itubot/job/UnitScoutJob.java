@@ -85,9 +85,6 @@ public class UnitScoutJob extends UnitJob {
 			
 			// Base location spotted?
 			int sight = unit.getType().sightRange();
-			if (Match.getInstance().enemy().getRace() == Race.Zerg){
-				sight *= 2; // Creep
-			}
 			if (unit.getDistance(target) < sight){
 				// Has spotted enemy base?
 				ITUBot.getInstance().informationManager.spotEnemyBaseLocation(target);

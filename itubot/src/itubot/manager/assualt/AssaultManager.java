@@ -14,6 +14,8 @@ import itubot.manager.information.InformationManager;
 public class AssaultManager implements IAssualtManager {
 
 	private static final int UNDER_ATTACK_DISTANCE = 900;
+
+	private static final double ENEMY_MULTIPLYER = 1.33;
 	
 	private CombatPredictor combatPredictor;
 	
@@ -34,14 +36,28 @@ public class AssaultManager implements IAssualtManager {
 		}
 		
 		// Estimate win change
-		double score = combatPredictor.prediction(squad, 1.33);
+		double score = combatPredictor.prediction(squad, ENEMY_MULTIPLYER);
 		//BotLogger.getInstance().log(this, "Score = " + score);
 		
-		if (ITUBot.getInstance().informationManager.getEnemyBaseLocation() != null && score > 0){
-			return ITUBot.getInstance().informationManager.getEnemyBaseLocation().getPosition();
-		} else {
+		if (score < 0){
 			return null;
 		}
+		
+		double d = Integer.MAX_VALUE;
+		Observation target = null;
+		for (Observation observation : ITUBot.getInstance().informationManager.getObservations()){
+			if (observation.type.isBuilding() || !observation.type.isFlyer()){
+				double distance = ITUBot.getInstance().informationManager.getOwnMainBaseLocation().getDistance(observation.position);
+				if (distance < d){
+					d = distance;
+					target = observation;
+				}
+			}
+		}
+		if (d == Integer.MAX_VALUE){
+			return ITUBot.getInstance().informationManager.getEnemyBaseLocation().getPoint();
+		}
+		return target.position;
 		
 	}
 

@@ -196,14 +196,20 @@ public class BwapiHelper {
 		boolean ground = unit.getType().groundWeapon() != null;
 		boolean air = unit.getType().airWeapon() != null;
 		for(Observation observation : ITUBot.getInstance().informationManager.getObservations()){
-			if (ground && !observation.type.isFlyer() || air && observation.type.isFlyer() || unit.getType().isSpellcaster()){
-				int distance = unit.getDistance(observation.position);
-				if (isFirstPriority(observation.type) && distance < disA){
-					a = Match.getInstance().getUnit(observation.id);
-					disA = distance;
-				} else if (distance < disB) {
-					b = Match.getInstance().getUnit(observation.id);
-					disB = distance;
+			if ((ground && !observation.type.isFlyer()) || (air && observation.type.isFlyer()) || unit.getType().isSpellcaster()){
+				if (observation.type == UnitType.Zerg_Egg || observation.type == UnitType.Zerg_Larva || observation.type == UnitType.Zerg_Lurker_Egg)
+					continue;
+				Unit enemy = Match.getInstance().getUnit(observation.id);
+				if (enemy.getPosition().isValid()){
+					int distance = unit.getDistance(enemy.getPosition());
+					if (isFirstPriority(observation.type) && distance < disA){
+						a = Match.getInstance().getUnit(observation.id);
+						disA = distance;
+					} else if (distance < disB) {
+						b = Match.getInstance().getUnit(observation.id);
+						disB = distance;
+						//System.out.println(b.getType() + "(" + b.getPosition() + ": " + distance );
+					}
 				}
 			}
 		}
@@ -221,14 +227,14 @@ public class BwapiHelper {
 	}
 	
 	private static boolean isFirstPriority(UnitType type) {
-		return (!type.isBuilding() ||
-				type == UnitType.Protoss_Observer || 
+		return ((!type.isBuilding()) ||
+				(type == UnitType.Protoss_Observer || 
 				type == UnitType.Terran_Missile_Turret || 
 				type == UnitType.Terran_Bunker || 
 				type == UnitType.Protoss_Photon_Cannon || 
 				type == UnitType.Zerg_Sunken_Colony || 
-				type == UnitType.Zerg_Spore_Colony || 
-				type.isSpellcaster());
+				type == UnitType.Zerg_Spore_Colony) || 
+				(type.isSpellcaster()));
 	}
 
 }

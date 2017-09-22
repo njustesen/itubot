@@ -245,7 +245,9 @@ public class FastScoreBuildLocationManager implements IBuildLocationManager {
 		}
 	}
 	
-	private boolean isFree(TilePosition position, UnitType buildingType) {
+	public boolean isFree(TilePosition position, UnitType buildingType) {
+		if (buildingType.isRefinery() || buildingType.isResourceDepot())
+			return true;
 		for (int x = position.getX(); x < position.getX() + buildingType.tileWidth(); x++){
 			for (int y = position.getY(); y < position.getY() + buildingType.tileHeight(); y++){
 				if (x >= Match.getInstance().mapWidth() || x < 0 || y >= Match.getInstance().mapHeight() || y < 0){

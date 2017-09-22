@@ -5,6 +5,7 @@ import itubot.abstraction.Observation;
 import itubot.abstraction.Squad;
 import itubot.abstraction.UnitAssignment;
 import itubot.bot.ITUBot;
+import itubot.log.BotLogger;
 import itubot.manager.information.InformationManager;
 
 public class CombatPredictor {
@@ -25,8 +26,11 @@ public class CombatPredictor {
 			}
 			if (airDamage + groundDamage > 0 || observation.type == UnitType.Terran_Bunker || observation.type.isSpellcaster()){
 				if (!observation.type.isWorker()){
-					enemyScore += observation.type.mineralPrice() + observation.type.gasPrice();
-					//BotLogger.getInstance().log(this, observation.type + ": " + (observation.type.mineralPrice() + observation.type.gasPrice()));
+					int score = observation.type.mineralPrice() + observation.type.gasPrice();
+					if (observation.type == UnitType.Zerg_Sunken_Colony || observation.type == UnitType.Terran_Bunker || observation.type == UnitType.Terran_Siege_Tank_Siege_Mode)
+						score = (int)(score*2.75);
+					enemyScore += score;
+					//BotLogger.getInstance().log(this, observation.type.toString() + ": " + score);
 				}
 			}
 		}

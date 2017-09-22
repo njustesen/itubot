@@ -28,8 +28,8 @@ public class KitingBehavior implements CombatBehavior {
 	@Override
 	public void command(Position target, Unit enemy, boolean newEnemy) {
 		Match.getInstance().drawCircleMap(unit.getPosition(), 2, Color.Green, true);
-		Match.getInstance().drawCircleMap(enemy.getPosition(), 2, Color.Red, true);
-		Match.getInstance().drawLineMap(unit.getPosition(), enemy.getPosition(), Color.Red);
+		Match.getInstance().drawCircleMap(target, 2, Color.Red, true);
+		Match.getInstance().drawLineMap(unit.getPosition(), target, Color.Red);
 		
 		int range = 0;
 		int cooldown = 50;
@@ -45,7 +45,6 @@ public class KitingBehavior implements CombatBehavior {
 			range = unit.getType().airWeapon().maxRange();
 			cooldown = unit.getType().airWeapon().damageCooldown();
 		} else {
-			BotLogger.getInstance().log(this, "Ground weapon="+unit.getType().groundWeapon());
 			range = unit.getType().groundWeapon().maxRange();
 			cooldown = unit.getType().groundWeapon().damageCooldown();
 		}
@@ -57,7 +56,7 @@ public class KitingBehavior implements CombatBehavior {
 				moveTarget = BwapiHelper.getKitePosition(unit, enemy, range);
 				unit.move(moveTarget);
 				//hasAttacked = false;
-				Match.getInstance().drawTextMap(unit.getPosition(), "Move");
+				Match.getInstance().drawTextMap(unit.getPosition(), "--Move--");
 			} else {
 				moveTarget = null;
 				if (hasAttacked || newEnemy){

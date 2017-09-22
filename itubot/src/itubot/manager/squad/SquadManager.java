@@ -26,9 +26,6 @@ import itubot.manager.IManager;
 
 public class SquadManager implements ISquadManager {
 		
-	private static final int SPLIT_DISTANCE = 320;
-	private static final int MERGE_DISTANCE = 80;
-	
 	public List<Squad> squads;
 	private Map<Integer, Squad> unitsInSquad;
 	
@@ -64,10 +61,9 @@ public class SquadManager implements ISquadManager {
 		// Split spread-out squads
 		List<Squad> newSquads = new ArrayList<Squad>();
 		for (Squad squad : squads){
-			Position center = squad.getCenter();
 			List<UnitAssignment> removedUnits = new ArrayList<UnitAssignment>();
 			for (UnitAssignment assignment : squad.assignments){
-				if (assignment.unit.getDistance(center) > SPLIT_DISTANCE){
+				if (assignment.unit.getDistance(squad.getCenter()) > squad.splitDistance()){
 					Squad newSquad = new Squad();
 					newSquad.add(assignment.unit);
 					unitsInSquad.put(assignment.unit.getID(), newSquad);
@@ -90,7 +86,7 @@ public class SquadManager implements ISquadManager {
 				if (squadA.id == squadB.id)
 					continue;
 				Position centerB = squadB.getCenter();
-				if (centerA.getApproxDistance(centerB) <= MERGE_DISTANCE){
+				if (centerA.getApproxDistance(centerB) <= (squadA.mergeDistance() + squadB.mergeDistance())){
 					for (UnitAssignment assignment : squadB.assignments){
 						squadA.add(assignment.unit);
 						unitsInSquad.put(assignment.unit.getID(), squadA);
@@ -127,8 +123,8 @@ public class SquadManager implements ISquadManager {
 				}
 			}
 			Position center = squad.getCenter();
-			Match.getInstance().drawCircleMap(center, SPLIT_DISTANCE, Color.Blue);
-			Match.getInstance().drawCircleMap(center, MERGE_DISTANCE, Color.Purple);
+			Match.getInstance().drawCircleMap(center, squad.splitDistance(), Color.Blue);
+			Match.getInstance().drawCircleMap(center, squad.mergeDistance(), Color.Purple);
 			Match.getInstance().drawCircleMap(center, 8, Color.Green);
 			Match.getInstance().drawTextMap(center, squad.text);
 			if (squad.target != null){
@@ -185,7 +181,7 @@ public class SquadManager implements ISquadManager {
 			for (Squad squad : squads){
 				Position center = squad.getCenter();
 				int distance = unit.getDistance(center);
-				if (distance <= SPLIT_DISTANCE && distance < closestDistance){
+				if (distance <= squad.splitDistance() && distance < closestDistance){
 					toJoin = squad;
 					closestDistance = distance;
 				}
@@ -210,9 +206,11 @@ public class SquadManager implements ISquadManager {
 	public void onUnitDestroy(Unit unit) {
 		if (unit.getPlayer().getID() == Self.getInstance().getID() && !unit.getType().isBuilding() && !unit.getType().isWorker()){
 			Squad squad = unitsInSquad.get(unit.getID());
-			squad.remove(unit);
-			if (squad.assignments.isEmpty())
-				squads.remove(squad);
+			if (squad != null){
+				squad.remove(unit);
+				if (squad.assignments.isEmpty())
+					squads.remove(squad);
+			}
 		}
 	}
 

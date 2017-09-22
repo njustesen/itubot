@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Main-Class: api.API
+Class-Path: lib/deeplearning4j-nn-0.8.0.jar lib/dl4j.jar lib/nd4j-api-0.8.0.jar
