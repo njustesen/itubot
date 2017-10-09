@@ -13,7 +13,6 @@ import itubot.combat.KitingBehavior;
 import itubot.combat.MeleeBehavior;
 import itubot.extension.BwapiHelper;
 import itubot.log.BotLogger;
-import jdk.nashorn.internal.runtime.DebugLogger;
 
 public class UnitCombatJob extends UnitJob {
 
