@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import bwapi.Color;
 import bwapi.Player;
@@ -29,6 +31,8 @@ import itubot.util.TypeRepository;
 
 public class InformationManager implements IInformationManager {
 
+	private static String deliminator = "-";
+	
 	private List<BaseLocation> possibleEnemyBasePositions;
 	private BaseLocation ownMainBaseLocation;
 	private List<BaseLocation> ownBaseLocations;
@@ -501,20 +505,135 @@ public class InformationManager implements IInformationManager {
 	}
 
 	@Override
-	public Double[] toArray(boolean underConstruction, boolean progress, boolean oppMaterial, boolean supply) {
+	public Map<String, String> toRequest() {
 
-		List<Double> list = new ArrayList<Double>();
+		Map<String, String> list = new HashMap<String, String>();
 
-		list.addAll(ownMaterial());
-		list.addAll(inProduction());
-		list.addAll(inProgress());
-		list.addAll(oppMaterial());
-		list.addAll(supply());
+		list.put("own_units", ownUnits());
+		list.put("own_units_under_construction", ownUnitsUnderConstruction());
+		list.put("own_techs", ownTechs());
+		list.put("own_techs_under_construction", ownTechsUnderConstruction());
+		list.put("own_upgrades", ownUpgrades());
+		list.put("own_upgrades_under_construction", ownUpgradesUnderConstruction());
+		list.put("opp_units", oppUnits());
+		list.put("own_race", Self.getInstance().getRace().toString());
+		list.put("opp_race", Enemy.getInstance().getRace().toString());
+		list.put("minerals", ""+Self.getInstance().minerals());
+		list.put("gas", ""+Self.getInstance().gas());
+		list.put("frame", ""+Match.getInstance().getFrameCount());
+		list.put("new_game", ""+(Match.getInstance().getFrameCount() == 0));
+		list.put("game_over", ""+(false));
+		list.put("won", ""+(false));
+		list.put("id", ""+-1);
 
-		Double[] arr = list.toArray(new Double[list.size()]);
+		return list;
 
-		return arr;
+	}
 
+	private String oppUnits() {
+		int[] uArr = new int[256];
+		for(Observation observation : observations){
+			uArr[TypeRepository.Units.indexOf(observation.type)] += 1;
+		}
+		return arrayToString(uArr);
+	}
+
+	private String ownUpgradesUnderConstruction() {
+		String[] uArr = new String[64];
+		for (Unit unit : Self.getInstance().getUnits()){
+			if (unit.getUpgrade() != UpgradeType.None){
+				uArr[TypeRepository.Upgrades.indexOf(unit.getTech())] = ""+unit.getRemainingUpgradeTime();
+			}
+		}
+		return arrayToString(uArr);
+	}
+
+	private String ownUpgrades() {
+		int[] uArr = new int[64];
+		for (UpgradeType upgrade : UpgradeTypes.all)
+		{
+			if (Self.getInstance().getUpgradeLevel(upgrade) > 0){
+				uArr[TypeRepository.Upgrades.indexOf(upgrade)] = 1;
+			}
+		}
+		return arrayToString(uArr);
+	}
+
+	private String ownTechsUnderConstruction() {
+		String[] tArr = new String[64];
+		for (Unit unit : Self.getInstance().getUnits()){
+			if (unit.getTech() != TechType.None){
+				tArr[TypeRepository.Techs.indexOf(unit.getTech())] = ""+unit.getRemainingResearchTime();
+			}
+		}
+		return arrayToString(tArr);
+	}
+
+	private String ownTechs() {
+		int[] tArr = new int[64];
+		for (TechType tech : TechTypes.all)
+		{
+			if (Self.getInstance().hasResearched(tech)){
+				tArr[TypeRepository.Techs.indexOf(tech)] = 1;
+			}
+		}
+		return arrayToString(tArr);
+	}
+
+	private String ownUnitsUnderConstruction() {
+		String[] uArr = new String[256];
+		for (Unit unit : Self.getInstance().getUnits()){
+			if (unit.getRemainingBuildTime() > 0){
+				if (uArr[TypeRepository.Units.indexOf(unit.getType())] == null || uArr[TypeRepository.Units.indexOf(unit.getType())].equals("")){
+					uArr[TypeRepository.Units.indexOf(unit.getType())] = ""+unit.getRemainingBuildTime();
+				} else {
+					uArr[TypeRepository.Units.indexOf(unit.getType())] += "," + unit.getRemainingBuildTime();
+				}
+			}
+		}
+		// Buildings assigned to be build, count as being build
+		// TODO:
+		return arrayToString(uArr);
+	}
+
+	private String ownUnits() {
+		int[] uArr = new int[256];
+		for (Unit unit : Self.getInstance().getUnits()){
+			if (unit.getRemainingBuildTime() == 0){
+				uArr[TypeRepository.Units.indexOf(unit.getType())] += 1;
+				uArr[TypeRepository.Units.indexOf(UnitType.Protoss_Scarab)] += unit.getScarabCount();
+				uArr[TypeRepository.Units.indexOf(UnitType.Protoss_Interceptor)] += unit.getInterceptorCount();
+			}
+		}
+		return arrayToString(uArr);
+	}
+	
+	private String arrayToString(String[] arr) {
+		StringBuilder nameBuilder = new StringBuilder();
+
+	    for (String i : arr) {
+	    	if (i == null){
+		        nameBuilder.append("").append(deliminator);
+	    	} else {
+	    		nameBuilder.append(""+i).append(deliminator);
+	    	}
+	    }
+
+	    nameBuilder.deleteCharAt(nameBuilder.length() - 1);
+
+	    return nameBuilder.toString();
+	}
+
+	private String arrayToString(int[] uArr) {
+		StringBuilder nameBuilder = new StringBuilder();
+
+	    for (int i : uArr) {
+	    	nameBuilder.append(""+i).append(deliminator);
+	    }
+
+	    nameBuilder.deleteCharAt(nameBuilder.length() - 1);
+
+	    return nameBuilder.toString();
 	}
 
 	private List<Double> supply() {

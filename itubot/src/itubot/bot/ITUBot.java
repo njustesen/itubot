@@ -18,9 +18,9 @@ import itubot.manager.building.IBuildingManager;
 import itubot.manager.buildlocation.FastScoreBuildLocationManager;
 import itubot.manager.buildlocation.IBuildLocationManager;
 import itubot.manager.buildlocation.ScoreBasedBuildLocationManager;
+import itubot.manager.buildorder.HttpBuildOrderManager;
 import itubot.manager.buildorder.IBuildOrderManager;
 import itubot.manager.buildorder.ScriptedBuildOrderManager;
-import itubot.manager.buildorder.TcpBuildOrderManager;
 import itubot.manager.gas.GasManager;
 import itubot.manager.gas.IGasManager;
 import itubot.manager.information.IInformationManager;
@@ -34,7 +34,7 @@ import itubot.manager.worker.WorkerManager;
 
 public class ITUBot implements BWEventListener {
 	
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         //MLPClassifierLinear classifier = new MLPClassifierLinear();
         //System.out.println("Classifer="+classifier.getClass().toString());
         ITUBot.getInstance().execute();
@@ -46,7 +46,11 @@ public class ITUBot implements BWEventListener {
  	
  	public static ITUBot getInstance() {
  	   if(instance == null) {
- 		   instance = new ITUBot();
+ 		   try {
+			instance = new ITUBot();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
  	   }
  	   return instance;
  	}
@@ -64,13 +68,13 @@ public class ITUBot implements BWEventListener {
 	
  	private List<IManager> managers;
 	
-	protected ITUBot(){
+	protected ITUBot() throws UnknownHostException, IOException{
 		
 		this.informationManager = new InformationManager();
 		this.mineralManager = new MineralManager();
 		this.gasManager = new GasManager();
 		this.assualtManager = new AssaultManager();
-		this.buildOrderManager = new ScriptedBuildOrderManager();
+		this.buildOrderManager = new HttpBuildOrderManager();
 		//this.buildOrderManager = new SupervisedBuildOrderManager(ActionSelection.PROBABILISTIC);
 		/*
 		try {

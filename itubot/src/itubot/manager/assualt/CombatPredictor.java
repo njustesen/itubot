@@ -28,7 +28,7 @@ public class CombatPredictor {
 				if (!observation.type.isWorker()){
 					int score = observation.type.mineralPrice() + observation.type.gasPrice();
 					if (observation.type == UnitType.Zerg_Sunken_Colony || observation.type == UnitType.Terran_Bunker || observation.type == UnitType.Terran_Siege_Tank_Siege_Mode)
-						score = (int)(score*2.75);
+						score = (int)(score*1.75);
 					enemyScore += score;
 					//BotLogger.getInstance().log(this, observation.type.toString() + ": " + score);
 				}
