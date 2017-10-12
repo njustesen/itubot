@@ -29,8 +29,10 @@ public class AssaultManager implements IAssualtManager {
 		for(Observation observation : ITUBot.getInstance().informationManager.getObservations()){
 			for(BaseLocation base : ITUBot.getInstance().informationManager.getOwnBaseLocations()){
 				if (observation.position.getDistance(base.getPosition()) < UNDER_ATTACK_DISTANCE){
-					//BotLogger.getInstance().log(this, "Observation found " + observation.position.getDistance(base.getPosition()) + " pixels from base.");
-					return observation.position;
+					if (observation.valid){
+						//BotLogger.getInstance().log(this, "Observation found " + observation.position.getDistance(base.getPosition()) + " pixels from base.");
+						return observation.position;
+					}
 				}
 			}
 		}
@@ -46,11 +48,13 @@ public class AssaultManager implements IAssualtManager {
 		double d = Integer.MAX_VALUE;
 		Observation target = null;
 		for (Observation observation : ITUBot.getInstance().informationManager.getObservations()){
-			if (observation.type.isBuilding() || !observation.type.isFlyer()){
-				double distance = ITUBot.getInstance().informationManager.getOwnMainBaseLocation().getDistance(observation.position);
-				if (distance < d){
-					d = distance;
-					target = observation;
+			if (observation.valid){
+				if (observation.type.isBuilding() || !observation.type.isFlyer()){
+					double distance = ITUBot.getInstance().informationManager.getOwnMainBaseLocation().getDistance(observation.position);
+					if (distance < d){
+						d = distance;
+						target = observation;
+					}
 				}
 			}
 		}

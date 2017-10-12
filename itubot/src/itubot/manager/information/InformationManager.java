@@ -164,6 +164,7 @@ public class InformationManager implements IInformationManager {
 						if (position.isValid()) {
 							observation.position = position;
 							observation.type = unit.getType();
+							observation.valid = true;
 							found = true;
 						}
 						break;
@@ -189,29 +190,26 @@ public class InformationManager implements IInformationManager {
 			}
 		}
 
-		List<Observation> invalid = new ArrayList<Observation>();
 		for (Observation observation : observations) {
 			boolean found = false;
 			for (Unit unit : Enemy.getInstance().getUnits()) {
-				if (observation.id == unit.getID()) {
+				if (observation.id == unit.getID() && unit.getPosition().isValid()) {
 					found = true;
 					break;
 				}
 			}
 			if (!found) {
+				observation.valid = true;
 				for (Unit unit : Self.getInstance().getUnits()) {
 					if (unit.getPosition().getDistance(observation.position) <= unit.getType().sightRange()) {
-						invalid.add(observation); // TODO: Should just be
-													// invalidated
+						observation.valid = false;
 					}
 				}
+			} else {
+				int i = 2;
 			}
 		}
-		observations.removeAll(invalid);
-		if (!invalid.isEmpty()) {
-			System.out.println("Removing " + invalid.size() + " observations.");
-		}
-
+		
 		for (TechType tech : TechTypes.all) {
 			ownTechs.put(tech, Self.getInstance().hasResearched(tech) && initTechs.get(tech) == 0 ? 1 : 0);
 			ownTechsInProduction.put(tech, Self.getInstance().isResearching(tech) ? 1 : 0);
@@ -291,9 +289,17 @@ public class InformationManager implements IInformationManager {
 						observation.position.getY() - height / 2);
 				Position bottomRight = new Position(observation.position.getX() + width / 2,
 						observation.position.getY() + height / 2);
-				Match.getInstance().drawBoxMap(topLeft, bottomRight, Color.Red);
+				if (observation.valid){
+					Match.getInstance().drawBoxMap(topLeft, bottomRight, Color.Red);
+				} else {
+					Match.getInstance().drawBoxMap(topLeft, bottomRight, Color.Yellow);
+				}
 			} else {
-				Match.getInstance().drawCircleMap(observation.position, observation.type.width() / 2, Color.Red);
+				if (observation.valid){
+					Match.getInstance().drawCircleMap(observation.position, observation.type.width() / 2, Color.Red);
+				} else {
+					Match.getInstance().drawCircleMap(observation.position, observation.type.width() / 2, Color.Yellow);
+				}
 			}
 			Match.getInstance().drawTextMap(observation.position, observation.type.toString());
 		}

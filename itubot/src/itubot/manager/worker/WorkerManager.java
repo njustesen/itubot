@@ -122,7 +122,7 @@ public class WorkerManager implements IWorkerManager {
 		
 		// If one pylon and not scouting
 		if (ITUBot.getInstance().informationManager.ownUnitCountTotal(UnitType.Protoss_Pylon) > 0 && 
-				ITUBot.getInstance().informationManager.getEnemyBaseLocation() == null){
+				(ITUBot.getInstance().informationManager.getEnemyBaseLocation() == null || ITUBot.getInstance().informationManager.getObservations().size() < 2)){
 			boolean scouting = false;
 			for(UnitAssignment assignment : assignments){
 				if (assignment.job instanceof UnitScoutJob){

@@ -1,10 +1,14 @@
 package itubot.combat;
 
+import java.util.List;
+
 import bwapi.Color;
 import bwapi.Position;
 import bwapi.TechType;
+import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwta.BWTA;
 import itubot.bwapi.Match;
 import itubot.bwapi.Self;
 import itubot.extension.BwapiHelper;
@@ -109,8 +113,14 @@ public class KitingBehavior implements CombatBehavior {
 				return true;
 			}
 		} else if (unit.getDistance(enemy) < range*0.9){
-			return true;
+			// Can kite? Or stuck
+			Position position = BwapiHelper.getKitePosition(unit, enemy, range);
+			List<TilePosition> path = BWTA.getShortestPath(unit.getPosition().toTilePosition(), position.toTilePosition());
+			if (!path.isEmpty()){
+				return true;
+			}
 		}
+		
 		return false;
 	}
 	

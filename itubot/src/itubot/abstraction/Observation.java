@@ -10,6 +10,7 @@ public class Observation {
 	public int id;
 	public Position position;
 	public int hp;
+	public boolean valid;
 	
 	public Observation(Unit unit) {
 		super();
@@ -17,6 +18,7 @@ public class Observation {
 		this.id = unit.getID();
 		this.position = new Position(unit.getPosition().getX(), unit.getPosition().getY());
 		this.hp = unit.getHitPoints();
+		this.valid = true;
 	}
 
 	@Override

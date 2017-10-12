@@ -296,13 +296,13 @@ public class ScoreBasedBuildLocationManager implements IBuildLocationManager {
 			double bestScore = Integer.MIN_VALUE;
 			for(BaseLocation location : BWTA.getBaseLocations()){
 				if (ITUBot.getInstance().informationManager.getOwnBaseLocations().contains(location)) {
-					//BotLogger.getInstance().log(this, location + " is our base already");
+					continue;
 				} else if (ITUBot.getInstance().informationManager.getPossibleEnemyBasePositions().contains(location)){
-					//BotLogger.getInstance().log(this, location + " might be taken by the enemy");
+					BotLogger.getInstance().log(this, location + " might be taken by the enemy");
 				} else if (location.isIsland()){
 					// TODO: Use dropships to expand to islands
 				} else if (Match.getInstance().hasCreep(location.getTilePosition())){
-					// Cant expand on creep
+					BotLogger.getInstance().log(this, location + " has creep");
 				} else {
 					double distanceToHome = Self.getInstance().getStartLocation().toPosition().getDistance(location.getPosition());
 					double distanceToEnemy = 0;

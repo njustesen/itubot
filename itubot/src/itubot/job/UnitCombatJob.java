@@ -8,6 +8,7 @@ import bwapi.UnitType;
 import bwapi.UpgradeType;
 import itubot.bwapi.Match;
 import itubot.bwapi.Self;
+import itubot.combat.CenterBehavior;
 import itubot.combat.CombatBehavior;
 import itubot.combat.KitingBehavior;
 import itubot.combat.MeleeBehavior;
@@ -38,10 +39,10 @@ public class UnitCombatJob extends UnitJob {
 	}
 	
 	private CombatBehavior createBehavior(Unit unit) {
-		if (unit.getType() == UnitType.Protoss_Zealot)
+		if (unit.getType() == UnitType.Protoss_Zealot || unit.getType() == UnitType.Protoss_Dark_Templar || unit.getType() == UnitType.Protoss_Probe)
 			return new MeleeBehavior(unit);
-		if (unit.getType() == UnitType.Protoss_Probe)
-			return new MeleeBehavior(unit);
+		if (unit.getType() == UnitType.Protoss_Observer)
+			return new CenterBehavior(unit);
 		return new KitingBehavior(unit);
 	}
 	
