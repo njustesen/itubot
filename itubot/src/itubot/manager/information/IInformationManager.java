@@ -69,6 +69,10 @@ public interface IInformationManager extends IManager {
 	public int supplyUsed();
 	
 	public int supplyTotal();
+
+	public int materialHash();
+
+	public void print();
 	
 	
 }

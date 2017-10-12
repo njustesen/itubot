@@ -19,7 +19,9 @@ import bwapi.UnitType;
 import bwapi.UpgradeType;
 import bwta.BWTA;
 import bwta.BaseLocation;
+import itubot.abstraction.Build;
 import itubot.abstraction.Observation;
+import itubot.abstraction.UnitAssignment;
 import itubot.bot.ITUBot;
 import itubot.bwapi.Enemy;
 import itubot.bwapi.Match;
@@ -55,6 +57,7 @@ public class InformationManager implements IInformationManager {
 	private HashMap<UpgradeType, Integer> ownUpgrades;
 	private HashMap<UpgradeType, Integer> ownUpgradesInProduction;
 	private HashMap<UpgradeType, Integer> ownUpgradesInProgress;
+	private HashMap<TechType, Integer> initTechs;
 	private HashMap<TechType, Integer> ownTechs;
 	private HashMap<TechType, Integer> ownTechsInProduction;
 	private HashMap<TechType, Integer> ownTechsInProgress;
@@ -69,6 +72,7 @@ public class InformationManager implements IInformationManager {
 		this.ownTechs = new HashMap<TechType, Integer>();
 		this.ownTechsInProduction = new HashMap<TechType, Integer>();
 		this.ownTechsInProgress = new HashMap<TechType, Integer>();
+		this.initTechs = new HashMap<TechType, Integer>();
 
 		this.oppUnits = new HashMap<UnitType, Integer>();
 		this.observations = new ArrayList<Observation>();
@@ -86,6 +90,7 @@ public class InformationManager implements IInformationManager {
 
 	@Override
 	public void execute() {
+		this.initTechs.clear();
 		this.ownUnits.clear();
 		this.ownUnitsInProduction.clear();
 		this.ownUnitsInProgress.clear();
@@ -101,6 +106,12 @@ public class InformationManager implements IInformationManager {
 		
 		this.supplyUsed = 0;
 		this.supplyTotal = 0;
+		
+		if (initTechs.isEmpty()){
+			for (TechType tech : TechTypes.all) {
+				initTechs.put(tech, Self.getInstance().hasResearched(tech) ? 1 : 0);
+			}
+		}
 
 		for (Unit unit : Self.getInstance().getUnits()) {
 
@@ -202,7 +213,7 @@ public class InformationManager implements IInformationManager {
 		}
 
 		for (TechType tech : TechTypes.all) {
-			ownTechs.put(tech, Self.getInstance().hasResearched(tech) ? 1 : 0);
+			ownTechs.put(tech, Self.getInstance().hasResearched(tech) && initTechs.get(tech) == 0 ? 1 : 0);
 			ownTechsInProduction.put(tech, Self.getInstance().isResearching(tech) ? 1 : 0);
 		}
 		for (UpgradeType upgrade : UpgradeTypes.all) {
@@ -540,9 +551,9 @@ public class InformationManager implements IInformationManager {
 
 	private String ownUpgradesUnderConstruction() {
 		String[] uArr = new String[64];
-		for (Unit unit : Self.getInstance().getUnits()){
-			if (unit.getUpgrade() != UpgradeType.None){
-				uArr[TypeRepository.Upgrades.indexOf(unit.getTech())] = ""+unit.getRemainingUpgradeTime();
+		for (UpgradeType upgrade : ownUpgradesInProgress.keySet()){
+			if (upgrade != UpgradeType.None){
+				uArr[TypeRepository.Upgrades.indexOf(upgrade)] = ""+ownUpgradesInProgress.get(upgrade);
 			}
 		}
 		return arrayToString(uArr);
@@ -561,9 +572,9 @@ public class InformationManager implements IInformationManager {
 
 	private String ownTechsUnderConstruction() {
 		String[] tArr = new String[64];
-		for (Unit unit : Self.getInstance().getUnits()){
-			if (unit.getTech() != TechType.None){
-				tArr[TypeRepository.Techs.indexOf(unit.getTech())] = ""+unit.getRemainingResearchTime();
+		for (TechType tech : ownTechsInProgress.keySet()){
+			if (tech != TechType.None){
+				tArr[TypeRepository.Upgrades.indexOf(tech)] = ""+ownTechsInProgress.get(tech);
 			}
 		}
 		return arrayToString(tArr);
@@ -571,11 +582,9 @@ public class InformationManager implements IInformationManager {
 
 	private String ownTechs() {
 		int[] tArr = new int[64];
-		for (TechType tech : TechTypes.all)
+		for (TechType tech : ownTechs.keySet())
 		{
-			if (Self.getInstance().hasResearched(tech)){
-				tArr[TypeRepository.Techs.indexOf(tech)] = 1;
-			}
+			tArr[TypeRepository.Techs.indexOf(tech)] = ownTechs.get(tech);
 		}
 		return arrayToString(tArr);
 	}
@@ -591,8 +600,13 @@ public class InformationManager implements IInformationManager {
 				}
 			}
 		}
-		// Buildings assigned to be build, count as being build
-		// TODO:
+		for(Build build : ITUBot.getInstance().workerManager.plannedBuilds()){
+			if (uArr[TypeRepository.Units.indexOf(build.unitType)] == null || uArr[TypeRepository.Units.indexOf(build.unitType)].equals("")){
+				uArr[TypeRepository.Units.indexOf(build.unitType)] = "" + build.unitType.buildTime();
+			} else {
+				uArr[TypeRepository.Units.indexOf(build.unitType)] += "," + build.unitType.buildTime();
+			}
+		}
 		return arrayToString(uArr);
 	}
 
@@ -773,6 +787,58 @@ public class InformationManager implements IInformationManager {
 			gas += location.getGeysers().size();
 		}
 		return gas;
+	}
+
+	@Override
+	public int materialHash() {
+		int hash = 1;
+		for (UnitType unit : ownUnitsInProduction.keySet()){
+			hash = hash*TypeRepository.Units.indexOf(unit);
+		}
+		for (TechType tech : ownTechsInProduction.keySet()){
+			hash = hash*TypeRepository.Units.indexOf(tech);
+		}
+		for (UpgradeType upgrade : ownUpgradesInProduction.keySet()){
+			hash = hash*TypeRepository.Units.indexOf(upgrade);
+		}
+		/*
+		for (UnitType unit : ownUnits.keySet()){
+			hash = hash*TypeRepository.Units.indexOf(unit);
+		}
+		*/
+		return hash;
+	}
+
+	@Override
+	public void print() {
+		System.out.println("--------------");
+		System.out.println("-- Material");
+		for (UnitType unit : ownUnits.keySet()){
+			if (ownUnits.get(unit) > 0)
+				System.out.println(unit.toString() + ": " + ownUnits.get(unit));
+		}/*
+		for (TechType tech : ownTechs.keySet()){
+			if (ownTechs.get(tech) > 0)
+				System.out.println(tech.toString() + ": " + ownTechs.get(tech));
+		}
+		for (UpgradeType upgrade : ownUpgrades.keySet()){
+			if (ownUpgrades.get(upgrade) > 0)
+				System.out.println(upgrade.toString() + ": " + ownUpgrades.get(upgrade));
+		}*/
+		System.out.println("-- In Production");
+		for (UnitType unit : ownUnitsInProduction.keySet()){
+			if (ownUnitsInProduction.get(unit) > 0)
+				System.out.println(unit.toString() + ": " + ownUnitsInProduction.get(unit));
+		}
+		for (TechType tech : ownTechsInProduction.keySet()){
+			if (ownTechsInProduction.get(tech) > 0)
+				System.out.println(tech.toString() + ": " + ownTechsInProduction.get(tech));
+		}
+		for (UpgradeType upgrade : ownUpgradesInProduction.keySet()){
+			if (ownUpgradesInProduction.get(upgrade) > 0)
+				System.out.println(upgrade.toString() + ": " + ownUpgradesInProduction.get(upgrade));
+		}
+		System.out.println("--------------");
 	}
 
 }

@@ -34,6 +34,7 @@ import itubot.manager.buildlocation.ScoreBasedBuildLocationManager;
 import itubot.manager.buildorder.ScriptedBuildOrderManager;
 import itubot.manager.gas.GasManager;
 import itubot.manager.information.InformationManager;
+import jdk.nashorn.internal.runtime.DebugLogger;
 
 public class WorkerManager implements IWorkerManager {
 
@@ -93,6 +94,7 @@ public class WorkerManager implements IWorkerManager {
 		// Build next build
 		Build nextBuild = null;
 		try {
+			//BotLogger.getInstance().log(this, "Requesting next build. Frame=" + Match.getInstance().getFrameCount());
 			nextBuild = ITUBot.getInstance().buildOrderManager.getNextBuild();
 			if (nextBuild.type == BuildType.BUILDING && !buildAlreadyAssigned(nextBuild)){
 				BotLogger.getInstance().log(this, "Requesting build location for " + nextBuild.toString());
@@ -443,6 +445,17 @@ public class WorkerManager implements IWorkerManager {
 
 	@Override
 	public void onUnitShow(Unit arg0) {
+	}
+
+	@Override
+	public List<Build> plannedBuilds() {
+		List<Build> builds = new ArrayList<Build>();
+		for (UnitAssignment assignment : assignments){
+			if (assignment.job instanceof UnitBuildJob){
+				builds.add(new Build(((UnitBuildJob)assignment.job).unitType));
+			}
+		}
+		return builds;
 	}
 	
 }

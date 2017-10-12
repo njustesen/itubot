@@ -18,6 +18,7 @@ import itubot.bwapi.Self;
 import itubot.job.UnitTechJob;
 import itubot.job.UnitTrainJob;
 import itubot.job.UnitUpgradeJob;
+import itubot.log.BotLogger;
 import itubot.manager.buildorder.ScriptedBuildOrderManager;
 
 public class BuildingManager implements IBuildingManager {
@@ -47,6 +48,7 @@ public class BuildingManager implements IBuildingManager {
 	public void execute() {
 		
 		// Check next build
+		//BotLogger.getInstance().log(this, "Requesting next build. Frame=" + Match.getInstance().getFrameCount());
 		Build nextBuild = ITUBot.getInstance().buildOrderManager.getNextBuild();
 		//if (alreadyAssigned(nextBuild)){
 		//	return;

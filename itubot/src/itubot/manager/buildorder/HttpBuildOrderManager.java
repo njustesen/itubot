@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Map;
 
+import bwapi.Color;
 import bwapi.Player;
 import bwapi.Position;
 import bwapi.Unit;
@@ -44,18 +45,17 @@ public class HttpBuildOrderManager implements IBuildOrderManager {
 		Map<String, String> stateArray = ITUBot.getInstance().informationManager.toRequest();
 		
 		// Don't call if nothing changed
-		int stateCount = 
-			ITUBot.getInstance().informationManager.getOwnUnitsInProduction().size() +
-			ITUBot.getInstance().informationManager.getOwnTechsInProduction().size() +
-			ITUBot.getInstance().informationManager.getOwnUpgradesInProduction().size() +
-			(Match.getInstance().getFrameCount() - lastRequestTime > maxTime ? 1 : 0);
+		int stateCount = ITUBot.getInstance().informationManager.materialHash();
 		
-		if (stateCount == lastStateCount){
+		if (stateCount == lastStateCount && Match.getInstance().getFrameCount() - lastRequestTime < maxTime){
+			//System.out.println("Returning last build: " + lastBuild.toString());
 			return lastBuild;
 		}
 		lastStateCount = stateCount;
 		
 		lastRequestTime = Match.getInstance().getFrameCount();
+		
+		ITUBot.getInstance().informationManager.print();
 		
 		// Build request
 		StringBuilder builder = new StringBuilder();
@@ -94,6 +94,7 @@ public class HttpBuildOrderManager implements IBuildOrderManager {
 		// Check for errors
 		if (response.length() >= 9 && response.substring(0, 8) == "Exception"){
 			lastBuild = new Build(UnitType.Protoss_Probe);
+			System.out.println("Exception from server: " + lastBuild.toString());
 			return lastBuild;
 		}
 		
@@ -112,6 +113,7 @@ public class HttpBuildOrderManager implements IBuildOrderManager {
 			lastBuild = new Build(UnitType.Protoss_Probe);
 		}
 
+		System.out.println("Returning new build: " + lastBuild.toString());
 		return lastBuild;
 	}
 
@@ -124,7 +126,8 @@ public class HttpBuildOrderManager implements IBuildOrderManager {
 	@Override
 	public void visualize() {
 		// TODO Auto-generated method stub
-		
+		Match.getInstance().drawBoxMap(10, 10, 200, 200, Color.Black);
+		Match.getInstance().drawTextScreen(12, 12, "Next Build: " + lastBuild.toString());
 	}
 
 	@Override
