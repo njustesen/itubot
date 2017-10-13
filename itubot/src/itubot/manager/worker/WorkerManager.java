@@ -234,10 +234,10 @@ public class WorkerManager implements IWorkerManager {
 		for(UnitAssignment responsibility : assignments){
 			if (responsibility.job instanceof UnitBuildJob){
 				if (((UnitBuildJob)responsibility.job).unitType.equals(nextBuild.unitType)){
-					if (((UnitBuildJob)responsibility.job).canBuild)
+					//if (((UnitBuildJob)responsibility.job).canBuild)
 						return true;
-					else
-						return false;
+					//else
+					//	return false;
 				}
 			}
 		}

@@ -74,5 +74,6 @@ public interface IInformationManager extends IManager {
 
 	public void print();
 	
+	public boolean exist(Unit enemy);
 	
 }

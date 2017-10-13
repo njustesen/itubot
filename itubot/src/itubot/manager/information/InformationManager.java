@@ -203,6 +203,9 @@ public class InformationManager implements IInformationManager {
 				for (Unit unit : Self.getInstance().getUnits()) {
 					if (unit.getPosition().getDistance(observation.position) <= unit.getType().sightRange()) {
 						observation.valid = false;
+						if (enemyBaseLocation.getPosition() != null){
+							observation.position = enemyBaseLocation.getPosition();
+						}
 					}
 				}
 			} else {
@@ -580,7 +583,7 @@ public class InformationManager implements IInformationManager {
 		String[] tArr = new String[64];
 		for (TechType tech : ownTechsInProgress.keySet()){
 			if (tech != TechType.None){
-				tArr[TypeRepository.Upgrades.indexOf(tech)] = ""+ownTechsInProgress.get(tech);
+				tArr[TypeRepository.Techs.indexOf(tech)] = ""+ownTechsInProgress.get(tech);
 			}
 		}
 		return arrayToString(tArr);
@@ -794,6 +797,20 @@ public class InformationManager implements IInformationManager {
 		}
 		return gas;
 	}
+	
+
+	public boolean exist(Unit enemy) {
+		if (enemy != null){
+			for (Observation observation : observations){
+				if (observation.id == enemy.getID()){
+					if (observation.valid){
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
 
 	@Override
 	public int materialHash() {
@@ -806,6 +823,9 @@ public class InformationManager implements IInformationManager {
 		}
 		for (UpgradeType upgrade : ownUpgradesInProduction.keySet()){
 			hash = hash*TypeRepository.Units.indexOf(upgrade);
+		}
+		for (Build build : ITUBot.getInstance().workerManager.plannedBuilds()){
+			hash = hash*TypeRepository.Units.indexOf(build.unitType);
 		}
 		/*
 		for (UnitType unit : ownUnits.keySet()){

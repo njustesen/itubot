@@ -41,10 +41,10 @@ public class KitingBehavior implements CombatBehavior {
 			range = 9*32;
 		} else if (unit.getType() == UnitType.Protoss_Carrier){
 			range = 8*32;
-			cooldown = 40;
+			cooldown = 400;
 		} else if (unit.getType() == UnitType.Protoss_Reaver){
 			range = 8*32;
-			cooldown = 55;
+			cooldown = 100;
 		} else if (enemy.isFlying()){
 			range = unit.getType().airWeapon().maxRange();
 			cooldown = unit.getType().airWeapon().damageCooldown();

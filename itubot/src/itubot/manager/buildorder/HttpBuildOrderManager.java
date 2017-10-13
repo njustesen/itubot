@@ -10,6 +10,7 @@ import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitType;
 import itubot.abstraction.Build;
+import itubot.abstraction.BuildType;
 import itubot.bot.ITUBot;
 import itubot.bwapi.Match;
 import itubot.bwapi.Self;
@@ -38,9 +39,25 @@ public class HttpBuildOrderManager implements IBuildOrderManager {
     	lastStateCount = 0;
     	lastRequestTime = 0;
 	}
-
+	
 	@Override
 	public Build getNextBuild() {
+		
+		Build next = nextBuild();
+		// If next just has been constructed
+		if (next.type == BuildType.BUILDING){
+			for (Unit unit : Self.getInstance().getUnits()){
+				if (unit.getType() == next.unitType && unit.getRemainingBuildTime() > unit.getType().buildTime() - 10){
+					lastBuild = new Build(UnitType.Protoss_Probe);
+					return lastBuild;
+				}
+			}
+		}
+		return next;
+		
+	}
+
+	private Build nextBuild() {
 		// https://github.com/njustesen/ualbertabot/blob/master/UAlbertaBot/Source/BuildOrderServiceManager.cpp
 		Map<String, String> stateArray = ITUBot.getInstance().informationManager.toRequest();
 		

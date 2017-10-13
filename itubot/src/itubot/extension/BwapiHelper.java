@@ -196,6 +196,9 @@ public class BwapiHelper {
 		boolean ground = unit.getType().groundWeapon() != null;
 		boolean air = unit.getType().airWeapon() != null;
 		for(Observation observation : ITUBot.getInstance().informationManager.getObservations()){
+			if (!observation.valid){
+				continue;
+			}
 			if ((ground && !observation.type.isFlyer()) || (air && observation.type.isFlyer()) || unit.getType().isSpellcaster()){
 				if (observation.type == UnitType.Zerg_Egg || observation.type == UnitType.Zerg_Larva || observation.type == UnitType.Zerg_Lurker_Egg)
 					continue;

@@ -6,6 +6,8 @@ import bwapi.TechType;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
+import itubot.abstraction.Observation;
+import itubot.bot.ITUBot;
 import itubot.bwapi.Match;
 import itubot.bwapi.Self;
 import itubot.combat.CenterBehavior;
@@ -58,6 +60,11 @@ public class UnitCombatJob extends UnitJob {
 		
 		// Did last enemy die?
 		if (enemy != null && enemy.getHitPoints() < 1){
+			enemy = null;
+		}
+		
+		// Did observation become invalid?
+		if (enemy != null && !ITUBot.getInstance().informationManager.exist(enemy)){
 			enemy = null;
 		}
 		
